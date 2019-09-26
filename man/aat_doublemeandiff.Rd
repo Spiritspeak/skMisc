@@ -41,7 +41,7 @@ A data.frame containing participant number and computed AAT score.
 \item \code{aat_doublemediandiff} computes a median-based double-difference score: \code{(median(push_target)-median(pull_target)) - (median(push_control) - median(pull_control))}
 \item \code{aat_dscore} computes D-scores (see Greenwald, Nosek, and Banaji, 2003): \code{((mean(push_target)-mean(pull_target)) - (mean(push_control) - mean(pull_control)))/sd(participant_reaction_times)}
 \item \code{aat_multilevelscore} fits a multilevel model using lme4 and extracts a random effect serving as AAT score. When using this function, additional arguments must be provided: 
-\itemize {
+\itemize{
 \item \code{formula} - a quoted formula to fit to the data;
 \item \code{aatterm} the quoted random effect within the subject variable that indicates the approach bias; this is usually the interaction of the pull and target terms.
 }

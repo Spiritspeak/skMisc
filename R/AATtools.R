@@ -179,7 +179,7 @@ case_prune_3SD<-function(ds){
 #' \item \code{aat_doublemediandiff} computes a median-based double-difference score: \code{(median(push_target)-median(pull_target)) - (median(push_control) - median(pull_control))}
 #' \item \code{aat_dscore} computes D-scores (see Greenwald, Nosek, and Banaji, 2003): \code{((mean(push_target)-mean(pull_target)) - (mean(push_control) - mean(pull_control)))/sd(participant_reaction_times)}
 #' \item \code{aat_multilevelscore} fits a multilevel model using lme4 and extracts a random effect serving as AAT score. When using this function, additional arguments must be provided: 
-#' \itemize {
+#' \itemize{
 #' \item \code{formula} - a quoted formula to fit to the data;
 #' \item \code{aatterm} the quoted random effect within the subject variable that indicates the approach bias; this is usually the interaction of the pull and target terms.
 #' }
@@ -192,7 +192,9 @@ case_prune_3SD<-function(ds){
 #' @param ... Other arguments passed on by functions (ignored)
 #'
 #' @return A data.frame containing participant number and computed AAT score.
+#' 
 #' @export
+#' 
 aat_doublemeandiff<-function(ds,subjvar,pullvar,targetvar,rtvar,...){
   ds%<>%group_by(!! sym(subjvar), !! sym(pullvar), !! sym(targetvar))%>%
     summarise(means =mean(!! sym(rtvar),na.rm=T))%>%group_by()
@@ -205,7 +207,9 @@ aat_doublemeandiff<-function(ds,subjvar,pullvar,targetvar,rtvar,...){
 }
 
 #' @rdname aat_doublemeandiff
+#' 
 #' @export
+#' 
 aat_doublemediandiff<-function(ds,subjvar,pullvar,targetvar,rtvar,...){
   ds%<>%group_by(!! sym(subjvar), !! sym(pullvar), !! sym(targetvar))%>%
     summarise(medians =median(!! sym(rtvar),na.rm=T))%>%group_by()
@@ -218,7 +222,9 @@ aat_doublemediandiff<-function(ds,subjvar,pullvar,targetvar,rtvar,...){
 }
 
 #' @rdname aat_doublemeandiff
+#' 
 #' @export
+#' 
 aat_dscore<-function(ds,subjvar,pullvar,targetvar,rtvar,...){
   setmeans <- ds %>% group_by(!! sym(subjvar), !! sym(pullvar), !! sym(targetvar)) %>%
     summarise(means =mean(!! sym(rtvar),na.rm=T)) %>% group_by() %>%
@@ -237,7 +243,9 @@ aat_dscore<-function(ds,subjvar,pullvar,targetvar,rtvar,...){
 #' @rdname aat_doublemeandiff
 #' @param formula A character string containing a formula to fit to the data and derive multilevel scores from
 #' @param aatterm The random term, grouped under the subject variable, which represents the approach bias. Usually this is the interaction of the pull and target terms.
+#' 
 #' @export
+#' 
 aat_multilevelscore<-function(ds,subjvar,formula,aatterm,...){
   fit<- lme4::lmer(as.formula(formula),data=ds,control=
                 lme4::lmerControl(optimizer="bobyqa",optCtrl = list(maxfun = 2e6)))
