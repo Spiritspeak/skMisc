@@ -238,20 +238,6 @@ compcorr<-function(cor1,cor2,n1,n2){
   return(invisible(list(zscore=zval,pvalue=pval)))
 }
 
-#' Correct a correlation coefficient for being based on only a subset of the data.
-#' @description Perform a Spearman-Brown correction on the provided correlation score.
-#' 
-#' @param corr To-be-corrected correlation coefficient
-#' @param ntests An integer indicating how many times larger the full test is, for which the corrected correlation coefficient is being computed.
-#' When \code{ntests=2}, the formula will compute what the correlation coefficient would be if the test were twice as long.
-#'
-#' @return Spearman-Brown-corrected correlation coefficient. Values are bounded at zero.
-#' @export
-SpearmanBrown<-function(corr,ntests=2){
-  sb<-ntests*corr / (1+(ntests-1)*corr)
-  ifelse(sb<0,0,sb)
-}
-
 # CorrCrunch ####
 
 #' Analyse the robustness of a correlation
@@ -359,5 +345,10 @@ CorTable<-function(df,rowids,columnids,rowdf,columndf){
 }
 
 
-
-
+#stolen from stackoverflow
+hilight<-function(x,y,s, bg="yellow") {
+  text.width <- strwidth(s)
+  text.height <- strheight(s)
+  rect(x,y,x+text.width,y+text.height,col=bg,border=NA)
+  text(x,y,s,adj=c(0,0))
+}
