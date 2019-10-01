@@ -16,7 +16,8 @@ A named list containing character vectors with random terms; names are group var
 Extract random terms from a lme4 formula
 }
 \examples{
-ExtractRandomTerms(grade ~ ChildIQ * TeacherSkill * SchoolType + (ChildIQ * TeacherSkill | School))
+ExtractRandomTerms(grade ~ ChildIQ * TeacherSkill * SchoolType + 
+                              (ChildIQ * TeacherSkill | School))
 #$School
 #[1] "ChildIQ"              "TeacherSkill"         "ChildIQ:TeacherSkill"
 }

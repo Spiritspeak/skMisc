@@ -7,7 +7,8 @@
 #' @return A named list containing character vectors with random terms; names are group variables.
 #' @export
 #'
-#' @examples ExtractRandomTerms(grade ~ ChildIQ * TeacherSkill * SchoolType + (ChildIQ * TeacherSkill | School))
+#' @examples ExtractRandomTerms(grade ~ ChildIQ * TeacherSkill * SchoolType + 
+#'                               (ChildIQ * TeacherSkill | School))
 #' #$School
 #' #[1] "ChildIQ"              "TeacherSkill"         "ChildIQ:TeacherSkill"
 ExtractRandomTerms<-function(form){
@@ -175,7 +176,6 @@ ComputeLowerModels2<-function(model,data,group="",...){
 #' @export 
 #'
 #' @examples 
-#' #Not Run.
 #' 
 AnovaTable<-function(...,fullmodel,models,serial=F,suppress=c("AIC","deviance","logLik")){
   if(missing(models) & missing(fullmodel)){    

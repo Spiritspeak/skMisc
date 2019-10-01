@@ -24,6 +24,7 @@
 #' but not when using d-scores or median double-difference scores.
 #' \code{prune_nothing} excludes no trials, while \code{trial_prune_3SD} excludes trials deviating more than 3SD from the mean per participant.
 #' @param errortrialfunc Function (without brackets or quotes) to apply to an error trial. 
+#' 
 #' \code{error_replace_blockmeanplus} replaces error trial reaction times with the block mean plus an arbitrary extra amount of time.
 #' If used, the following additional arguments are required:
 #' \itemize{
@@ -40,6 +41,7 @@
 #' a list of data.frames used over each iteration, and a vector containing the split-half reliability of each iteration.
 #' @export
 #'
+#' @author Sercan Kahveci
 #' @examples #Not Run
 #' aat_splithalf(ds=ds2,subjvar="subjectid",pullvar="is_pull",targetvar="is_food",
 #'               rtvar="rt",iters=1000,trialdropfunc=trial_prune_3SD,
@@ -235,9 +237,15 @@ error_replace_blockmeanplus<-function(ds,subjvar,rtvar,blockvar,errorvar,errorbo
 #' AAT score computation algorithms
 #' @description
 #' \itemize{
-#' \item \code{aat_doublemeandiff} computes a mean-based double-difference score: \code{(mean(push_target)-mean(pull_target)) - (mean(push_control) - mean(pull_control))}
-#' \item \code{aat_doublemediandiff} computes a median-based double-difference score: \code{(median(push_target)-median(pull_target)) - (median(push_control) - median(pull_control))}
-#' \item \code{aat_dscore} computes D-scores (see Greenwald, Nosek, and Banaji, 2003): \code{((mean(push_target)-mean(pull_target)) - (mean(push_control) - mean(pull_control)))/sd(participant_reaction_times)}
+#' \item \code{aat_doublemeandiff} computes a mean-based double-difference score: 
+#' 
+#' \code{(mean(push_target) - mean(pull_target)) - (mean(push_control) - mean(pull_control))}
+#' \item \code{aat_doublemediandiff} computes a median-based double-difference score: 
+#' 
+#' \code{(median(push_target) - median(pull_target)) - (median(push_control) - median(pull_control))}
+#' \item \code{aat_dscore} computes D-scores (see Greenwald, Nosek, and Banaji, 2003): 
+#' 
+#' \code{((mean(push_target) - mean(pull_target)) - (mean(push_control) - mean(pull_control))) / sd(participant_reaction_times)}
 #' \item \code{aat_multilevelscore} fits a multilevel model using lme4 and extracts a random effect serving as AAT score. When using this function, additional arguments must be provided: 
 #' \itemize{
 #' \item \code{formula} - a quoted formula to fit to the data;

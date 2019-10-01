@@ -26,6 +26,5 @@ conditional R-squared (the effect size of all model terms), loglikelihood, devia
 Compare multilevel models
 }
 \examples{
-#Not Run.
 
 }

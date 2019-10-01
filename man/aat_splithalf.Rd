@@ -45,6 +45,7 @@ but not when using d-scores or median double-difference scores.
 \code{prune_nothing} excludes no trials, while \code{trial_prune_3SD} excludes trials deviating more than 3SD from the mean per participant.}
 
 \item{errortrialfunc}{Function (without brackets or quotes) to apply to an error trial. 
+
 \code{error_replace_blockmeanplus} replaces error trial reaction times with the block mean plus an arbitrary extra amount of time.
 If used, the following additional arguments are required:
 \itemize{
@@ -86,4 +87,7 @@ aat_splithalf(ds=ds2,subjvar="subjectid",pullvar="is_pull",targetvar="is_food",
 #Mean reliability: 0.5313939
 #Spearman-Brown-corrected r: 0.6940003
 #95\%CI: [0.2687186, 0.6749176]
+}
+\author{
+Sercan Kahveci
 }
