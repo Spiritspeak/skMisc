@@ -75,10 +75,25 @@ OLcrunch<-function(x,DS=3,hardlimit=NULL){
 #'
 #' @examples temp<- smoothvect(beaver1$temp)
 #' plot(temp,type="l")
-smoothvect<-function(vect,width=2,both.sides=T){
+smoothvect<-function(vect,width=2,both.sides=T,alg=c("mean","gauss")){
   output<-numeric()
-  for(i in seq_len(length(vect))){
-    output[i]<-mean(vect[ max(i-width*both.sides,0):min(i+width,length(vect))],na.rm=T)
+  
+  normsum<-function(x){x/sum(x)}
+  
+  if(alg=="mean"){
+    for(i in seq_len(length(vect))){
+      output[i]<-mean(vect[ max(i-width*both.sides,1):min(i+width,length(vect))],na.rm=T)
+    }
+  }
+  if(alg=="gauss"){
+    winvect<- (-width*both.sides):(width)
+    window<-dnorm(winvect/length(vect)*3)
+    for(i in seq_len(length(vect))){
+      output[i]<-sum(
+        vect[max(i-width*both.sides,1):min(i+width,length(vect))] * 
+          normsum(window[ (max(i-width,1)-i):(min(i+width,length(vect))-i) +width+1])
+        ,na.rm=T)
+    }
   }
   output
 }

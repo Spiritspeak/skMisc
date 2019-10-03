@@ -5,7 +5,7 @@ Authors@R: person("Sercan", "Kahveci", email = "sercan+kahveci@sbg.ac.at", role 
 Description: Contains a wide range of functions. 
 Depends: R (>= 3.6.1)
 Imports: magrittr, dplyr, doParallel, lmerTest, knitr
-License: GPL (>=2)
+License: GPL-3
 BugReports: https://github.com/Spiritspeak/skMisc/issues
 LazyData: true
 RoxygenNote: 6.1.1

@@ -88,16 +88,17 @@ aat_splithalf<-function(ds,subjvar,pullvar,targetvar,rtvar,iters,plot=T,
     stopifnot(deparse(substitute(casedropfunc)) %in% c("prune_nothing","case_prune_3SD"))
   }
   if(deparse(substitute(algorithm))=="aat_multilevelscore" & !any(c("formula","aatterm") %in% names(args))){
-    args$formula<-paste(rtvar,"~",1,"+(",pullvar,"*",targetvar,"|",subjvar,")")
-    args$aatterm<-paste(pullvar,":",targetvar)
+    args$formula<-paste0(rtvar,"~",1,"+(",pullvar,"*",targetvar,"|",subjvar,")")
+    args$aatterm<-paste0(pullvar,":",targetvar)
     warning("No multilevel formula or AAT-term provided. Defaulting to formula ",args$formula," and AAT-term ",args$aatterm)
   }
+  ds%<>%aat_preparedata(subjvar,pullvar,targetvar,rtvar)
   
   #splithalf loop
   cluster<-makeCluster(detectCores()-1)#,outfile="splithalfmessages.txt")
   registerDoParallel(cluster)
   results<-
-    foreach(iter = seq_len(iters), .packages=c("magrittr","dplyr","tidyr","lme4")) %dopar% {
+    foreach(iter = seq_len(iters), .packages=c("magrittr","dplyr","lme4")) %dopar% {
       #Split data
       iterds<-ds%>%group_by(!! sym(subjvar), !! sym(pullvar), !! sym(targetvar))%>%
         mutate(key=sample(n())%%2)%>%ungroup()
@@ -131,10 +132,95 @@ aat_splithalf<-function(ds,subjvar,pullvar,targetvar,rtvar,iters,plot=T,
   #Print and generate output
   cors<-sapply(results,FUN=function(x){x$corr})
   cors%<>%sort
-  cat("\nMean reliability: ",mean(cors),
-      "\nSpearman-Brown-corrected r: ",SpearmanBrown(mean(cors)),
-      "\n95%CI: [", cors[round(iters*0.025)], ", ", cors[round(iters*0.975)],"]\n",
-      sep="")
+
+  if(plot){
+    abds<-results[[length(results)]]$abds
+    plot(abds$abhalf0,abds$abhalf1,pch=20,xlab="Half 1 computed bias",ylab="Half 2 computed bias")
+    text(abds$abhalf0,abds$abhalf1,abds[[subjvar]],cex= 0.7, pos=3, offset=0.3)
+  }
+  #cat(scan("splithalfmessages.txt",what=character(),quiet=TRUE))
+  output<-list(rsplithalf=mean(cors),
+               lowerci=cors[round(iters*0.025)],
+               upperci=cors[round(iters*0.975)],
+               rSB=SpearmanBrown(mean(cors)),
+               iters=iters,
+               itercors=sapply(results,function(x){ x$corr }),
+               iterdata=lapply(results,function(x){ x$abds })) %>%
+    structure(class = "aat_splithalf")
+  return(output)
+}
+
+#Singlecore splithalf (slower but produces output)
+#' @rdname aat_splithalf
+aat_splithalf_singlecore<-function(ds,subjvar,pullvar,targetvar,rtvar,iters,plot=T,
+                        algorithm=c(aat_doublemeandiff,aat_doublemediandiff,aat_dscore,aat_multilevelscore),
+                        trialdropfunc=c(prune_nothing,trial_prune_3SD),
+                        errortrialfunc=c(prune_nothing,error_replace_blockmeanplus),
+                        casedropfunc=c(prune_nothing,case_prune_3SD),
+                        ...){
+  for(pack in c("magrittr","dplyr","tidyr","lme4","doParallel")){ require(pack,character.only=T) }
+  
+  #Handle arguments
+  args<-list(...)
+  if(missing(algorithm)){ algorithm<-algorithm[[1]] }else{
+    stopifnot(deparse(substitute(algorithm)) %in% c("aat_doublemeandiff","aat_doublemediandiff","aat_dscore","aat_multilevelscore"))
+  }
+  if(missing(trialdropfunc)){ trialdropfunc<-trialdropfunc[[1]] }else{
+    stopifnot(deparse(substitute(trialdropfunc)) %in% c("prune_nothing","trial_prune_3SD"))
+  }
+  if(missing(errortrialfunc)){ errortrialfunc<-errortrialfunc[[1]] }else{
+    stopifnot(deparse(substitute(errortrialfunc)) %in% c("prune_nothing","error_replace_blockmeanplus"))
+    if(deparse(substitute(errortrialfunc))=="error_replace_blockmeanplus"){
+      stopifnot(!is.null(args$blockvar),!is.null(args$errorvar))
+    }
+  }
+  if(is.null(args$errorbonus)){ args$errorbonus<- 0.6 }
+  if(is.null(args$blockvar)){ args$blockvar<- 0 }
+  if(is.null(args$errorvar)){ args$errorvar<- 0 }
+  if(missing(casedropfunc)){ casedropfunc<-casedropfunc[[1]] }else{
+    stopifnot(deparse(substitute(casedropfunc)) %in% c("prune_nothing","case_prune_3SD"))
+  }
+  if(deparse(substitute(algorithm))=="aat_multilevelscore" & !any(c("formula","aatterm") %in% names(args))){
+    args$formula<-paste0(rtvar,"~",1,"+(",pullvar,"*",targetvar,"|",subjvar,")")
+    args$aatterm<-paste0(pullvar,":",targetvar)
+    warning("No multilevel formula or AAT-term provided. Defaulting to formula ",args$formula," and AAT-term ",args$aatterm)
+  }
+  ds%<>%aat_preparedata(subjvar,pullvar,targetvar,rtvar)
+  
+  #splithalf loop
+  results<-list()
+  for(iter in seq_len(iters)){
+    #Split data
+    iterds<-ds%>%group_by(!! sym(subjvar), !! sym(pullvar), !! sym(targetvar))%>%
+      mutate(key=sample(n())%%2)%>%ungroup()
+    #Handle outlying trials
+    iterds<-do.call(trialdropfunc,list(ds=iterds,subjvar=subjvar,rtvar=rtvar))
+    #Handle error trials
+    iterds<-do.call(errortrialfunc,list(ds=iterds,subjvar=subjvar,rtvar=rtvar,
+                                        blockvar=args$blockvar,errorvar=args$errorvar,
+                                        errorbonus=args$errorbonus))
+    
+    # abds<-do.call(algorithm,c(list(iterds=iterds,subjvar=subjvar,pullvar=pullvar,
+    #                                targetvar=targetvar,rtvar=rtvar),args))
+    #Compute AB
+    half0set<-iterds%>%filter(key==0)
+    half1set<-iterds%>%filter(key==1)
+    abds<-merge(
+      do.call(algorithm,c(list(ds=half0set,subjvar=subjvar,pullvar=pullvar,
+                               targetvar=targetvar,rtvar=rtvar),args)),
+      do.call(algorithm,c(list(ds=half1set,subjvar=subjvar,pullvar=pullvar,
+                               targetvar=targetvar,rtvar=rtvar),args)),
+      by=subjvar,suffixes=c("half0","half1"))
+    #Remove outlying participants
+    abds<-do.call(casedropfunc,list(ds=abds))
+    #Compute reliability
+    currcorr<-cor(abds$abhalf0,abds$abhalf1,use="complete.obs")
+    results[[iter]]<-list(corr=currcorr,abds=abds)
+  }
+  
+  #Print and generate output
+  cors<-sapply(results,FUN=function(x){x$corr})
+  cors%<>%sort
   
   if(plot){
     abds<-results[[length(results)]]$abds
@@ -145,52 +231,24 @@ aat_splithalf<-function(ds,subjvar,pullvar,targetvar,rtvar,iters,plot=T,
   output<-list(rsplithalf=mean(cors),
                lowerci=cors[round(iters*0.025)],
                upperci=cors[round(iters*0.975)],
+               rSB=SpearmanBrown(mean(cors)),
+               iters=iters,
                itercors=sapply(results,function(x){ x$corr }),
-               iterdata=lapply(results,function(x){ x$abds }))
-  return(invisible(output))
+               iterdata=lapply(results,function(x){ x$abds })) %>%
+    structure(class = "aat_splithalf")
+  return(output)
 }
 
-#Singlecore splithalf (slower but produces output)
-#' @rdname aat_splithalf
-aat_splithalf_singlecore<-function(ds,subjvar,pullvar,targetvar,rtvar,iters,plot=F,
-                                   algorithm=c(aat_doublemeandiff,aat_doublemediandiff,aat_dscore,aat_multilevelscore),
-                                   trialdropfunc=c(prune_nothing,trial_prune_3SD),
-                                   casedropfunc=c(prune_nothing,case_prune_3SD),
-                                   ...){
-  for(pack in c("magrittr","dplyr","tidyr","lme4")){ require(pack,character.only=T) }
-  args<-list(...)
-  
-  cors<-vector()
-  for(iter in 1:iters){
-    iterds<-ds%>%group_by(!! sym(subjvar), !! sym(pullvar), !! sym(targetvar))%>%
-      mutate(key=sample(n())%%2)%>%ungroup()
-    
-    iterds<-do.call(trialdropfunc,list(ds=iterds,subjvar=subjvar,rtvar=rtvar))
-    
-    abds<-do.call(algorithm,c(list(ds=iterds,subjvar=subjvar,pullvar=pullvar,
-                                   targetvar=targetvar,rtvar=rtvar),args))
-    
-    abds<-do.call(casedropfunc,list(ds=abds))
-    
-    cors[iter]<-cor(abds$abhalf0,abds$abhalf1,use="complete.obs")
-    cat("\rCorr for iter ",iter," is ", round(cors[iter],digits=2),rep(".",iter/iters*10)," ",sep="")
-    #cat("\r[",rep("/",iter/iters*20),rep(" ",(iters-iter)/iters*20),"]",sep="")
-  }
-  cors%<>%sort
-  cat("\nMean reliability: ",mean(cors),
-      "\nSpearman-Brown-corrected r: ",SpearmanBrown(mean(cors)),
-      "\n95%CI: [", cors[round(iters*0.025)], ", ", cors[round(iters*0.975)],"]\n",
+
+print.aat_splithalf<-function(x){
+  cat("\nMean reliability: ",x$rsplithalf,
+      "\nSpearman-Brown-corrected r: ",x$rSB,
+      "\n95%CI: [", x$lowerci, ", ", x$upperci,"]\n",
       sep="")
-  
-  if(plot){
-    plot(abds$abhalf0,abds$abhalf1,pch=20,xlab="Half 1 computed bias",ylab="Half 2 computed bias",
-         main="Scatterplot for last split-half iteration")
-    text(abds$abhalf0,abds$abhalf1,abds[[subjvar]],cex= 0.7, pos=3, offset=0.3)
-  }
-  invisible(list(iterdf=abds,rsplithalf=mean(cors),
-                 lowerci=cors[round(iters*0.025)],
-                 upperci=cors[round(iters*0.975)]))
 }
+registerS3method("print",class="aat_splithalf",method=print.aat_splithalf)
+
+
 
 
 # Outlier removing algorithms ####
@@ -342,29 +400,30 @@ SpearmanBrown<-function(corr,ntests=2){
 
 
 
-# aat_preparedata<-function(ds,subjvar,pullvar,targetvar,rtvar){
-#   ds[,subjvar]%<>%as.factor()
-#   if(is.logical(ds[,pullvar])){ 
-#     message("Recoded ",pullvar," from logical to numeric. Please make sure that FALSE ",
-#             "represents push trials and TRUE represents pull trials")
-#     ds[,pullvar]%<>%as.numeric() 
-#   }
-#   if(is.factor(ds[,pullvar])){ 
-#     message("Recoded ",pullvar," from factor to numeric. Please make sure that ",
-#             levels(ds[,pullvar])[1], "represents push trials and ",levels(ds[,pullvar])[2],
-#             " represents pull trials")
-#     ds[,pullvar]<-as.numeric(ds[,pullvar])-1 
-#   }
-#   if(is.logical(ds[,targetvar])){ 
-#     message("Recoded ",targetvar," from logical to numeric. Please make sure that FALSE ",
-#             "represents control/neutral stimuli and TRUE represents target stimuli")
-#     ds[,targetvar]%<>%as.numeric() 
-#   }
-#   if(is.factor(ds[,targetvar])){ 
-#     message("Recoded ",targetvar," from factor to numeric. Please make sure that ",
-#             levels(ds[,targetvar])[1], "represents control/neutral stimuli and ",levels(ds[,targetvar])[2],
-#             " represents target stimuli")
-#     ds[,targetvar]<-as.numeric(ds[,targetvar])-1 
-#   }
-#   return(ds)
-# }
+aat_preparedata<-function(ds,subjvar,pullvar,targetvar,rtvar){
+  stopifnot(all(c(subjvar,pullvar,targetvar,rtvar) %in% colnames(ds)))
+  ds[,subjvar]%<>%as.factor()
+  if(is.logical(ds[,pullvar])){
+    warning("Recoded ",pullvar," from logical to numeric. Please make sure that FALSE ",
+            "represents push trials and TRUE represents pull trials")
+    ds[,pullvar]%<>%as.numeric()
+  }
+  if(is.factor(ds[,pullvar])){
+    warning("Recoded ",pullvar," from factor to numeric. Please make sure that ",
+            levels(ds[,pullvar])[1], "represents push trials and ",levels(ds[,pullvar])[2],
+            " represents pull trials")
+    ds[,pullvar]<-as.numeric(ds[,pullvar])-1
+  }
+  if(is.logical(ds[,targetvar])){
+    warning("Recoded ",targetvar," from logical to numeric. Please make sure that FALSE ",
+            "represents control/neutral stimuli and TRUE represents target stimuli")
+    ds[,targetvar]%<>%as.numeric()
+  }
+  if(is.factor(ds[,targetvar])){
+    warning("Recoded ",targetvar," from factor to numeric. Please make sure that ",
+            levels(ds[,targetvar])[1], "represents control/neutral stimuli and ",levels(ds[,targetvar])[2],
+            " represents target stimuli")
+    ds[,targetvar]<-as.numeric(ds[,targetvar])-1
+  }
+  return(ds)
+}
