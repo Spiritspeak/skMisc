@@ -395,9 +395,9 @@ aat_multilevelscore<-function(ds,subjvar,formula,aatterm,...){
 #' @examples 
 #' @export
 aat_bootstrap<-function(ds,subjvar,pullvar,targetvar,rtvar,iters,plot=T,
-                        algorithm=c(aat_doublemeandiff,aat_doublemediandiff,aat_dscore,aat_multilevelscore),
-                        trialdropfunc=c(prune_nothing,trial_prune_3SD),
-                        errortrialfunc=c(prune_nothing,error_replace_blockmeanplus),
+                        algorithm=c("aat_doublemeandiff","aat_doublemediandiff","aat_dscore","aat_multilevelscore"),
+                        trialdropfunc=c("prune_nothing","trial_prune_3SD"),
+                        errortrialfunc=c("prune_nothing","error_replace_blockmeanplus"),
                         ...){
   for(pack in c("magrittr","dplyr","tidyr","lme4","doParallel")){ require(pack,character.only=T) }
   packs<-c("magrittr","dplyr","skMisc")
@@ -522,3 +522,8 @@ aat_preparedata<-function(ds,subjvar,pullvar,targetvar,rtvar){
   }
   return(ds)
 }
+
+
+
+importfuncs<-c(aat_doublemeandiff,aat_doublemediandiff,aat_dscore,aat_multilevelscore,
+               prune_nothing,trial_prune_3SD,case_prune_3SD,error_replace_blockmeanplus)

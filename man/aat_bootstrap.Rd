@@ -5,10 +5,11 @@
 \title{Compute bootstrapped approach-bias scores}
 \usage{
 aat_bootstrap(ds, subjvar, pullvar, targetvar, rtvar, iters, plot = T,
-  algorithm = c(aat_doublemeandiff, aat_doublemediandiff, aat_dscore,
-  aat_multilevelscore), trialdropfunc = c(prune_nothing,
-  trial_prune_3SD), errortrialfunc = c(prune_nothing,
-  error_replace_blockmeanplus), ...)
+  algorithm = c("aat_doublemeandiff", "aat_doublemediandiff",
+  "aat_dscore", "aat_multilevelscore"),
+  trialdropfunc = c("prune_nothing", "trial_prune_3SD"),
+  errortrialfunc = c("prune_nothing", "error_replace_blockmeanplus"),
+  ...)
 }
 \arguments{
 \item{ds}{a longformat data.frame}
