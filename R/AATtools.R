@@ -80,7 +80,6 @@ aat_splithalf<-function(ds,subjvar,pullvar,targetvar,rtvar,iters,plot=T,
     if(is.null(args$blockvar)){ args$blockvar<- 0 }
     if(is.null(args$errorvar)){ args$errorvar<- 0 }
   }
-  
   if(algorithm=="aat_multilevelscore"){
     packs<-c(packs,"lme4")
     if(!any(c("formula","aatterm") %in% names(args))){
