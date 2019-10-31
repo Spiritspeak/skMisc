@@ -455,7 +455,7 @@ aat_bootstrap<-function(ds,subjvar,pullvar,targetvar,rtvar,iters,plot=T,
                       bias=rowMeans(results),
                       lowerci=apply(results,MARGIN=1,FUN=function(x){quantile(x,0.025)}),
                       upperci=apply(results,MARGIN=1,FUN=function(x){quantile(x,0.975)}))
-  statset$ci<-statset$hici-statset$loci
+  statset$ci<-statset$upperci-statset$lowerci
   
   output<-list(bias=statset,iters=iters,iterdata=results) %>%
      structure(class = "aat_bootstrap")
@@ -474,6 +474,7 @@ plot.aat_bootstrap <- function(x){
   segments(x0=statset$bias+0.005*wideness,x1=statset$upperci,y0=rank,y1=rank)
   #text(x=statset$bias,y=statset$rownr,labels=statset$ppidx,cex=0.5)
 }
+registerS3method("plot",class="aat_bootstrap",method=plot.aat_bootstrap)
 
 # utils ####
 #' Correct a correlation coefficient for being based on only a subset of the data.
@@ -523,7 +524,3 @@ aat_preparedata<-function(ds,subjvar,pullvar,targetvar,rtvar){
   return(ds)
 }
 
-
-
-importfuncs<-c(aat_doublemeandiff,aat_doublemediandiff,aat_dscore,aat_multilevelscore,
-               prune_nothing,trial_prune_3SD,case_prune_3SD,error_replace_blockmeanplus)
