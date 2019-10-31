@@ -4,7 +4,7 @@
 \alias{smoothvect}
 \title{Smooth a numeric vector using a moving window algorithm}
 \usage{
-smoothvect(vect, width = 2, both.sides = T)
+smoothvect(vect, width = 2, both.sides = T, alg = c("mean", "gauss"))
 }
 \arguments{
 \item{vect}{}

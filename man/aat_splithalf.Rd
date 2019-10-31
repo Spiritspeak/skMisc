@@ -6,16 +6,18 @@
 \title{Compute bootstrapped split-half reliability for approach-avoidance task data}
 \usage{
 aat_splithalf(ds, subjvar, pullvar, targetvar, rtvar, iters, plot = T,
-  algorithm = c(aat_doublemeandiff, aat_doublemediandiff, aat_dscore,
-  aat_multilevelscore), trialdropfunc = c(prune_nothing,
-  trial_prune_3SD), errortrialfunc = c(prune_nothing,
-  error_replace_blockmeanplus), casedropfunc = c(prune_nothing,
-  case_prune_3SD), ...)
+  algorithm = c("aat_doublemeandiff", "aat_doublemediandiff",
+  "aat_dscore", "aat_multilevelscore"),
+  trialdropfunc = c("prune_nothing", "trial_prune_3SD"),
+  errortrialfunc = c("prune_nothing", "error_replace_blockmeanplus"),
+  casedropfunc = c("prune_nothing", "case_prune_3SD"), ...)
 
 aat_splithalf_singlecore(ds, subjvar, pullvar, targetvar, rtvar, iters,
-  plot = F, algorithm = c(aat_doublemeandiff, aat_doublemediandiff,
-  aat_dscore, aat_multilevelscore), trialdropfunc = c(prune_nothing,
-  trial_prune_3SD), casedropfunc = c(prune_nothing, case_prune_3SD), ...)
+  plot = T, algorithm = c("aat_doublemeandiff", "aat_doublemediandiff",
+  "aat_dscore", "aat_multilevelscore"),
+  trialdropfunc = c("prune_nothing", "trial_prune_3SD"),
+  errortrialfunc = c("prune_nothing", "error_replace_blockmeanplus"),
+  casedropfunc = c("prune_nothing", "case_prune_3SD"), ...)
 }
 \arguments{
 \item{ds}{a longformat data.frame}
