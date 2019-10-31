@@ -362,6 +362,7 @@ CorTable<-function(df,rowids,columnids,rowdf,columndf){
 
 
 #stolen from stackoverflow
+#' @export
 hilight<-function(x,y,s, bg="yellow") {
   text.width <- strwidth(s)
   text.height <- strheight(s)

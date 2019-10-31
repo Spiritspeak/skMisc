@@ -39,7 +39,6 @@
 #'
 #' @return A list, containing the mean bootstrapped split-half reliability, bootstrapped 95% confidence intervals, 
 #' a list of data.frames used over each iteration, and a vector containing the split-half reliability of each iteration.
-#' @export
 #'
 #' @author Sercan Kahveci
 #' @examples #Not Run
@@ -59,6 +58,7 @@
 #' #Mean reliability: 0.5313939
 #' #Spearman-Brown-corrected r: 0.6940003
 #' #95%CI: [0.2687186, 0.6749176]
+#' @export
 aat_splithalf<-function(ds,subjvar,pullvar,targetvar,rtvar,iters,plot=T,
                         algorithm=c("aat_doublemeandiff","aat_doublemediandiff","aat_dscore","aat_multilevelscore"),
                         trialdropfunc=c("prune_nothing","trial_prune_3SD"),
@@ -142,6 +142,7 @@ aat_splithalf<-function(ds,subjvar,pullvar,targetvar,rtvar,iters,plot=T,
 
 #Singlecore splithalf (slower but produces output)
 #' @rdname aat_splithalf
+#' @export
 aat_splithalf_singlecore<-function(ds,subjvar,pullvar,targetvar,rtvar,iters,plot=T,
                         algorithm=c("aat_doublemeandiff","aat_doublemediandiff","aat_dscore","aat_multilevelscore"),
                         trialdropfunc=c("prune_nothing","trial_prune_3SD"),
@@ -303,7 +304,6 @@ error_replace_blockmeanplus<-function(ds,subjvar,rtvar,blockvar,errorvar,errorbo
 #' @return A data.frame containing participant number and computed AAT score.
 #' 
 #' @export
-#' 
 aat_doublemeandiff<-function(ds,subjvar,pullvar,targetvar,rtvar,...){
   ds%<>%group_by(!! sym(subjvar), !! sym(pullvar), !! sym(targetvar))%>%
     summarise(means =mean(!! sym(rtvar),na.rm=T))%>%group_by()
@@ -333,7 +333,6 @@ aat_doublemediandiff<-function(ds,subjvar,pullvar,targetvar,rtvar,...){
 #' @rdname aat_doublemeandiff
 #' 
 #' @export
-#' 
 aat_dscore<-function(ds,subjvar,pullvar,targetvar,rtvar,...){
   setmeans <- ds %>% group_by(!! sym(subjvar), !! sym(pullvar), !! sym(targetvar)) %>%
     summarise(means =mean(!! sym(rtvar),na.rm=T)) %>% group_by() %>%
@@ -354,7 +353,6 @@ aat_dscore<-function(ds,subjvar,pullvar,targetvar,rtvar,...){
 #' @param aatterm The random term, grouped under the subject variable, which represents the approach bias. Usually this is the interaction of the pull and target terms.
 #' 
 #' @export
-#' 
 aat_multilevelscore<-function(ds,subjvar,formula,aatterm,...){
   fit<- lme4::lmer(as.formula(formula),data=ds,control=
                 lme4::lmerControl(optimizer="bobyqa",optCtrl = list(maxfun = 2e6),calc.derivs=F))
@@ -392,11 +390,10 @@ aat_multilevelscore<-function(ds,subjvar,formula,aatterm,...){
 #'
 #' @return A list, containing bootstrapped bias scores, a data frame with bootstrapped 95% confidence intervals, 
 #' the number of iterations, and a matrix of bias scores for each iteration.
-#' @export
 #'
 #' @author Sercan Kahveci
 #' @examples 
-#' 
+#' @export
 aat_bootstrap<-function(ds,subjvar,pullvar,targetvar,rtvar,iters,plot=T,
                         algorithm=c(aat_doublemeandiff,aat_doublemediandiff,aat_dscore,aat_multilevelscore),
                         trialdropfunc=c(prune_nothing,trial_prune_3SD),
@@ -460,19 +457,9 @@ aat_bootstrap<-function(ds,subjvar,pullvar,targetvar,rtvar,iters,plot=T,
                       upperci=apply(results,MARGIN=1,FUN=function(x){quantile(x,0.975)}))
   statset$ci<-statset$hici-statset$loci
   
-  #generate plot
-  if(plot){ 
-    rank<-rank(statset$bias)
-    wideness<-max(statset$upperci) - min(statset$lowerci)
-    plot(x=statset$bias,y=rank,xlim=c(min(statset$lowerci)-0.01*wideness,max(statset$upperci)+0.01*wideness),
-         xlab="Bias score",main=paste0("Individual bias scores with 95%CI",
-                                       "\nMean confidence interval: ",round(mean(statset$ci),digits=2)))
-    segments(x0=statset$lowerci,x1=statset$bias-0.005*wideness,y0=rank,y1=rank)
-    segments(x0=statset$bias+0.005*wideness,x1=statset$upperci,y0=rank,y1=rank)
-    #text(x=statset$bias,y=statset$rownr,labels=statset$ppidx,cex=0.5)
-  }
   output<-list(bias=statset,iters=iters,iterdata=results) %>%
      structure(class = "aat_bootstrap")
+  if(plot){ plot(output) }
   return(output)
 }
 

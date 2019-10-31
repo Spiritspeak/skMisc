@@ -9,3 +9,4 @@
 #' @docType package
 #' @name skMisc
 #' 
+#' @importFrom tidyr spread
