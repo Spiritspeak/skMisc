@@ -13,7 +13,6 @@ args2strings <- function(...) sapply(substitute({ ... })[-1], deparse)
 #' @export 
 #'
 #' @examples clamp(0:10,2,8)
-
 clamp <- function(val,minval,maxval){
   val[val<minval]<-minval
   val[val>maxval]<-maxval
@@ -206,6 +205,7 @@ read.csv.folder<-function(folder="./", readfunc=list(read.csv,read.csv2,read.tab
 #' @param ... Unquoted names of packages to try loading, and if unable, install and load.
 #'
 #' @examples trypackages(stats,utils,compiler)
+#' @export
 trypackages<-function(...){
   packs<-args2strings(...)
   for(pack in packs){
@@ -297,12 +297,6 @@ CorrCrunch<-function(x,y,verbose=F){
     if(verbose){ cat(sep="","Holdout: ",iter,", r: ",rval,"\n") }
     iterdf<-iterdf[-delidx,]
   }
-  # This section was moved to its own print function
-  # if(verbose){
-  #   cat("Holdout needed to flip the sign: ",iter,
-  #       " (",round(iter/(length(x)-2)*100,digits=2),"%)\n",sep="")
-  #   cat("Final r: ",cor(iterdf$x,iterdf$y),"\n",sep="")
-  # }
   structure(.Data=list(h=iter,h.prop=iter/(length(x)-2),lastdf=iterdf),class="CorrCrunch")
 }
 
@@ -373,4 +367,47 @@ hilight<-function(x,y,s, bg="yellow") {
   text.height <- strheight(s)
   rect(x,y,x+text.width,y+text.height,col=bg,border=NA)
   text(x,y,s,adj=c(0,0))
+}
+
+
+#FullAutocorPlot
+AutocorPlot<-function(ds,ppvar,rtvar,scope=64){
+  if(missing(ds)){
+    ds<-data.frame(ppvar=ppvar,rtvar=rtvar,stringsAsFactors = F)
+    ppvar<-"ppvar"
+    rtvar<-"rtvar"
+  }
+  ds%<>%as.data.frame()
+  pplist<-unique(ds[,ppvar])%>%as.vector
+  npp<-length(pplist)
+  cormat<-matrix(nrow=scope,ncol=npp)
+  ct<-0
+  for(pp in pplist){
+    ct<-ct+1
+    tds<-ds%>%filter((!!sym(ppvar)) ==pp)
+    autocor<-numeric()
+    for(i in seq_len(scope)){
+      autocor[i]<-cor(tds[,rtvar],lag(tds[,rtvar],i),use="complete.obs")
+    }
+    cormat[,ct]<-autocor
+  }
+  colnames(cormat)<-pplist
+  plot(rowMeans(cormat),type="s",xlab="lag",ylab="autocorrelation",main=paste("Variable",rtvar,"autocorrelation"),
+       ylim=c(min(cormat),max(cormat)))
+  for(i in seq_len(npp)){ lines(x=cormat[,i],pch=".",col=rgb(0,0,0,0.1),type="l") }
+  abline(h=0,col="gray")
+  return(invisible(cormat))
+}
+
+
+#TransformPlots
+DistroPlots<-function(x){
+  par(mfrow=c(2,3),mar=c(3,2,3,1))
+  qqp(x,"norm",main="Untransformed")
+  qqp(log(x),"norm",main="Log-transformed")
+  qqp(sqrt(x),"norm",main="Sqrt-transformed")
+  qqp(1/x,"norm",main="Inverse-transformed")
+  fitdistr(x, "gamma") %$%
+    qqp(x, "gamma", shape = .$estimate[[1]], scale = .$estimate[[2]],main="Gamma-distribution")
+  x%>%density%>%plot(main="Density")
 }
