@@ -60,7 +60,8 @@
 #' #95%CI: [0.2687186, 0.6749176]
 #' @export
 aat_splithalf<-function(ds,subjvar,pullvar,targetvar,rtvar,iters,plot=T,
-                        algorithm=c("aat_doublemeandiff","aat_doublemediandiff","aat_dscore","aat_multilevelscore"),
+                        algorithm=c("aat_doublemeandiff","aat_doublemediandiff","aat_dscore",
+                                    "aat_dscore_multiblock","aat_multilevelscore"),
                         trialdropfunc=c("prune_nothing","trial_prune_3SD"),
                         errortrialfunc=c("prune_nothing","error_replace_blockmeanplus"),
                         casedropfunc=c("prune_nothing","case_prune_3SD"),
@@ -80,6 +81,7 @@ aat_splithalf<-function(ds,subjvar,pullvar,targetvar,rtvar,iters,plot=T,
     if(is.null(args$blockvar)){ args$blockvar<- 0 }
     if(is.null(args$errorvar)){ args$errorvar<- 0 }
   }
+  stopifnot(!(algorithm=="aat_dscore_multiblock" & is.null(args$blockvar)))
   if(algorithm=="aat_multilevelscore"){
     packs<-c(packs,"lme4")
     if(!any(c("formula","aatterm") %in% names(args))){
@@ -144,7 +146,8 @@ aat_splithalf<-function(ds,subjvar,pullvar,targetvar,rtvar,iters,plot=T,
 #' @rdname aat_splithalf
 #' @export
 aat_splithalf_singlecore<-function(ds,subjvar,pullvar,targetvar,rtvar,iters,plot=T,
-                        algorithm=c("aat_doublemeandiff","aat_doublemediandiff","aat_dscore","aat_multilevelscore"),
+                        algorithm=c("aat_doublemeandiff","aat_doublemediandiff","aat_dscore",
+                                    "aat_dscore_multiblock","aat_multilevelscore"),
                         trialdropfunc=c("prune_nothing","trial_prune_3SD"),
                         errortrialfunc=c("prune_nothing","error_replace_blockmeanplus"),
                         casedropfunc=c("prune_nothing","case_prune_3SD"),
@@ -163,6 +166,7 @@ aat_splithalf_singlecore<-function(ds,subjvar,pullvar,targetvar,rtvar,iters,plot
     if(is.null(args$blockvar)){ args$blockvar<- 0 }
     if(is.null(args$errorvar)){ args$errorvar<- 0 }
   }
+  stopifnot(!(algorithm=="aat_dscore_multiblock" & is.null(args$blockvar)))
   if(algorithm=="aat_multilevelscore" & !any(c("formula","aatterm") %in% names(args))){
     args$formula<-paste0(rtvar,"~",1,"+(",pullvar,"*",targetvar,"|",subjvar,")")
     args$aatterm<-paste0(pullvar,":",targetvar)
@@ -285,9 +289,12 @@ error_replace_blockmeanplus<-function(ds,subjvar,rtvar,blockvar,errorvar,errorbo
 #' \item \code{aat_doublemediandiff} computes a median-based double-difference score: 
 #' 
 #' \code{(median(push_target) - median(pull_target)) - (median(push_control) - median(pull_control))}
-#' \item \code{aat_dscore} computes D-scores (see Greenwald, Nosek, and Banaji, 2003): 
+#' \item \code{aat_dscore} computes D-scores for a 2-block design (see Greenwald, Nosek, and Banaji, 2003): 
 #' 
 #' \code{((mean(push_target) - mean(pull_target)) - (mean(push_control) - mean(pull_control))) / sd(participant_reaction_times)}
+#' \item \code{aat_dscore_multiblock} computes D-scores for pairs of sequential blocks 
+#' and averages the resulting score (see Greenwald, Nosek, and Banaji, 2003). 
+#' Requires extra \code{blockvar} argument, indicating the name of the block variable.
 #' \item \code{aat_multilevelscore} fits a multilevel model using lme4 and extracts a random effect serving as AAT score. When using this function, additional arguments must be provided: 
 #' \itemize{
 #' \item \code{formula} - a quoted formula to fit to the data;
@@ -349,6 +356,27 @@ aat_dscore<-function(ds,subjvar,pullvar,targetvar,rtvar,...){
 }
 
 #' @rdname aat_doublemeandiff
+#' 
+#' @export
+#note: this matches sequential columns with one another. 
+aat_dscore_multiblock<-function(ds,subjvar,pullvar,targetvar,rtvar,...){
+  args<-list(...)
+  setmeans <- ds %>% group_by(!!sym(subjvar), !!sym(pullvar), !!sym(targetvar), !!sym(args$blockvar)) %>% 
+    summarise(means=mean(!!sym(rtvar),na.rm=T)) %>% group_by() %>% 
+    mutate(groupcol=paste0("pull", !!sym(pullvar),"target", !!sym(targetvar)),
+           blockset=LETTERS[1+floor((!!sym(args$blockvar) - min(!!sym(args$blockvar)))/2)]) %>%  
+    dplyr::select(-!!sym(pullvar),-!!sym(targetvar),-!!sym(args$blockvar)) %>% 
+    tidyr::spread(key=groupcol,value=means) %>% mutate(mergekey=paste0(!!sym(subjvar),blockset))
+  setsds <- ds%>%group_by(!!sym(subjvar), 
+                          blockset=LETTERS[1+floor((!!sym(args$blockvar)-min(!!sym(args$blockvar)))/2)]) %>%
+    summarise(sds =sd(!!sym(rtvar),na.rm=T)) %>% mutate(mergekey=paste0(!!sym(subjvar),blockset))
+  abds <- merge(setmeans,setsds,by="mergekey",suffixes=c("",".sd")) %>% 
+    mutate(ab=((pull0target1-pull1target1)-(pull0target0-pull1target0))/sds) %>% 
+    group_by(!!sym(subjvar)) %>% summarise(ab=mean(ab)) %>% dplyr::select(!!sym(subjvar),ab)
+  return(abds)
+}
+
+#' @rdname aat_doublemeandiff
 #' @param formula A character string containing a formula to fit to the data and derive multilevel scores from
 #' @param aatterm The random term, grouped under the subject variable, which represents the approach bias. Usually this is the interaction of the pull and target terms.
 #' 
@@ -395,7 +423,8 @@ aat_multilevelscore<-function(ds,subjvar,formula,aatterm,...){
 #' @examples 
 #' @export
 aat_bootstrap<-function(ds,subjvar,pullvar,targetvar,rtvar,iters,plot=T,
-                        algorithm=c("aat_doublemeandiff","aat_doublemediandiff","aat_dscore","aat_multilevelscore"),
+                        algorithm=c("aat_doublemeandiff","aat_doublemediandiff","aat_dscore",
+                                    "aat_dscore_multiblock","aat_multilevelscore"),
                         trialdropfunc=c("prune_nothing","trial_prune_3SD"),
                         errortrialfunc=c("prune_nothing","error_replace_blockmeanplus"),
                         ...){
@@ -413,6 +442,7 @@ aat_bootstrap<-function(ds,subjvar,pullvar,targetvar,rtvar,iters,plot=T,
     if(is.null(args$blockvar)){ args$blockvar<- 0 }
     if(is.null(args$errorvar)){ args$errorvar<- 0 }
   }
+  stopifnot(!(algorithm=="aat_dscore_multiblock" & is.null(args$blockvar)))
   if(algorithm=="aat_multilevelscore"){
     packs<-c(packs,"lme4")
     if(!any(c("formula","aatterm") %in% names(args))){

@@ -7,14 +7,14 @@
 \usage{
 aat_splithalf(ds, subjvar, pullvar, targetvar, rtvar, iters, plot = T,
   algorithm = c("aat_doublemeandiff", "aat_doublemediandiff",
-  "aat_dscore", "aat_multilevelscore"),
+  "aat_dscore", "aat_dscore_multiblock", "aat_multilevelscore"),
   trialdropfunc = c("prune_nothing", "trial_prune_3SD"),
   errortrialfunc = c("prune_nothing", "error_replace_blockmeanplus"),
   casedropfunc = c("prune_nothing", "case_prune_3SD"), ...)
 
 aat_splithalf_singlecore(ds, subjvar, pullvar, targetvar, rtvar, iters,
   plot = T, algorithm = c("aat_doublemeandiff", "aat_doublemediandiff",
-  "aat_dscore", "aat_multilevelscore"),
+  "aat_dscore", "aat_dscore_multiblock", "aat_multilevelscore"),
   trialdropfunc = c("prune_nothing", "trial_prune_3SD"),
   errortrialfunc = c("prune_nothing", "error_replace_blockmeanplus"),
   casedropfunc = c("prune_nothing", "case_prune_3SD"), ...)

@@ -4,6 +4,7 @@
 \alias{aat_doublemeandiff}
 \alias{aat_doublemediandiff}
 \alias{aat_dscore}
+\alias{aat_dscore_multiblock}
 \alias{aat_multilevelscore}
 \title{AAT score computation algorithms}
 \usage{
@@ -12,6 +13,8 @@ aat_doublemeandiff(ds, subjvar, pullvar, targetvar, rtvar, ...)
 aat_doublemediandiff(ds, subjvar, pullvar, targetvar, rtvar, ...)
 
 aat_dscore(ds, subjvar, pullvar, targetvar, rtvar, ...)
+
+aat_dscore_multiblock(ds, subjvar, pullvar, targetvar, rtvar, ...)
 
 aat_multilevelscore(ds, subjvar, formula, aatterm, ...)
 }
@@ -43,9 +46,12 @@ A data.frame containing participant number and computed AAT score.
 \item \code{aat_doublemediandiff} computes a median-based double-difference score: 
 
 \code{(median(push_target) - median(pull_target)) - (median(push_control) - median(pull_control))}
-\item \code{aat_dscore} computes D-scores (see Greenwald, Nosek, and Banaji, 2003): 
+\item \code{aat_dscore} computes D-scores for a 2-block design (see Greenwald, Nosek, and Banaji, 2003): 
 
 \code{((mean(push_target) - mean(pull_target)) - (mean(push_control) - mean(pull_control))) / sd(participant_reaction_times)}
+\item \code{aat_dscore_multiblock} computes D-scores for pairs of sequential blocks 
+and averages the resulting score (see Greenwald, Nosek, and Banaji, 2003). 
+Requires extra \code{blockvar} argument, indicating the name of the block variable.
 \item \code{aat_multilevelscore} fits a multilevel model using lme4 and extracts a random effect serving as AAT score. When using this function, additional arguments must be provided: 
 \itemize{
 \item \code{formula} - a quoted formula to fit to the data;
