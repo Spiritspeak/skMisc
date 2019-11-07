@@ -14,7 +14,8 @@ aat_doublemediandiff(ds, subjvar, pullvar, targetvar, rtvar, ...)
 
 aat_dscore(ds, subjvar, pullvar, targetvar, rtvar, ...)
 
-aat_dscore_multiblock(ds, subjvar, pullvar, targetvar, rtvar, ...)
+aat_dscore_multiblock(ds, subjvar, pullvar, targetvar, rtvar, blockvar,
+  ...)
 
 aat_multilevelscore(ds, subjvar, formula, aatterm, ...)
 }

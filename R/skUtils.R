@@ -431,13 +431,35 @@ AutocorPlot<-function(ds,ppvar,rtvar,scope=64){
 
 
 #TransformPlots
+#' Title
+#' @description Visualize how different transformations of the data will fit to a normal distribution.
+#' @param x A numeric vector.
+#'
+#' @export
+#' DistroPlots(mtcars$disp)
+TransformPlots<-function(x){
+  par(mfrow=c(2,2),mar=c(3,2,3,1))
+  inv<-function(x){ 1/x }
+  nothing<-function(x){ x }
+  titles<-c("Untransformed","Log-transformed","Sqrt-transformed","Inverse-transformed")
+  transforms<-c(nothing,log,sqrt,inv)
+  for(i in 1:4){
+    y<-do.call(transforms[[i]],list(x))
+    ks<-try(ks.test(y,"pnorm"),silent=T)
+    car::qqp(y,"norm",main=paste(titles[i],
+                                 "\nKS-test D = ",round(ks$statistic,digits=3),
+                                 ", p = ",round(ks$p.value,digits=3)))
+  }
+}
+
+#LEGACY
 DistroPlots<-function(x){
   par(mfrow=c(2,3),mar=c(3,2,3,1))
-  qqp(x,"norm",main="Untransformed")
-  qqp(log(x),"norm",main="Log-transformed")
-  qqp(sqrt(x),"norm",main="Sqrt-transformed")
-  qqp(1/x,"norm",main="Inverse-transformed")
-  fitdistr(x, "gamma") %$%
-    qqp(x, "gamma", shape = .$estimate[[1]], scale = .$estimate[[2]],main="Gamma-distribution")
+  car::qqp(x,"norm",main="Untransformed")
+  car::qqp(log(x),"norm",main="Log-transformed")
+  car::qqp(sqrt(x),"norm",main="Sqrt-transformed")
+  car::qqp(1/x,"norm",main="Inverse-transformed")
+  MASS::fitdistr(x, "gamma") %$%
+    car::qqp(x, "gamma", shape = .$estimate[[1]], scale = .$estimate[[2]],main="Gamma-distribution")
   x%>%density%>%plot(main="Density")
 }

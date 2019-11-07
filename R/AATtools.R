@@ -363,17 +363,16 @@ aat_dscore<-function(ds,subjvar,pullvar,targetvar,rtvar,...){
 #' @rdname aat_doublemeandiff
 #' 
 #' @export
-#note: this matches sequential columns with one another. 
-aat_dscore_multiblock<-function(ds,subjvar,pullvar,targetvar,rtvar,...){
-  args<-list(...)
-  setmeans <- ds %>% group_by(!!sym(subjvar), !!sym(pullvar), !!sym(targetvar), !!sym(args$blockvar)) %>% 
+#note: this matches sequential blocks with one another. 
+aat_dscore_multiblock<-function(ds,subjvar,pullvar,targetvar,rtvar,blockvar,...){
+  setmeans <- ds %>% group_by(!!sym(subjvar), !!sym(pullvar), !!sym(targetvar), !!sym(blockvar)) %>% 
     summarise(means=mean(!!sym(rtvar),na.rm=T)) %>% group_by() %>% 
     mutate(groupcol=paste0("pull", !!sym(pullvar),"target", !!sym(targetvar)),
-           blockset=LETTERS[1+floor((!!sym(args$blockvar) - min(!!sym(args$blockvar)))/2)]) %>%  
-    dplyr::select(-!!sym(pullvar),-!!sym(targetvar),-!!sym(args$blockvar)) %>% 
+           blockset=LETTERS[1+floor((!!sym(blockvar) - min(!!sym(blockvar)))/2)]) %>%  
+    dplyr::select(-!!sym(pullvar),-!!sym(targetvar),-!!sym(blockvar)) %>% 
     tidyr::spread(key=groupcol,value=means) %>% mutate(mergekey=paste0(!!sym(subjvar),blockset))
   setsds <- ds%>%group_by(!!sym(subjvar), 
-                          blockset=LETTERS[1+floor((!!sym(args$blockvar)-min(!!sym(args$blockvar)))/2)]) %>%
+                          blockset=LETTERS[1+floor((!!sym(blockvar)-min(!!sym(blockvar)))/2)]) %>%
     summarise(sds =sd(!!sym(rtvar),na.rm=T)) %>% mutate(mergekey=paste0(!!sym(subjvar),blockset))
   abds <- merge(setmeans,setsds,by="mergekey",suffixes=c("",".sd")) %>% 
     mutate(ab=((pull0target1-pull1target1)-(pull0target0-pull1target0))/sds) %>% 
