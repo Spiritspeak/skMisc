@@ -1,4 +1,12 @@
 #AATtools
+
+.onLoad<-function(){
+  registerS3method("print",class="aat_splithalf",method=print.aat_splithalf)
+  registerS3method("plot",class="aat_splithalf",method=plot.aat_splithalf)
+  registerS3method("plot",class="aat_bootstrap",method=plot.aat_bootstrap)
+  packageStartupMessage("Thank you for loading skMisc v0.01")
+}
+
 # splithalf engine ####
 
 #multicore splithalf
@@ -226,7 +234,6 @@ print.aat_splithalf<-function(x){
       "\n95%CI: [", x$lowerci, ", ", x$upperci,"]\n",
       sep="")
 }
-registerS3method("print",class="aat_splithalf",method=print.aat_splithalf)
 
 plot.aat_splithalf<-function(x){
   abds<-x$iterdata[[length(x$iterdata)]]
@@ -236,8 +243,6 @@ plot.aat_splithalf<-function(x){
        xlab="Half 1 computed bias",ylab="Half 2 computed bias")
   text(abds$abhalf0,abds$abhalf1,abds[,1],cex= 0.7, pos=3, offset=0.3)
 }
-registerS3method("plot",class="aat_splithalf",method=plot.aat_splithalf)
-
 
 # Outlier removing algorithms ####
 
@@ -504,7 +509,6 @@ plot.aat_bootstrap <- function(x){
   segments(x0=statset$bias+0.005*wideness,x1=statset$upperci,y0=rank,y1=rank)
   #text(x=statset$bias,y=statset$rownr,labels=statset$ppidx,cex=0.5)
 }
-registerS3method("plot",class="aat_bootstrap",method=plot.aat_bootstrap)
 
 # utils ####
 #' Correct a correlation coefficient for being based on only a subset of the data.
