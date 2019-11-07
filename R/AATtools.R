@@ -230,7 +230,7 @@ aat_splithalf_singlecore<-function(ds,subjvar,pullvar,targetvar,rtvar,iters,plot
 
 print.aat_splithalf<-function(x){
   cat("\nr = ",format(x$rsplithalf, digits=2),
-      "\nSpeakman-Brown-corrected r = ",format(x$rSB,digits=2),
+      "\nSpearman-Brown-corrected r = ",format(x$rSB,digits=2),
       "\n95%CI = [", format(x$lowerci,digits=2), ", ", format(x$upperci,digits=2),"]\n",
       sep="")
 }
