@@ -1,6 +1,6 @@
 #AATtools
 
-.onLoad<-function(){
+.onLoad<-function(libname, pkgname){
   registerS3method("print",class="aat_splithalf",method=print.aat_splithalf)
   registerS3method("plot",class="aat_splithalf",method=plot.aat_splithalf)
   registerS3method("plot",class="aat_bootstrap",method=plot.aat_bootstrap)
