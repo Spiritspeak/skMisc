@@ -12,3 +12,6 @@ TransformPlots(x)
 \description{
 Visualize how different transformations of the data will fit to a normal distribution.
 }
+\examples{
+TransformPlots(mtcars$disp)
+}

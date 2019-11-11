@@ -434,6 +434,8 @@ AutocorPlot<-function(ds,ppvar,rtvar,scope=64){
 #' @param x A numeric vector.
 #'
 #' @export
+#' 
+#' @examples
 #' TransformPlots(mtcars$disp)
 TransformPlots<-function(x){
   par(mfrow=c(2,2),mar=c(3,2,3,1))
