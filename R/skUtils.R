@@ -1,5 +1,3 @@
-#.globals <- new.env(parent = emptyenv())
-
 #I don't want to import rlang, so it will be done this way instead.
 args2strings <- function(...) sapply(substitute({ ... })[-1], deparse)
 
@@ -436,7 +434,7 @@ AutocorPlot<-function(ds,ppvar,rtvar,scope=64){
 #' @param x A numeric vector.
 #'
 #' @export
-#' DistroPlots(mtcars$disp)
+#' TransformPlots(mtcars$disp)
 TransformPlots<-function(x){
   par(mfrow=c(2,2),mar=c(3,2,3,1))
   inv<-function(x){ 1/x }
