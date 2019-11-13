@@ -465,3 +465,26 @@ DistroPlots<-function(x){
     car::qqp(x, "gamma", shape = .$estimate[[1]], scale = .$estimate[[2]],main="Gamma-distribution")
   x%>%density%>%plot(main="Density")
 }
+
+
+#' Compound tokens without overflowing memory and crashing R
+#' @description A wrapper around \link[quanteda]{tokens_compound} that processes your tokens in chunks, 
+#' set by argument \code{stepsize}. See \link[quanteda]{tokens_compound} for more info.
+#'
+#' @export
+tokens_compound_stepwise<-function(x, pattern, stepsize=100, concatenator = "_", 
+                                   valuetype = c("glob", "regex", "fixed"), 
+                                   case_insensitive = TRUE, join = TRUE){
+  valuetype<-match.arg(valuetype)
+  output<-list()
+  lx<-length(x)
+  mxsteps<-ceiling(lx/stepsize)
+  for(i in seq_len(mxsteps)){
+    cat("\rCompounding tokens... ",round(100*(i-1)/mxsteps,digits=2),"%",sep="")
+    range<-(1+(i-1)*stepsize):min(i*stepsize, lx)
+    currcomp<-quanteda::tokens_compound(x[range],pattern,concatenator,valuetype,case_insensitive,join)
+    output<-c(output,currcomp)
+  }
+  cat("\rCompounding tokens... finished.")
+  return(output)
+}
