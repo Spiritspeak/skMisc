@@ -1,3 +1,7 @@
+.onLoad<-function(libname, pkgname){
+  packageStartupMessage("Thank you for loading skMisc v0.01")
+}
+
 #I don't want to import rlang, so it will be done this way instead.
 args2strings <- function(...) sapply(substitute({ ... })[-1], deparse)
 
@@ -351,8 +355,6 @@ registerS3method("print", "CorrCrunch", print.CorrCrunch)
 #' 
 #' CorTable(rowdf=mtcars[,c(1,3,4)],columndf=mtcars[,5:7])
 CorTable<-function(df,rowids,columnids,rowdf,columndf){
-  require(knitr)
-  
   if(missing(df) | missing(rowids) | missing(columnids)){
     df<-cbind(rowdf,columndf)
     rowids<-colnames(rowdf)
@@ -384,7 +386,7 @@ CorTable<-function(df,rowids,columnids,rowdf,columndf){
   outmat[5*(0:(length(rowids)-1))+2,]<-gsub("0\\.","\\.",paste0("p=  ",format(pmat,digits=0,nsmall=3)))
   outmat[5*(0:(length(rowids)-1))+3,]<-gsub("0\\.","\\.",paste0("h=    ",format(hmat,digits=0)))
   outmat[5*(0:(length(rowids)-1))+4,]<-gsub("0\\.","\\.",paste0("h/df=",format(hmat/dfmat,digits=0,nsmall=2)))
-  kable(outmat,digits=2,align="r")
+  knitr::kable(outmat,digits=2,align="r")
 }
 
 
