@@ -2,6 +2,7 @@
 % Please edit documentation in R/lme4tools.R
 \name{AnovaTable}
 \alias{AnovaTable}
+\alias{print.AnovaTable}
 \title{Compare multilevel models}
 \usage{
 AnovaTable(
@@ -11,6 +12,8 @@ AnovaTable(
   serial = F,
   suppress = c("AIC", "deviance", "logLik")
 )
+
+\method{print}{AnovaTable}(x)
 }
 \arguments{
 \item{...}{Model objects to be compared}

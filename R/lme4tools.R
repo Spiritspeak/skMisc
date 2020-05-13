@@ -223,14 +223,16 @@ AnovaTable<-function(...,fullmodel,models,serial=F,suppress=c("AIC","deviance","
   formulas<-c(fullmodel,models) %>% sapply(function(x){ x@call$formula })
   header<-paste0(modnames,": ",formulas,"\n",collapse="") %>%paste0("\n")
   
-  anovatable<-structure(.Data=anovatable,class=c("anovatable","data.frame"),suppress=suppress,
+  anovatable<-structure(.Data=anovatable,class=c("AnovaTable","data.frame"),suppress=suppress,
                         header=header)
   return(anovatable)
 }
 
-print.anovatable<-function(x){
+#' @export
+#' @rdname AnovaTable
+print.AnovaTable<-function(x){
   attr(x,"header") %>% cat
   x<-x[,which(!(colnames(x) %in% attr(x,"suppress")))]
   print.data.frame(x,digits=3)
 }
-registerS3method("print","anovatable",print.anovatable)
+registerS3method("print","AnovaTable",print.AnovaTable)
