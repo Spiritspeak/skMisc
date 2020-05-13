@@ -4,8 +4,10 @@
 \alias{read.csv.folder}
 \title{Read and merge all .csv files in a folder}
 \usage{
-read.csv.folder(folder = "./", readfunc = list(read.csv, read.csv2,
-  read.table))
+read.csv.folder(
+  folder = "./",
+  readfunc = list(read.csv, read.csv2, read.table)
+)
 }
 \arguments{
 \item{folder}{path to a folder}

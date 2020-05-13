@@ -4,8 +4,15 @@
 \alias{logit.weightfun}
 \title{Downweight outliers}
 \usage{
-logit.weightfun(x, mean = mean(x), s = sd(x), sdist = 3,
-  taper = 10, scale = c("max", "norm"), min = 0)
+logit.weightfun(
+  x,
+  mean = mean(x),
+  s = sd(x),
+  sdist = 3,
+  taper = 10,
+  scale = c("max", "norm"),
+  min = 0
+)
 }
 \arguments{
 \item{x}{A numeric vector}

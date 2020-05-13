@@ -47,6 +47,23 @@ coerce<-function(x,default=FALSE){
   x
 }
 
+
+#' Create unique pairs
+#' @description Combines vectors such that unique unordered sets are derived from the vectors' cross sections. 
+#' @param ... two or more vectors of equal length
+#'
+#' @return a character vector consisting of all input vectors concatenated term-by-term and in alphabetic order.
+#' @export
+#'
+#' @examples 
+#' pair(1:4,4:1)
+#' #[1] "1-4" "2-3" "2-3" "1-4"
+pair<-function(...){
+  args<-list(...)
+  mat<-matrix(unlist(args),ncol=length(args))
+  apply(mat,MARGIN=1,FUN=function(x){paste(sort(x),collapse="-")})
+}
+
 #' Crunch Outliers
 #'
 #' @param x Numeric vector to remove outliers from
@@ -286,8 +303,8 @@ combobulate<-function(...){
 compcorr<-function(cor1,cor2,n1,n2){
   r2z<-function(r){  z <- .5 * (log(1+r) - log(1-r)) }
   zval<-abs(r2z(cor1)-r2z(cor2)) / sqrt((1/(n1-3)) + (1/(n2-3)))
-  pval<-pnorm(zval)
-  cat("Z =",zval,"\np =",pval,"\n")
+  pval<-pnorm(abs(zval)/2,lower.tail=F)
+  cat("Two-tailed Z-test for the difference between two correlation coefficients.","\nZ =",zval,"\np =",pval,"\n")
   return(invisible(list(zscore=zval,pvalue=pval)))
 }
 
@@ -488,3 +505,61 @@ tokens_compound_stepwise<-function(x, pattern, stepsize=100, concatenator = "_",
   cat("\rCompounding tokens... finished.")
   return(output)
 }
+
+
+#wtd.median
+#' Weighted Median
+#'
+#' @param x an input vector
+#' @param wts a vector of weights
+#' @param na.rm Logical indicating whether NA values in the input and weight vectors should be stripped. 
+#'
+#' @return A weighted median of the input values and weights.
+#' @export
+#'
+#' @examples
+wtd.median<-function(x,wts,na.rm=T){
+  #clean
+  if(na.rm){
+    to.include<-which(!(is.na(x) | is.na(wts)))
+    x<-x[to.include]
+    wts<-wts[to.include]
+  }
+  
+  #sort
+  xord<-order(x)
+  x<-x[xord]
+  wts<-wts[xord]
+  
+  #standardize
+  wts<-wts/sum(wts)
+  
+  #find middle
+  cumwts<-cumsum(wts)-.5
+  sig<-sign(cumwts)
+  if(!any(sig==0)){
+    midx<-which(sig==1)[1]
+    out<-x[midx]
+  }else{
+    midx<-c(which(sig==1)[1],which(sig==0)[1])
+    out<-mean(x[midx])
+  }
+  return(out)
+}
+
+#' Compute column and row variances
+#' @param x an input matrix of data.frame
+#' @param na.rm Logical indicating whether NA values should be omitted before variance computation
+#'
+#' @export
+colVars<-function(x,na.rm=T){
+  apply(x,MARGIN=2,FUN=var,na.rm=T)
+}
+#' @export
+#' @rdname colVars
+rowVars<-function(x,na.rm=T){
+  apply(x,MARGIN=1,FUN=var,na.rm=T)
+}
+
+
+

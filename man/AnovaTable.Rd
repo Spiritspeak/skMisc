@@ -4,8 +4,13 @@
 \alias{AnovaTable}
 \title{Compare multilevel models}
 \usage{
-AnovaTable(..., fullmodel, models, serial = F, suppress = c("AIC",
-  "deviance", "logLik"))
+AnovaTable(
+  ...,
+  fullmodel,
+  models,
+  serial = F,
+  suppress = c("AIC", "deviance", "logLik")
+)
 }
 \arguments{
 \item{...}{Model objects to be compared}

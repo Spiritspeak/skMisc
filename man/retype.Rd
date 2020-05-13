@@ -10,7 +10,7 @@ retype(df, ...)
 retype_all(df, from, to)
 }
 \arguments{
-\item{df}{a data frame}
+\item{df}{A data.frame}
 
 \item{...}{Unquoted column names, paired with the desired class, e.g. 
 
@@ -19,8 +19,6 @@ retype_all(df, from, to)
 \item{from}{An empty vector of the class to convert from, or a string. Columns sharing the class of argument \code{from} will be converted to the class of argument \code{to}.}
 
 \item{to}{An empty vector of the class to convert to, or a string. Columns sharing the class of argument \code{from} will be converted to the class of argument \code{to}.}
-
-\item{df}{A data.frame}
 }
 \description{
 \code{retype()} changes the class of specific columns; \code{retype_all()} changes the class of all columns of a given class.
