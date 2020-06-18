@@ -215,6 +215,30 @@ retype_all<-function(df,from,to){
   df
 }
 
+#' Verify variable types in bulk
+#'
+#' @param ... Named arguments, where the argument is the object to be checked and the name of the argument is the mode (numeric, list, character, etc)
+#'
+#' @return Returns true on success, causes error if not.
+#' @export
+#'
+#' @examples
+verify_types<-function(...){
+  args<-list(...)
+  call<-as.list(match.call()[-1])
+  types<-unique(names(args))
+  for(type in types){
+    ids<-which(type == names(args))
+    for(id in ids){
+      if(!do.call(paste0("is.",type),list(args[[id]]))){
+        stop("Variable ",as.character(call[[id]])," is not of type ",type)
+      }
+    }
+  }
+  return(T)
+}
+
+
 #' Read and merge all .csv files in a folder
 #'
 #' @param folder path to a folder
@@ -563,3 +587,35 @@ rowVars<-function(x,na.rm=T){
 
 
 
+#' Levenshtein distance
+#' 
+#' Counts the number of single character deletions, insertions, and substitutions 
+#' that need to be performed to turn the source string into the target string.
+#'
+#' @param source,target Strings to be compared.
+#'
+#' @return The Levenshtein distance between the two strings.
+#' @export
+#'
+#' @examples LevenshteinDistance("Yoghurt","Youtube")
+LevenshteinDistance<-function(source,target){
+  source<-strsplit(source,"")[[1]]
+  target<-strsplit(target,"")[[1]]
+  sl<-length(source)
+  tl<-length(target)
+  d<- matrix(nrow=sl+1,ncol=tl+1)
+
+  d[,1]<-seq_len(sl+1)-1
+  d[1,]<-seq_len(tl+1)-1
+  
+  for(i in seq_len(sl+1)[-1]){
+    for(j in seq_len(tl+1)[-1]){
+      d[i, j]<- min(
+        d[i-1, j] + 1,
+        d[i, j-1] + 1,
+        d[i-1, j-1] + (source[i-1] == target[j-1])
+      )
+    }
+  }
+  return(d[sl+1,tl+1])
+}
