@@ -619,3 +619,25 @@ LevenshteinDistance<-function(source,target){
   }
   return(d[sl+1,tl+1])
 }
+
+
+
+#' Pecher theme for ggplot
+#' Based on the plot design style of prof. Diane Pecher
+#' @return
+#' @export
+#'
+#' @examples
+theme_pecher<-function(){
+  theme_bw() + 
+    theme(text = element_text(size=14, family="serif"),
+          plot.title = element_text(hjust = 0.5),
+          panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(),
+          panel.border = element_blank(),
+          axis.line = element_line(colour = "black"),
+          axis.ticks.length=unit(-.25,"cm"),
+          axis.text = element_text(colour = rgb(0,0,0),size=12),
+          axis.text.x=element_text(margin = margin(t=.4,b=.1,r=.1,l=.1,unit="cm")),
+          axis.text.y=element_text(margin = margin(t=.1,b=.1,r=.4,l=.1,unit="cm")))
+}
