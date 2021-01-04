@@ -620,6 +620,23 @@ LevenshteinDistance<-function(source,target){
   return(d[sl+1,tl+1])
 }
 
+#' Split a character column into multiple values
+#'
+#' @param x a character vector to split into columns
+#' @param sep a caracter separating the different values
+#'
+#' @return a \code{data.frame} of boolean values, with rows representing the unpacked
+#' vector entries and columns indicating whether the specific value
+#' @export
+#'
+#' @examples
+splitColumn<-function(x,sep=";"){
+  vals<-lapply(x,function(y){strsplit(y,sep)[[1]]})
+  uniques<-unique(unlist(vals))
+  idx<-t(sapply(vals,function(y){uniques %in% y}))
+  colnames(idx)<-ifelse(is.na(uniques),"NA",uniques)
+  return(as.data.frame(idx))
+}
 
 
 #' Pecher theme for ggplot

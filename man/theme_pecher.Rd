@@ -3,7 +3,7 @@
 \name{theme_pecher}
 \alias{theme_pecher}
 \title{Pecher theme for ggplot
-Based on the plot design style of prof. Diane Pecher}
+Based on the plot design style of prof. Diane Pecher.}
 \usage{
 theme_pecher()
 }
@@ -12,5 +12,5 @@ theme_pecher()
 }
 \description{
 Pecher theme for ggplot
-Based on the plot design style of prof. Diane Pecher
+Based on the plot design style of prof. Diane Pecher.
 }

@@ -9,4 +9,4 @@ License: GPL-3
 BugReports: https://github.com/Spiritspeak/skMisc/issues
 LazyData: true
 ByteCompile: true
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.1
