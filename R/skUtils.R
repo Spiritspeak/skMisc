@@ -430,84 +430,6 @@ CorTable<-function(df,rowids,columnids,rowdf,columndf){
   knitr::kable(outmat,digits=2,align="r")
 }
 
-
-#stolen from stackoverflow
-#' @export
-hilight<-function(x,y,s, bg="yellow") {
-  text.width <- strwidth(s)
-  text.height <- strheight(s)
-  rect(x,y,x+text.width,y+text.height,col=bg,border=NA)
-  text(x,y,s,adj=c(0,0))
-}
-
-
-#FullAutocorPlot
-AutocorPlot<-function(ds,ppvar,rtvar,scope=64){
-  if(missing(ds)){
-    ds<-data.frame(ppvar=ppvar,rtvar=rtvar,stringsAsFactors = F)
-    ppvar<-"ppvar"
-    rtvar<-"rtvar"
-  }
-  ds%<>%as.data.frame()
-  pplist<-unique(ds[,ppvar])%>%as.vector
-  npp<-length(pplist)
-  cormat<-matrix(nrow=scope,ncol=npp)
-  ct<-0
-  for(pp in pplist){
-    ct<-ct+1
-    tds<-ds%>%filter((!!sym(ppvar)) ==pp)
-    autocor<-numeric()
-    for(i in seq_len(scope)){
-      autocor[i]<-cor(tds[,rtvar],lag(tds[,rtvar],i),use="complete.obs")
-    }
-    cormat[,ct]<-autocor
-  }
-  colnames(cormat)<-pplist
-  plot(rowMeans(cormat),type="s",xlab="lag",ylab="autocorrelation",main=paste("Variable",rtvar,"autocorrelation"),
-       ylim=c(min(cormat),max(cormat)))
-  for(i in seq_len(npp)){ lines(x=cormat[,i],pch=".",col=rgb(0,0,0,0.1),type="l") }
-  abline(h=0,col="gray")
-  return(invisible(cormat))
-}
-
-
-#TransformPlots
-#' Title
-#' @description Visualize how different transformations of the data will fit to a normal distribution.
-#' @param x A numeric vector.
-#'
-#' @export
-#' 
-#' @examples
-#' TransformPlots(mtcars$disp)
-TransformPlots<-function(x){
-  par(mfrow=c(2,2),mar=c(3,2,3,1))
-  inv<-function(x){ 1/x }
-  nothing<-function(x){ x }
-  titles<-c("Untransformed","Log-transformed","Sqrt-transformed","Inverse-transformed")
-  transforms<-c(nothing,log,sqrt,inv)
-  for(i in 1:4){
-    y<-do.call(transforms[[i]],list(x))
-    ks<-try(ks.test(y,"pnorm"),silent=T)
-    car::qqp(y,"norm",main=paste(titles[i],
-                                 "\nKS-test D = ",round(ks$statistic,digits=3),
-                                 ", p = ",round(ks$p.value,digits=3)))
-  }
-}
-
-#LEGACY
-DistroPlots<-function(x){
-  par(mfrow=c(2,3),mar=c(3,2,3,1))
-  car::qqp(x,"norm",main="Untransformed")
-  car::qqp(log(x),"norm",main="Log-transformed")
-  car::qqp(sqrt(x),"norm",main="Sqrt-transformed")
-  car::qqp(1/x,"norm",main="Inverse-transformed")
-  MASS::fitdistr(x, "gamma") %$%
-    car::qqp(x, "gamma", shape = .$estimate[[1]], scale = .$estimate[[2]],main="Gamma-distribution")
-  x%>%density%>%plot(main="Density")
-}
-
-
 #' Compound tokens without overflowing memory and crashing R
 #' @description A wrapper around \link[quanteda]{tokens_compound} that processes your tokens in chunks, 
 #' set by argument \code{stepsize}. See \link[quanteda]{tokens_compound} for more info.
@@ -586,6 +508,18 @@ rowVars<-function(x,na.rm=T){
 }
 
 
+#' Set column and row names of an object
+#' These are convenience functions that return an object with its column or row names changed.
+#' Use it in pipes.
+#' 
+#' @param x an object
+#' @param names column or row names to be assigned to the object
+#' 
+#' @export
+setColNames<-function(x,names){ colnames(x)<-names; return(x) }
+#' @export
+#' @rdname setColNames
+setRowNames<-function(x,names){ rownames(x)<-names; return(x) }
 
 #' Levenshtein distance
 #' 
@@ -638,29 +572,6 @@ splitColumn<-function(x,sep=";"){
   return(as.data.frame(idx))
 }
 
-
-#' Pecher theme for ggplot
-#' Based on the plot design style of prof. Diane Pecher.
-#' @return
-#' @export
-#'
-#' @examples
-theme_pecher<-function(){
-  th<-theme_bw() + 
-    theme(text = element_text(size=14, family="serif"),
-          plot.title = element_text(hjust = 0.5),
-          panel.grid.major = element_blank(), 
-          panel.grid.minor = element_blank(),
-          panel.border = element_blank(),
-          axis.line = element_line(colour = "black"),
-          axis.ticks.length=unit(-.25,"cm"),
-          axis.text = element_text(colour = rgb(0,0,0),size=12),
-          axis.text.x=element_text(margin = margin(t=.4,b=.1,r=.1,l=.1,unit="cm")),
-          axis.text.y=element_text(margin = margin(t=.1,b=.1,r=.4,l=.1,unit="cm")),
-          strip.background=element_blank())
-  return(th)
-}
-
 #' Generate a matrix of combinations of values
 #'
 #' @param ... Character vectors, named or unnamed, or unquoted names of named arguments. 
@@ -681,9 +592,7 @@ comboTable<-function(...){
   named<- names(cl)!=""
   repeated<- as.character(cl) %in% names(cl)[named]
   unnamed<- names(cl)=="" & !repeated
-  
-  message("named: ",which(named),"\nrepeated: ",which(repeated),"\nunnamed: ",which(unnamed))
-  
+
   #ensure named args occur only once
   if(any(duped<-named & duplicated(names(cl)))){
     stop("When there are named arguments with identical names, every such argument",
@@ -708,4 +617,43 @@ comboTable<-function(...){
   
   #return
   return(mat)
+}
+
+#' Merge Multiple Data Frames
+#' 
+#' This function makes calls to \code{merge()} to merge every other dataset 
+#' with the one next to it, repeating until only one dataset remains. 
+#'
+#' @param x a list of data frames
+#' @param ... all other arguments for \code{merge} can be provided here
+#'
+#' @return A single, merged \code{data.frame}
+#' @author Sercan Kahveci
+#' @export
+#'
+#' @examples
+#' testlist<-list()
+#' lsize<-100
+#' for(i in 1:lsize){
+#'   testlist[[i]]<-data.frame(key=sample(1:500,100),
+#'                             junk=letters[sample(1:26,100,replace=T)])
+#'   colnames(testlist[[i]])[2]<-paste0("info",i)
+#' }
+#' multimerge(testlist,by="key",all=T)
+multimerge<-function(x,...){
+  while(length(x)>1){
+    out<-list()
+    while(length(x)>0){
+      if(length(x)>=2){
+        out[[length(out)+1]]<-merge(x[[1]],x[[2]],...)
+        x[[1]]<-NULL
+        x[[1]]<-NULL
+      }else{
+        out[[length(out)+1]]<-x[[1]]
+        x[[1]]<-NULL
+      }
+    }
+    x<-out
+  }
+  return(x)
 }
