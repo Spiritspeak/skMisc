@@ -1,7 +1,17 @@
 
 
 #stolen from stackoverflow
+#' Plot highlighted text
+#'
+#' @param x x position
+#' @param y y position
+#' @param s text
+#' @param bg highlight color
+#'
 #' @export
+#'
+#' @examples
+#' 
 hilight<-function(x,y,s, bg="yellow") {
   text.width <- strwidth(s)
   text.height <- strheight(s)
@@ -11,6 +21,17 @@ hilight<-function(x,y,s, bg="yellow") {
 
 
 #FullAutocorPlot
+#' Per-subject Autocorrelation Plotting
+#'
+#' @param ds a dataset
+#' @param ppvar name of the variable indicating participant ID
+#' @param rtvar name of the variable indicating reaction time
+#' @param scope numeric, the maximum lag at which to compute autocorrelation.
+#'
+#' @export
+#'
+#' @examples
+#' AutocorPlot(ds=ToothGrowth,ppvar="supp",rtvar="len",scope=10)
 AutocorPlot<-function(ds,ppvar,rtvar,scope=64){
   if(missing(ds)){
     ds<-data.frame(ppvar=ppvar,rtvar=rtvar,stringsAsFactors = F)
@@ -41,8 +62,10 @@ AutocorPlot<-function(ds,ppvar,rtvar,scope=64){
 
 
 #TransformPlots
-#' Title
-#' @description Visualize how different transformations of the data will fit to a normal distribution.
+#' Data Transformation Plots
+#' 
+#' @description Visualize how different transformations of the data 
+#' will fit to a normal distribution.
 #' @param x A numeric vector.
 #'
 #' @export
@@ -71,6 +94,7 @@ TransformPlots<-function(x){
 #' @export
 #'
 #' @examples
+#' ggplot(mtcars,aes(x=mpg,y=wt)) + geom_point() + theme_pecher()
 theme_pecher<-function(){
   th<-theme_bw() + 
     theme(text = element_text(size=14, family="serif"),
@@ -86,5 +110,4 @@ theme_pecher<-function(){
           strip.background=element_blank())
   return(th)
 }
-
 

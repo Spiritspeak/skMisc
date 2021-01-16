@@ -2,7 +2,7 @@
 % Please edit documentation in R/skPlotting.R
 \name{TransformPlots}
 \alias{TransformPlots}
-\title{Title}
+\title{Data Transformation Plots}
 \usage{
 TransformPlots(x)
 }
@@ -10,7 +10,8 @@ TransformPlots(x)
 \item{x}{A numeric vector.}
 }
 \description{
-Visualize how different transformations of the data will fit to a normal distribution.
+Visualize how different transformations of the data 
+will fit to a normal distribution.
 }
 \examples{
 TransformPlots(mtcars$disp)

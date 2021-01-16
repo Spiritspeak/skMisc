@@ -14,3 +14,6 @@ theme_pecher()
 Pecher theme for ggplot
 Based on the plot design style of prof. Diane Pecher.
 }
+\examples{
+ggplot(mtcars,aes(x=mpg,y=wt)) + geom_point() + theme_pecher()
+}

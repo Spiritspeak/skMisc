@@ -2,6 +2,7 @@
 
 S3method(print,AnovaTable)
 export(AnovaTable)
+export(AutocorPlot)
 export(CorTable)
 export(CorrCrunch)
 export(ExpandFormula)
