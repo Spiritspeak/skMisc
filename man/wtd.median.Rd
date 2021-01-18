@@ -19,3 +19,7 @@ A weighted median of the input values and weights.
 \description{
 Weighted Median
 }
+\examples{
+wtd.median(1:5,c(.5,4,1,2,1))
+
+}

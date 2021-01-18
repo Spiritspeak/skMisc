@@ -18,3 +18,10 @@ tokens_compound_stepwise(
 A wrapper around \link[quanteda]{tokens_compound} that processes your tokens in chunks, 
 set by argument \code{stepsize}. See \link[quanteda]{tokens_compound} for more info.
 }
+\examples{
+toks<-tokens(data_corpus_inaugural)
+compounded<-tokens_compound_stepwise(x=toks,pattern="I am",stepsize=10)
+
+#note: does not work?
+
+}

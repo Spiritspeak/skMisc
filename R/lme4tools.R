@@ -57,7 +57,7 @@ FindTopTerms<-function(form){
 }
 
 #' Parse a lme4 formula and return all main effects and interactions as separate terms
-#' @param form 
+#' @param form Formula to be expanded.
 #'
 #' @return The same formula, but with all interactions and mai neffects as separate terms
 #' @export
@@ -228,9 +228,10 @@ AnovaTable<-function(...,fullmodel,models,serial=F,suppress=c("AIC","deviance","
   return(anovatable)
 }
 
+#' 
 #' @export
-#' @rdname AnovaTable
-print.AnovaTable<-function(x){
+#' @describeIn AnovaTable Print generic for anova tables.
+print.AnovaTable<-function(x, ...){
   attr(x,"header") %>% cat
   x<-x[,which(!(colnames(x) %in% attr(x,"suppress")))]
   print.data.frame(x,digits=3)

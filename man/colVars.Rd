@@ -17,3 +17,7 @@ rowVars(x, na.rm = T)
 \description{
 Compute column and row variances
 }
+\examples{
+colVars(WorldPhones)
+rowVars(WorldPhones)
+}

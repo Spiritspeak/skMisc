@@ -38,7 +38,7 @@ sapply(mtcars,class)
 #      qsec        vs        am      gear      carb 
 # "numeric" "numeric" "numeric" "numeric" "numeric" 
 
-newmtcars <- retype_all(mtcars,"numeric","character")
+newmtcars <- retype_all(mtcars,from="numeric",to="character")
 sapply(newmtcars,class)
 #         mpg         cyl        disp          hp        drat
 # "character" "character" "character" "character" "character"

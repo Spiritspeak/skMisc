@@ -19,8 +19,9 @@ This function makes calls to \code{merge()} to merge every other dataset
 with the one next to it, repeating until only one dataset remains.
 }
 \examples{
+#generate test data
 testlist<-list()
-lsize<-100
+lsize<-50
 for(i in 1:lsize){
   testlist[[i]]<-data.frame(key=sample(1:500,100),
                             junk=letters[sample(1:26,100,replace=T)])

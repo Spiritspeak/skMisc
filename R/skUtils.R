@@ -47,7 +47,6 @@ coerce<-function(x,default=FALSE){
   x
 }
 
-
 #' Create unique pairs
 #' @description Combines vectors such that unique unordered sets are derived from the vectors' cross sections. 
 #' @param ... two or more vectors of equal length
@@ -72,6 +71,8 @@ pair<-function(...){
 #'
 #' @return Vector with outlying values set to NA
 #' @export
+#' 
+#' 
 OLcrunch<-function(x,DS=3,hardlimit=NULL){
   if(!missing(hardlimit)){
     x[x<hardlimit[1] | x>hardlimit[2]]<-NA
@@ -84,9 +85,10 @@ OLcrunch<-function(x,DS=3,hardlimit=NULL){
 
 #' Smooth a numeric vector using a moving window algorithm
 #'
-#' @param vect 
+#' @param vect Numeric vector to be smoothened
 #' @param width Over how many values should the vector be averaged?  
 #' @param both.sides If TRUE (default), takes the mean of \code{width} values before and after the current index. If FALSE, only takes values ahead of the current index.
+#' @param alg Method by which to smooth the vector. 'mean' or 'gauss' are supported.
 #'
 #' @return Smoothed numeric vector
 #' @export
@@ -202,7 +204,7 @@ retype<-function(df, ...){
 #' #      qsec        vs        am      gear      carb 
 #' # "numeric" "numeric" "numeric" "numeric" "numeric" 
 #' 
-#' newmtcars <- retype_all(mtcars,"numeric","character")
+#' newmtcars <- retype_all(mtcars,from="numeric",to="character")
 #' sapply(newmtcars,class)
 #' #         mpg         cyl        disp          hp        drat
 #' # "character" "character" "character" "character" "character"
@@ -223,6 +225,7 @@ retype_all<-function(df,from,to){
 #' @export
 #'
 #' @examples
+#' try(verify_types(character="test",numeric=0000,character=12345))
 verify_types<-function(...){
   args<-list(...)
   call<-as.list(match.call()[-1])
@@ -324,6 +327,8 @@ combobulate<-function(...){
 #' @export
 #' 
 #' @references http://vassarstats.net/rdiff.html
+#' 
+#' @examples compcorr(.1,.6,50,100)
 compcorr<-function(cor1,cor2,n1,n2){
   r2z<-function(r){  z <- .5 * (log(1+r) - log(1-r)) }
   zval<-abs(r2z(cor1)-r2z(cor2)) / sqrt((1/(n1-3)) + (1/(n2-3)))
@@ -435,6 +440,12 @@ CorTable<-function(df,rowids,columnids,rowdf,columndf){
 #' set by argument \code{stepsize}. See \link[quanteda]{tokens_compound} for more info.
 #'
 #' @export
+#' @examples 
+#' toks<-tokens(data_corpus_inaugural)
+#' compounded<-tokens_compound_stepwise(x=toks,pattern="I am",stepsize=10)
+#' 
+#' #note: does not work?
+#' 
 tokens_compound_stepwise<-function(x, pattern, stepsize=100, concatenator = "_", 
                                    valuetype = c("glob", "regex", "fixed"), 
                                    case_insensitive = TRUE, join = TRUE){
@@ -452,7 +463,6 @@ tokens_compound_stepwise<-function(x, pattern, stepsize=100, concatenator = "_",
   return(output)
 }
 
-
 #wtd.median
 #' Weighted Median
 #'
@@ -464,6 +474,8 @@ tokens_compound_stepwise<-function(x, pattern, stepsize=100, concatenator = "_",
 #' @export
 #'
 #' @examples
+#' wtd.median(1:5,c(.5,4,1,2,1))
+#' 
 wtd.median<-function(x,wts,na.rm=T){
   #clean
   if(na.rm){
@@ -498,6 +510,9 @@ wtd.median<-function(x,wts,na.rm=T){
 #' @param na.rm Logical indicating whether NA values should be omitted before variance computation
 #'
 #' @export
+#' @examples 
+#' colVars(WorldPhones)
+#' rowVars(WorldPhones)
 colVars<-function(x,na.rm=T){
   apply(x,MARGIN=2,FUN=var,na.rm=T)
 }
@@ -516,6 +531,9 @@ rowVars<-function(x,na.rm=T){
 #' @param names column or row names to be assigned to the object
 #' 
 #' @export
+#' @examples 
+#' setColNames(ToothGrowth,c("length","supplement","dosage"))
+#' setRowNames(BOD,BOD$Time)
 setColNames<-function(x,names){ colnames(x)<-names; return(x) }
 #' @export
 #' @rdname setColNames
@@ -564,6 +582,9 @@ LevenshteinDistance<-function(source,target){
 #' @export
 #'
 #' @examples
+#' unsplit<-c("flour;salt;baking soda;steak;sugar;water;sauce;vinegar",
+#' "flour;sauce;mustard;salt;pepper;vinegar;baking soda;water;tomatoes;onion;steak")
+#' splitColumn(unsplit)
 splitColumn<-function(x,sep=";"){
   vals<-lapply(x,function(y){strsplit(y,sep)[[1]]})
   uniques<-unique(unlist(vals))
@@ -584,7 +605,7 @@ splitColumn<-function(x,sep=";"){
 #'
 #' @examples
 #' hh<-c("a","b")
-#' testfunc(a=letters[1:3], b=2,a,b,c=c("e","f"),d,c,d=hh,"huh",a,hh)
+#' comboTable(a=letters[1:3], b=2,a,b,c=c("e","f"),d,c,d=hh,"huh",a,hh)
 comboTable<-function(...){
   cl<-match.call(expand.dots = FALSE)[[2]]
   
@@ -632,8 +653,9 @@ comboTable<-function(...){
 #' @export
 #'
 #' @examples
+#' #generate test data
 #' testlist<-list()
-#' lsize<-100
+#' lsize<-50
 #' for(i in 1:lsize){
 #'   testlist[[i]]<-data.frame(key=sample(1:500,100),
 #'                             junk=letters[sample(1:26,100,replace=T)])

@@ -20,5 +20,5 @@ Generate a matrix of combinations of values
 }
 \examples{
 hh<-c("a","b")
-testfunc(a=letters[1:3], b=2,a,b,c=c("e","f"),d,c,d=hh,"huh",a,hh)
+comboTable(a=letters[1:3], b=2,a,b,c=c("e","f"),d,c,d=hh,"huh",a,hh)
 }

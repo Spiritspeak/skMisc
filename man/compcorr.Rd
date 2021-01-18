@@ -17,6 +17,9 @@ List containing the z-score and p-value
 \description{
 Uses Fisher's r to z transformation, then performs a z-test on the resulting z-scores
 }
+\examples{
+compcorr(.1,.6,50,100)
+}
 \references{
 http://vassarstats.net/rdiff.html
 }

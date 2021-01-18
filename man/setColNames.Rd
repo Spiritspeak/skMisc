@@ -21,3 +21,7 @@ Set column and row names of an object
 These are convenience functions that return an object with its column or row names changed.
 Use it in pipes.
 }
+\examples{
+setColNames(ToothGrowth,c("length","supplement","dosage"))
+setRowNames(BOD,BOD$Time)
+}

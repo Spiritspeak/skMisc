@@ -15,3 +15,6 @@ Returns true on success, causes error if not.
 \description{
 Verify variable types in bulk
 }
+\examples{
+try(verify_types(character="test",numeric=0000,character=12345))
+}

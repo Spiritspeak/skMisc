@@ -18,3 +18,8 @@ vector entries and columns indicating whether the specific value
 \description{
 Split a character column into multiple values
 }
+\examples{
+unsplit<-c("flour;salt;baking soda;steak;sugar;water;sauce;vinegar",
+"flour;sauce;mustard;salt;pepper;vinegar;baking soda;water;tomatoes;onion;steak")
+splitColumn(unsplit)
+}
