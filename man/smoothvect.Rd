@@ -7,11 +7,13 @@
 smoothvect(vect, width = 2, both.sides = T, alg = c("mean", "gauss"))
 }
 \arguments{
-\item{vect}{}
+\item{vect}{Numeric vector to be smoothened}
 
 \item{width}{Over how many values should the vector be averaged?}
 
 \item{both.sides}{If TRUE (default), takes the mean of \code{width} values before and after the current index. If FALSE, only takes values ahead of the current index.}
+
+\item{alg}{Method by which to smooth the vector. 'mean' or 'gauss' are supported.}
 }
 \value{
 Smoothed numeric vector

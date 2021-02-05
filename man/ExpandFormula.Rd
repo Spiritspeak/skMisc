@@ -7,7 +7,7 @@
 ExpandFormula(form)
 }
 \arguments{
-\item{form}{}
+\item{form}{Formula to be expanded.}
 }
 \value{
 The same formula, but with all interactions and mai neffects as separate terms

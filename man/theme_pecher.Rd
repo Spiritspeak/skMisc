@@ -7,9 +7,6 @@ Based on the plot design style of prof. Diane Pecher.}
 \usage{
 theme_pecher()
 }
-\value{
-
-}
 \description{
 Pecher theme for ggplot
 Based on the plot design style of prof. Diane Pecher.

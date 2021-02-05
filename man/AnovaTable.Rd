@@ -13,7 +13,7 @@ AnovaTable(
   suppress = c("AIC", "deviance", "logLik")
 )
 
-\method{print}{AnovaTable}(x)
+\method{print}{AnovaTable}(x, ...)
 }
 \arguments{
 \item{...}{Model objects to be compared}
@@ -33,6 +33,11 @@ conditional R-squared (the effect size of all model terms), loglikelihood, devia
 \description{
 Compare multilevel models
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{print}: Print generic for anova tables.
+}}
+
 \examples{
 
 }

@@ -679,3 +679,36 @@ multimerge<-function(x,...){
   }
   return(x)
 }
+
+
+#' Divide a vector or list
+#' 
+#' Divide a vector or list into parts of (preferably) equal length.
+#' Either the length or the number of the parts can be set.
+#'
+#' @param x the to-be-divided object
+#' @param divs,divlen The number of divisions and the preferred length of divisions. 
+#' One and only one of \code{divs} and \code{divlen} must be given.
+#'
+#' @return A list consisting of \code{x}, divided in parts.
+#' @export
+#'
+#' @examples
+#' DivideSeries(letters,divs=5)
+#' DivideSeries(1:10,divlen=3)
+DivideSeries<-function(x,divs,divlen){
+  if(missing(divlen)){
+    divlen<-(length(x)+1)/divs
+    stopifnot(length(x)/divs>=1)
+    mapply(a=ceiling(cumsum(c(0,rep(divlen,divs-1)))),
+           b=ceiling(cumsum(rep(divlen,divs))-1),
+           FUN=function(a,b){x[a:b]},SIMPLIFY=F)
+  }else if(missing(divs)){
+    reps<-ceiling(length(x)/divlen)
+    mapply(a=cumsum(c(1,rep(divlen,reps -1))),
+           b=replace(cumsum(rep(divlen,reps)),reps,length(x)),
+           FUN=function(a,b){x[a:b]},SIMPLIFY=F)
+  }
+}
+
+
