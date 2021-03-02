@@ -318,25 +318,6 @@ combobulate<-function(...){
   return(output)
 }
 
-#' Test if two correlation coefficients significantly differ
-#' @description Uses Fisher's r to z transformation, then performs a z-test on the resulting z-scores
-#' @param cor1,cor2 Correlation values being compared
-#' @param n1,n2 Sample sizes of the correlation coefficients
-#'
-#' @return List containing the z-score and p-value 
-#' @export
-#' 
-#' @references http://vassarstats.net/rdiff.html
-#' 
-#' @examples compcorr(.1,.6,50,100)
-compcorr<-function(cor1,cor2,n1,n2){
-  r2z<-function(r){  z <- .5 * (log(1+r) - log(1-r)) }
-  zval<-abs(r2z(cor1)-r2z(cor2)) / sqrt((1/(n1-3)) + (1/(n2-3)))
-  pval<-pnorm(abs(zval)/2,lower.tail=F)
-  cat("Two-tailed Z-test for the difference between two correlation coefficients.","\nZ =",zval,"\np =",pval,"\n")
-  return(invisible(list(zscore=zval,pvalue=pval)))
-}
-
 # CorrCrunch ####
 
 #' Analyse the robustness of a correlation
