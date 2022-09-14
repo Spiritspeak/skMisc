@@ -5,48 +5,6 @@
 #I don't want to import rlang, so it will be done this way instead.
 args2strings <- function(...) sapply(substitute({ ... })[-1], deparse)
 
-#' clamp
-#'
-#' @param val The vector/matrix to clamp
-#' @param minval Minimum value; all lower values are clamped to this value
-#' @param maxval Maximum value; all higher values are clamped to this value
-#'
-#' @return Clamped vector.
-#' @export 
-#'
-#' @examples clamp(0:10,2,8)
-clamp <- function(val,minval,maxval){
-  val[val<minval]<-minval
-  val[val>maxval]<-maxval
-  val
-}
-
-#' coerce a vector to contain only TRUE and FALSE
-#'
-#' @param x Numeric/logical vector/matrix to coerce into TRUE/FALSE
-#' @param default default returned value if NULL or NA is encountered
-#'
-#' @return logical vector or matrix with only T and F
-#' @export
-#'
-#' @examples 
-#' coerce(NULL)
-#' # FALSE
-#' 
-#' coerce(c(T,F,NA,NA,T))
-#' # T F F F T
-#' 
-#' coerce(matrix(c(T,T,F,F,NA,NA),nrow=2))
-#' #     [,1]  [,2]  [,3]
-#' #[1,] TRUE FALSE FALSE
-#' #[2,] TRUE FALSE FALSE
-coerce<-function(x,default=FALSE){
-  if(length(x)==0){ return(default) }
-  x<-x!=0
-  x[is.na(x)]<-default
-  x
-}
-
 #' Create unique pairs
 #' @description Combines vectors such that unique unordered sets are derived from the vectors' cross sections. 
 #' @param ... two or more vectors of equal length
@@ -73,13 +31,18 @@ pair<-function(...){
 #' @export
 #' 
 #' 
-OLcrunch<-function(x,DS=3,hardlimit=NULL){
+OLcrunch<-function(x,DS=3,rerun=F,hardlimit=NULL){
   if(!missing(hardlimit)){
     x[x<hardlimit[1] | x>hardlimit[2]]<-NA
   }
   m<-mean(x,na.rm=T)
   s<-sd(x,na.rm=T)
   x[(x>m+s*DS) | (x<m-s*DS)]<-NA
+  if(rerun){
+    while(any( abs(scale(x))>DS, na.omit=T )){
+      x[which(abs(scale(x))>DS)]<-NA
+    }
+  }
   return(x)
 }
 
@@ -189,6 +152,7 @@ retype<-function(df, ...){
   }
   return(df)
 }
+
 #' @rdname retype
 #' @param df A data.frame
 #' @param from An empty vector of the class to convert from, or a string. Columns sharing the class of argument \code{from} will be converted to the class of argument \code{to}.
@@ -291,32 +255,6 @@ trypackages<-function(...){
   }
 }
 
-#' Get all possible combinations of strings
-#' @description \code{combobulate()} returns all possible combinations of the provided character strings, each combination merged into a single string.
-#' @param ... Character vectors to combobulate.
-#'
-#' @return A character vector.
-#' @export
-#'
-#' @examples combobulate("Hello ",c("Sir","Madam"),", ",c("may I take your order?","what shall it be?"))
-#' # [1] "Hello Sir, may I take your order?"    
-#' # [2] "Hello Madam, may I take your order?"   
-#' # [3] "Hello Sir, what shall it be?"  
-#' # [4] "Hello Madam, what shall it be?"
-combobulate<-function(...){
-  args<-list(...)
-  if(length(args)==0){ return("") }
-  output<-args[[1]]
-  for(i in min(length(args),2):length(args)){
-    currarg<-args[[i]]
-    newoutput<-character(0)
-    for(j in min(length(currarg),1):length(currarg)){
-      newoutput<-c(newoutput,paste0(output,currarg[[j]]))
-    }
-    output<-newoutput
-  }
-  return(output)
-}
 
 # CorrCrunch ####
 
@@ -690,6 +628,138 @@ DivideSeries<-function(x,divs,divlen){
            b=replace(cumsum(rep(divlen,reps)),reps,length(x)),
            FUN=function(a,b){x[a:b]},SIMPLIFY=F)
   }
+}
+
+
+suppressor<-function(x,soft,hard, strength){
+  hard<-hard-soft
+  y<-x
+  y[x< -soft]<- hard*(y[x< -soft]+soft)/(strength*abs(y[x< -soft]+soft)+hard)-soft
+  y[x> soft]<- hard*(y[x> soft]-soft)/(strength*abs(y[x> soft]-soft)+hard)+soft
+  return(y)
+}
+
+
+# Remove rows with OLs from data frame
+removeOLs<-function(.tbl,olvars,groups=NULL){
+  newtbl<-.tbl %>% group_by(across(all_of(groups))) %>% 
+    filter(if_all(.cols=(olvars),.fns=function(x){abs(scale(x))<3})) %>% ungroup()
+  message("Filtered ",nrow(.tbl)-nrow(newtbl)," rows")
+  return(newtbl)
+}
+
+# Replace OLs with NA
+maskOLs<-function(.tbl,olvars,groups=NULL){
+  if(!is.null(groups)){
+    groupvar<-interaction(.tbl[groups])
+  }else{
+    groupvar<-rep(1,nrow(.tbl))
+  }
+  for(olvar in olvars){
+    key<-tapply(.tbl[[olvar]],groupvar,function(x) abs(x-mean(x,na.rm=T))/sd(x,na.rm=T) >3) %>% unlist() %>% which()
+    .tbl[[olvar]][key]<-NA
+    message("Masked ",length(key), " outliers from variable ",olvar)
+  }
+  return(.tbl)
+}
+
+# Remove OLs in a vector
+vec.removeOLs<-function(x){
+  excl<-which(abs(scale(x))>3)
+  message("Excluding ",length(excl)," observations from vector")
+  if(length(excl)>0)  return(x[-excl])
+  else return(x)
+}
+
+# ggplot theme appropriate for manuscripts
+apatheme<-function(){
+  theme_bw() + 
+    theme(legend.position="bottom",panel.grid=element_blank(),
+          panel.border = element_blank(),
+          axis.line=element_line(),
+          strip.background = element_blank(),
+          strip.text=element_text(face="bold",size=unit(14,"pt")),
+          axis.title=element_text(face="bold",size=unit(14,"pt"),margin=unit(rep(0,4),"pt")),
+          legend.text = element_text(size=unit(14,"pt")),
+          axis.ticks.length = unit(-5,"pt"),
+          axis.text=element_text(color="black",size=unit(13,"pt")),
+          axis.text.x=element_text(margin=unit(c(8,0,0,0),"pt")),
+          axis.text.y=element_text(margin=unit(c(0,8,0,0),"pt")))
+}
+
+# Remove leading zero from formatted numbers (taken from stackoverflow, and edited)
+dropLeadingZero <- function(l){
+  lnew <- c()
+  for(i in l){
+    if(isTRUE(i==0)){ #zeros stay zero
+      lnew <- c(lnew,"0")
+    } else if (isTRUE(i>=1) | isTRUE(i<=-1)){ #above one stays the same
+      lnew <- c(lnew, as.character(i))
+    } else
+      lnew <- c(lnew, gsub("(?<![0-9])0+(?=\\.)", "", i, perl = TRUE))
+  }
+  as.character(lnew)
+}
+
+# Formatted t-test comparing to zero
+zerodiff<-function(x){
+  x<-na.omit(x)
+  tt<-t.test(x)
+  cat("t (",tt$parameter,") = ",tt$statistic, ", p = ",tt$p.value,
+      ", g = ",format(CohenD(x,correct=T),digits=5),", M = ",format(mean(x),digits=5),"\n",sep="")
+}
+
+# Formatted t-test
+twodiff<-function(form,data,paired=F){
+  term<-as.character(form)[3]
+  outcome<-as.character(form)[2]
+  data<-data[,c(term,outcome)]
+  data<-na.omit(data)
+  
+  tt<-t.test(form,data,paired=paired)
+  x<-data[[outcome]][data[[term]]==unique(data[[term]])[1]]
+  y<-data[[outcome]][data[[term]]==unique(data[[term]])[2]]
+  cat("t (",tt$parameter,") = ",tt$statistic, ", p = ",tt$p.value,
+      ", g = ",format(CohenD(x=x,y=y,correct=T),digits=5),", Mdiff = ",format(mean(x)-mean(y),digits=5),"\n",sep="")
+}
+
+# Formatted t-test for two inputs
+twodiff2<-function(x,y,paired=F){
+  tt<-t.test(x=x,y=y,paired=paired)
+  cat("t (",tt$parameter,") = ",tt$statistic, ", p = ",tt$p.value,
+      ", g = ",format(CohenD(x=x,y=y,correct=T),digits=5),", Mdiff = ",format(mean(x)-mean(y),digits=5),"\n",sep="")
+}
+
+npr.zerodiff<-function(x){
+  x<-na.omit(x)
+  test<-coin::wilcoxsign_test(rep(0,length(x))~x,exact=T)
+  cat("Z = ",format(test@statistic@teststatistic,digits=5),
+      ", p = ",format(test@distribution@pvalue(test@statistic@teststatistic),digits=5),
+      ", Mdiff = ",format(mean(x),digits=5),"\n",sep="")
+}
+
+# Formatted Wilcoxon test
+npr.twodiff<-function(form,data){
+  term<-as.character(form)[3]
+  outcome<-as.character(form)[2]
+  data<-data[,c(term,outcome)]
+  data[[term]]<-factor(data[[term]])
+  data<-na.omit(data)
+  test<-coin::wilcox_test(form,data, distribution="exact",conf.int=T)
+  
+  x<-data[[outcome]][data[[term]]==unique(data[[term]])[1]]
+  y<-data[[outcome]][data[[term]]==unique(data[[term]])[2]]
+  
+  cat("Z = ",format(test@statistic@teststatistic,digits=5),
+      ", p = ",format(test@distribution@pvalue(test@statistic@teststatistic),digits=5),
+      ", Mdiff = ",format(mean(x)-mean(y),digits=5),"\n",sep="")
+}
+
+# formatted correlation
+cor.print<-function(x,y,method="pearson"){
+  h<-cor.test(x,y,method=method)
+  cat(method," r (",h$parameter,") = ",dropLeadingZero(format(h$estimate,digits=2)),
+      ", p = ",dropLeadingZero(format(h$p.value,digits=3)),"\n",sep="")
 }
 
 
