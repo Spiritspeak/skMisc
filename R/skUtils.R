@@ -14,7 +14,9 @@ args2strings <- function(...) sapply(substitute({ ... })[-1], deparse)
 #' @return Clamped vector.
 #' @export 
 #'
-#' @examples clamp(0:10,2,8)
+#' @examples 
+#' clamp(0:10,2,8)
+#' clamp0(rnorm(10))
 clamp <- function(val,minval=-Inf,maxval=Inf){
   val[val<minval]<-minval
   val[val>maxval]<-maxval
@@ -27,6 +29,24 @@ clamp0 <- function(val,minval=0,maxval=1){
   val[val<minval]<-minval
   val[val>maxval]<-maxval
   val
+}
+
+#' Scale a vector
+#' 
+#' Like scale() but returns a vector and is faster
+#' 
+#' @param x Numeric vector to standardize
+#'
+#' @return Scaled numeric vector with mean of 0 and sd of 1
+#' @export
+#'
+#' @examples
+#' vec.scale(1:10)
+#' 
+vec.scale<-function(x){
+  xt<-na.omit(x)
+  m<-mean.default(xt)
+  (x-m)/sqrt((sum((xt-m)^2)/(length(xt)-1)))
 }
 
 #' Crunch Outliers
@@ -141,12 +161,8 @@ df.init<-function(namelist){
 #'
 #' @examples 
 #' sapply(ToothGrowth,class)
-#' #      len      supp      dose 
-#' #"numeric"  "factor" "numeric" 
 #' NewToothGrowth <- retype(ToothGrowth, supp = character(), dose = factor())
 #' sapply(NewToothGrowth,class)
-#' #      len        supp        dose 
-#' #"numeric" "character"    "factor" 
 retype<-function(df, ...){
   args<-list(...)
 
@@ -695,3 +711,4 @@ CorTable<-function(df,rowids,columnids,rowdf,columndf){
   outmat[5*(0:(length(rowids)-1))+4,]<-gsub("0\\.","\\.",paste0("h/df=",format(hmat/dfmat,nsmall=2)))
   knitr::kable(outmat,digits=2,align="r")
 }
+
