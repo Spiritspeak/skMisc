@@ -90,25 +90,4 @@ TransformPlots<-function(x){
 }
 
 
-#' Pecher theme for ggplot
-#' Based on the plot design style of prof. Diane Pecher.
-#' @export
-#'
-#' @examples
-#' ggplot(mtcars,aes(x=mpg,y=wt)) + geom_point() + theme_pecher()
-theme_pecher<-function(){
-  th<-theme_bw() + 
-    theme(text = element_text(size=14, family="serif"),
-          plot.title = element_text(hjust = 0.5),
-          panel.grid.major = element_blank(), 
-          panel.grid.minor = element_blank(),
-          panel.border = element_blank(),
-          axis.line = element_line(colour = "black"),
-          axis.ticks.length=unit(-.25,"cm"),
-          axis.text = element_text(colour = rgb(0,0,0),size=12),
-          axis.text.x=element_text(margin = margin(t=.4,b=.1,r=.1,l=.1,unit="cm")),
-          axis.text.y=element_text(margin = margin(t=.1,b=.1,r=.4,l=.1,unit="cm")),
-          strip.background=element_blank())
-  return(th)
-}
 

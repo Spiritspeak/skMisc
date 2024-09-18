@@ -5,20 +5,28 @@
 #I don't want to import rlang, so it will be done this way instead.
 args2strings <- function(...) sapply(substitute({ ... })[-1], deparse)
 
-#' Create unique pairs
-#' @description Combines vectors such that unique unordered sets are derived from the vectors' cross sections. 
-#' @param ... two or more vectors of equal length
+#' clamp
 #'
-#' @return a character vector consisting of all input vectors concatenated term-by-term and in alphabetic order.
+#' @param val The vector/matrix to clamp
+#' @param minval Minimum value; all lower values are clamped to this value
+#' @param maxval Maximum value; all higher values are clamped to this value
+#'
+#' @return Clamped vector.
+#' @export 
+#'
+#' @examples clamp(0:10,2,8)
+clamp <- function(val,minval=-Inf,maxval=Inf){
+  val[val<minval]<-minval
+  val[val>maxval]<-maxval
+  val
+}
+
+#' @rdname clamp
 #' @export
-#'
-#' @examples 
-#' pair(1:4,4:1)
-#' #[1] "1-4" "2-3" "2-3" "1-4"
-pair<-function(...){
-  args<-list(...)
-  mat<-matrix(unlist(args),ncol=length(args))
-  apply(mat,MARGIN=1,FUN=function(x){paste(sort(x),collapse="-")})
+clamp0 <- function(val,minval=0,maxval=1){
+  val[val<minval]<-minval
+  val[val>maxval]<-maxval
+  val
 }
 
 #' Crunch Outliers
@@ -163,17 +171,8 @@ retype<-function(df, ...){
 #' @examples 
 #'
 #' sapply(mtcars,class)
-#' #       mpg       cyl      disp        hp      drat        wt
-#' # "numeric" "numeric" "numeric" "numeric" "numeric" "numeric"
-#' #      qsec        vs        am      gear      carb 
-#' # "numeric" "numeric" "numeric" "numeric" "numeric" 
-#' 
 #' newmtcars <- retype_all(mtcars,from="numeric",to="character")
 #' sapply(newmtcars,class)
-#' #         mpg         cyl        disp          hp        drat
-#' # "character" "character" "character" "character" "character"
-#' #          wt        qsec          vs          am        gear        carb 
-#' # "character" "character" "character" "character" "character" "character" 
 retype_all<-function(df,from,to){
   for(i in which(sapply(df,class)==from)){
     df[[i]]<-as(df[[i]],to)
@@ -258,101 +257,6 @@ trypackages<-function(...){
 
 # CorrCrunch ####
 
-#' Analyse the robustness of a correlation
-#' @description \code{CorrCrunch()} computes the minimum number of cases that need to be removed from a dataset to flip the sign of a correlation coefficient.
-#' This can be useful in distinguishing genuine correlations from spurious findings that hinge on one or two outliers.
-#' Cases are removed iteratively; in each iteration the case that maximally shrinks the correlation coefficient is removed.
-#' @param x,y Numeric vectors to correlate.
-#' @param verbose if TRUE, prints verbose output.
-#'
-#' @return A list containing the number of cases that need to be removed to flip the sign of the correlation coefficient; 
-#' the proportion removed cases in the data; and a data.frame without these cases.
-#' @export
-#'
-#' @examples CorrCrunch(mtcars$mpg,mtcars$wt)
-#' #Holdout needed to flip the sign: 19 (63.33%)
-#' #Final r: 0.01181141
-CorrCrunch<-function(x,y,verbose=F){
-  iter<-0
-  delidx<-0
-  iterdf<-data.frame(x=x,y=y)
-  iterdf<-iterdf[!is.na(rowSums(iterdf)),]
-  origrval<-cor(iterdf$x,iterdf$y)
-  rval<-origrval
-  corsign<-sign(origrval)
-  if(verbose){ cat(sep="","Holdout: ",0,", r: ",rval,"\n") }
-  while(sign(rval)==corsign & iter<1000){
-    iter<-iter+1
-    for(i in 1:nrow(iterdf)){
-      loopdf<-iterdf[-i,]
-      if(corsign*cor(loopdf$x,loopdf$y)<corsign*rval){
-        delidx<-i
-        rval<-cor(loopdf$x,loopdf$y)
-      }
-    }
-    if(verbose){ cat(sep="","Holdout: ",iter,", r: ",rval,"\n") }
-    iterdf<-iterdf[-delidx,]
-  }
-  structure(.Data=list(h=iter,h.prop=iter/(length(x)-2),lastdf=iterdf),class="CorrCrunch")
-}
-
-print.CorrCrunch<-function(x){
-  cat("Holdout needed to flip the sign: ",x$h,
-      " (",round(x$h.prop*100,digits=2),"%)\n",sep="")
-  cat("Final r: ",cor(x$lastdf$x,x$lastdf$y),"\n",sep="")
-}
-registerS3method("print", "CorrCrunch", print.CorrCrunch)
-
-
-# Asymmetric CorMat with CorrCrunch ####
-#' Create a Correlation Table
-#'
-#' @param df A data.frame. 
-#' @param rowids,columnids character vectors containing column names from \code{df} that need to be correlated.  
-#' @param rowdf,columndf data.frames whose columns need to be correlated. 
-#' Either \code{df, rowids, & columnids} or \code{rowdf & columndf} are required.
-#'
-#' @return A formatted markdown table containing correlation coefficients, p-values, and 
-#' the number and percentage of cases that need to be removed to flip the sign of each correlation coefficient.
-#' @export
-#'
-#' @examples CorTable(mtcars,rowids=c("mpg","disp","hp"),columnids=c("drat","wt","qsec"))
-#' 
-#' CorTable(rowdf=mtcars[,c(1,3,4)],columndf=mtcars[,5:7])
-CorTable<-function(df,rowids,columnids,rowdf,columndf){
-  if(missing(df) | missing(rowids) | missing(columnids)){
-    df<-cbind(rowdf,columndf)
-    rowids<-colnames(rowdf)
-    columnids<-colnames(columndf)
-  }
-
-  cormat<-matrix(NA,nrow=length(rowids),ncol=length(columnids))
-  colnames(cormat)<-columnids
-  rownames(cormat)<-rowids
-  dfmat<-pmat<-hmat<-cormat
-  
-  for(i in rowids){
-    for(j in columnids){
-      corobj<-cor.test(df[,i],df[,j])
-      cormat[i,j]<-corobj$estimate
-      pmat[i,j]<-corobj$p.value
-      hmat[i,j]<-CorrCrunch(df[,i],df[,j])$h
-      dfmat[i,j]<-corobj$parameter
-    }
-  }
-  
-  outmat<-matrix("",ncol=length(columnids),nrow=length(rowids)*5-1)
-  colnames(outmat)<-abbreviate(columnids)
-  outrows<-rep("",length(rowids)*5-1)
-  outrows[5*(0:(length(rowids)-1))+1]<-rowids
-  rownames(outmat)<-outrows
-  
-  outmat[5*(0:(length(rowids)-1))+1,]<-gsub("0\\.","\\.",paste0("r=  ",format(cormat,digits=0,nsmall=2)))
-  outmat[5*(0:(length(rowids)-1))+2,]<-gsub("0\\.","\\.",paste0("p=  ",format(pmat,digits=0,nsmall=3)))
-  outmat[5*(0:(length(rowids)-1))+3,]<-gsub("0\\.","\\.",paste0("h=    ",format(hmat,digits=0)))
-  outmat[5*(0:(length(rowids)-1))+4,]<-gsub("0\\.","\\.",paste0("h/df=",format(hmat/dfmat,digits=0,nsmall=2)))
-  knitr::kable(outmat,digits=2,align="r")
-}
 
 #' Compound tokens without overflowing memory and crashing R
 #' @description A wrapper around \link[quanteda]{tokens_compound} that processes your tokens in chunks, 
@@ -422,23 +326,6 @@ wtd.median<-function(x,wts,na.rm=T){
     out<-mean(x[midx])
   }
   return(out)
-}
-
-#' Compute column and row variances
-#' @param x an input matrix of data.frame
-#' @param na.rm Logical indicating whether NA values should be omitted before variance computation
-#'
-#' @export
-#' @examples 
-#' colVars(WorldPhones)
-#' rowVars(WorldPhones)
-colVars<-function(x,na.rm=T){
-  apply(x,MARGIN=2,FUN=var,na.rm=T)
-}
-#' @export
-#' @rdname colVars
-rowVars<-function(x,na.rm=T){
-  apply(x,MARGIN=1,FUN=var,na.rm=T)
 }
 
 
@@ -512,52 +399,6 @@ splitColumn<-function(x,sep=";"){
   return(as.data.frame(idx))
 }
 
-#' Generate a matrix of combinations of values
-#'
-#' @param ... Character vectors, named or unnamed, or unquoted names of named arguments. 
-#' Character vectors will be used to generate a matrix where each row represents a unique combination
-#' of all values, akin to \code{expand.grid()}. Arguments which are unquoted names of named arguments
-#' will become copies of the column generated by the eponymous named character vector. 
-#'
-#' @return A matrix.
-#' @export
-#'
-#' @examples
-#' hh<-c("a","b")
-#' comboTable(a=letters[1:3], b=2,a,b,c=c("e","f"),d,c,d=hh,"huh",a,hh)
-comboTable<-function(...){
-  cl<-match.call(expand.dots = FALSE)[[2]]
-  
-  #deconstruct arguments
-  named<- names(cl)!=""
-  repeated<- as.character(cl) %in% names(cl)[named]
-  unnamed<- names(cl)=="" & !repeated
-
-  #ensure named args occur only once
-  if(any(duped<-named & duplicated(names(cl)))){
-    stop("When there are named arguments with identical names, every such argument",
-         "after the first one should have no value associated with it. Violating args: ",
-         paste(which(duped),collapse=", "))
-  }
-  
-  #build args
-  e.args<-as.list(vector(length=length(cl)))
-  e.args[named]<-lapply(cl[named],eval)
-  e.args[repeated]<-NA
-  e.args[unnamed]<-lapply(cl[unnamed],eval)
-  
-  #get table
-  mat<-unname(as.matrix(do.call(expand.grid,e.args)))
-  
-  #enter duplicates
-  for(i in which(repeated)){
-    col<-which(names(cl) %in% as.character(cl[i]) & named)
-    mat[,i]<-mat[,col]
-  }
-  
-  #return
-  return(mat)
-}
 
 #' Merge Multiple Data Frames
 #' 
@@ -630,7 +471,7 @@ DivideSeries<-function(x,divs,divlen){
   }
 }
 
-
+# "Rein in" outliers by moving them closer to the mean
 suppressor<-function(x,soft,hard, strength){
   hard<-hard-soft
   y<-x
@@ -639,6 +480,18 @@ suppressor<-function(x,soft,hard, strength){
   return(y)
 }
 
+std.suppressor<-function(x,soft=2.5,hard=3,strength=1){
+  m<-mean(x)
+  s<-sd(x)
+  suppressor((x-m)/s,soft,hard,strength)*s+m
+}
+
+loop.suppressor<-function(x,soft=2.5,hard=3,strength=1){
+  while(any(abs(scale(x))>3)){
+    x<-std.suppressor(x,soft,hard,strength)
+  }
+  x
+}
 
 # Remove rows with OLs from data frame
 removeOLs<-function(.tbl,olvars,groups=NULL){
@@ -669,36 +522,6 @@ vec.removeOLs<-function(x){
   message("Excluding ",length(excl)," observations from vector")
   if(length(excl)>0)  return(x[-excl])
   else return(x)
-}
-
-# ggplot theme appropriate for manuscripts
-apatheme<-function(){
-  theme_bw() + 
-    theme(legend.position="bottom",panel.grid=element_blank(),
-          panel.border = element_blank(),
-          axis.line=element_line(),
-          strip.background = element_blank(),
-          strip.text=element_text(face="bold",size=unit(14,"pt")),
-          axis.title=element_text(face="bold",size=unit(14,"pt"),margin=unit(rep(0,4),"pt")),
-          legend.text = element_text(size=unit(14,"pt")),
-          axis.ticks.length = unit(-5,"pt"),
-          axis.text=element_text(color="black",size=unit(13,"pt")),
-          axis.text.x=element_text(margin=unit(c(8,0,0,0),"pt")),
-          axis.text.y=element_text(margin=unit(c(0,8,0,0),"pt")))
-}
-
-# Remove leading zero from formatted numbers (taken from stackoverflow, and edited)
-dropLeadingZero <- function(l){
-  lnew <- c()
-  for(i in l){
-    if(isTRUE(i==0)){ #zeros stay zero
-      lnew <- c(lnew,"0")
-    } else if (isTRUE(i>=1) | isTRUE(i<=-1)){ #above one stays the same
-      lnew <- c(lnew, as.character(i))
-    } else
-      lnew <- c(lnew, gsub("(?<![0-9])0+(?=\\.)", "", i, perl = TRUE))
-  }
-  as.character(lnew)
 }
 
 # Formatted t-test comparing to zero
@@ -756,10 +579,119 @@ npr.twodiff<-function(form,data){
 }
 
 # formatted correlation
-cor.print<-function(x,y,method="pearson"){
+print.cor<-function(x,y,method="pearson"){
   h<-cor.test(x,y,method=method)
   cat(method," r (",h$parameter,") = ",dropLeadingZero(format(h$estimate,digits=2)),
       ", p = ",dropLeadingZero(format(h$p.value,digits=3)),"\n",sep="")
 }
 
+# return a vector revealing for each value which Nth repetition of that unique value it is
+which.duplicate<-function(vec){
+  vals<-unique(vec)
+  repvec<-numeric(length(vals))
+  for(v in vals){
+    repvec[vec==v]<-seq_len(sum(vec==v))
+  }
+  return(repvec)
+}
 
+getMetrics<-function(origdata,preddata){
+  cm<-table(origdata,preddata)
+  return(c(acc=acc<-sum(diag(cm))/sum(cm),
+           chance_acc=chance_acc<-max(rowSums(cm))/sum(cm),
+           kappa=(acc-chance_acc)/(1-chance_acc),
+           ppv=ppv<-cm[2,2]/sum(cm[,2]),
+           chance_ppv=chance_ppv<-sum(cm[2,])/sum(cm),
+           kappa_ppv=(ppv-chance_ppv)/(1-chance_ppv),
+           npv=npv<-cm[1,1]/sum(cm[,1]),
+           chance_npv=chance_npv<-sum(cm[1,])/sum(cm),
+           kappa_npv=(npv-chance_npv)/(1-chance_npv),
+           sens=cm[2,2]/sum(cm[2,]),
+           spec=cm[1,1]/sum(cm[1,])))
+}
+
+
+#' Multiple correlation
+#' Computes the \href{https://en.wikipedia.org/wiki/Multiple_correlation}{multiple correlation coefficient}
+#' of variables in \code{ymat} with the variable \code{x}
+#' @param x Either a matrix of variables whose multiple correlation with each other is to be estimated; or a vector of which the multiple correlation with variables in \code{ymat} is to be estimated
+#' @param ymat a matrix or data.frame of variables of which the multiple correlation with \code{x} is to be estimated
+#' @param use optional character indicating how to handle missing values (see \link{cor})
+#'
+#' @return The multiple correlation coefficient
+#' @export
+#' @seealso https://www.personality-project.org/r/book/chapter5.pdf
+#'
+#' @examples
+#' multiple.cor(mtcars[,1],mtcars[,2:4])
+multiple.cor<-function(x,ymat,use="everything"){
+  if(missing(ymat)){
+    cv<-cor(x,use=use)
+    corvec<-numeric(ncol(x))
+    for(i in seq_along(corvec)){
+      gfvec<-cv[(1:nrow(cv))[-i],i]
+      dcm<-cv[(1:nrow(cv))[-i],(1:ncol(cv))[-i]]
+      rsq<-t(gfvec) %*% solve(dcm) %*% gfvec
+      corvec[i]<-sqrt(as.vector(rsq))
+    }
+    names(corvec)<-colnames(cv)
+    return(corvec)
+  }else{
+    cv<-cor(cbind(x,ymat),use=use)
+    gfvec<-cv[2:nrow(cv),1]
+    dcm<-cv[2:nrow(cv),2:ncol(cv)]
+    rsq<-t(gfvec) %*% solve(dcm) %*% gfvec
+    return(sqrt(as.vector(rsq)))
+  }
+}
+
+
+# Asymmetric CorMat with CorrCrunch ####
+#' Create a Correlation Table
+#'
+#' @param df A data.frame. 
+#' @param rowids,columnids character vectors containing column names from \code{df} that need to be correlated.  
+#' @param rowdf,columndf data.frames whose columns need to be correlated. 
+#' Either \code{df, rowids, & columnids} or \code{rowdf & columndf} are required.
+#'
+#' @return A formatted markdown table containing correlation coefficients, p-values, and 
+#' the number and percentage of cases that need to be removed to flip the sign of each correlation coefficient.
+#' @export
+#'
+#' @examples CorTable(mtcars,rowids=c("mpg","disp","hp"),columnids=c("drat","wt","qsec"))
+#' 
+#' CorTable(rowdf=mtcars[,c(1,3,4)],columndf=mtcars[,5:7])
+CorTable<-function(df,rowids,columnids,rowdf,columndf){
+  if(missing(df) | missing(rowids) | missing(columnids)){
+    df<-cbind(rowdf,columndf)
+    rowids<-colnames(rowdf)
+    columnids<-colnames(columndf)
+  }
+  
+  cormat<-matrix(NA,nrow=length(rowids),ncol=length(columnids))
+  colnames(cormat)<-columnids
+  rownames(cormat)<-rowids
+  dfmat<-pmat<-hmat<-cormat
+  
+  for(i in rowids){
+    for(j in columnids){
+      corobj<-cor.test(df[,i],df[,j])
+      cormat[i,j]<-corobj$estimate
+      pmat[i,j]<-corobj$p.value
+      hmat[i,j]<-CorrCrunch(df[,i],df[,j])$h
+      dfmat[i,j]<-corobj$parameter
+    }
+  }
+  
+  outmat<-matrix("",ncol=length(columnids),nrow=length(rowids)*5-1)
+  colnames(outmat)<-abbreviate(columnids)
+  outrows<-rep("",length(rowids)*5-1)
+  outrows[5*(0:(length(rowids)-1))+1]<-rowids
+  rownames(outmat)<-outrows
+  
+  outmat[5*(0:(length(rowids)-1))+1,]<-gsub("0\\.","\\.",paste0("r=  ",format(cormat,nsmall=2)))
+  outmat[5*(0:(length(rowids)-1))+2,]<-gsub("0\\.","\\.",paste0("p=  ",format(pmat,nsmall=3)))
+  outmat[5*(0:(length(rowids)-1))+3,]<-gsub("0\\.","\\.",paste0("h=    ",format(hmat)))
+  outmat[5*(0:(length(rowids)-1))+4,]<-gsub("0\\.","\\.",paste0("h/df=",format(hmat/dfmat,nsmall=2)))
+  knitr::kable(outmat,digits=2,align="r")
+}
