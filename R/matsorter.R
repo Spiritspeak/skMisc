@@ -1,17 +1,25 @@
 
 
-# For viewing the matrix as image
-showmat<-function(x){
-  image(x[,rev(seq_len(dim(x)[2]))])
-}
-
-mat<-matrix(rnorm(144),ncol=12,nrow=12)
-mat<-mat+t(mat)
-
-showmat(mat)
-newmat<-sortmat(mat,"bottomright")
-showmat(newmat)
-
+#' Sort a square matrix
+#' This is a crude iterative algorithm that swaps the rows and columns of a matrix 
+#' to ensure the highest values are either in the middle or the bottom-right.
+#'
+#' @param mat Square numeric matrix to be sorted
+#' @param sorttype Where the highest values should appear - "middle" or "bottomright".
+#'
+#' @return A sorted square matrix
+#' @export
+#'
+#' @examples
+#' 
+#' mat<-matrix(rnorm(144),ncol=12,nrow=12)
+#' mat<-mat+t(mat)
+#' 
+#' newmat1<-sortmat(mat,"bottomright")
+#' 
+#' newmat2<-sortmat(mat,"middle")
+#' 
+#' 
 sortmat<-function(mat,sorttype=c("middle","bottomright")){
   dims<-dim(mat)
   k<-dims[1]
@@ -40,4 +48,11 @@ sortmat<-function(mat,sorttype=c("middle","bottomright")){
 
   return(mat)
 }
+
+# For viewing the matrix as image
+showmat<-function(x){
+  image(x[,rev(seq_len(dim(x)[2]))])
+}
+
+
 

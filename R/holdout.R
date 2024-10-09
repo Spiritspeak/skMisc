@@ -1,4 +1,7 @@
 
+# goals right now: 
+# add help file to every function
+# ensure these functions behave normally with already insignificant models
 
 r2t<-function(r,df){
   sqrt(r^2*df / (1-r^2))
@@ -17,9 +20,9 @@ cor.influence<-function(x,y){
 #' either no longer significant or has changed its sign
 #'
 #' @param x,y Numeric vectors of variables to correlate
-#' @param goal Character denoting objective of observation removal; 
-#' can be nsig (no longer significant) or flip (change of sign)
-#' @param method Character denoting correlation method, either pearson or spearman
+#' @param goal Objective of observation removal: 
+#' "nsig" (no longer significant) or "flip" (change of sign).
+#' @param method Correlation method, either pearson or spearman
 #' @param alpha Alpha level for significance testing
 #' @param verbose Logical; if TRUE, will produce more output
 #'
@@ -28,13 +31,13 @@ cor.influence<-function(x,y){
 #' - h.prop: h but as a percentage
 #' - final_r: the correlation after removal of observations
 #' - final_p: the p value after removal of observations
-#' - rem: logical vector denoting which observations were removed to obtain result
+#' - omit: logical vector denoting which observations were omitted to obtain result
 #' @export
 #'
 #' @examples
 #' 
 #' xval<-rnorm(100)
-#' cor.holdout(x=rnorm(100),y=rnorm(100)+xval,goal="flip")
+#' cor.holdout(x=rnorm(100)+xval,y=rnorm(100)+xval,goal="flip")
 #' cor.holdout(x=rnorm(100),y=rnorm(100)+xval,goal="nsig",method="spearman")
 #' 
 cor.holdout<-function(x,y,
@@ -99,13 +102,16 @@ cor.holdout<-function(x,y,
                 final_p=(rval |> r2t(df=lastdf) |> abs() |> pt(df=lastdf,lower.tail=F))*2,
                 success=success,
                 h=sum(!incl),
-                rem=incl,
+                omit=!incl,
                 h.prop=sum(!incl)/(length(x)-2))
   out<-structure(.Data=outlist,class="cor.holdout")
   return(out)
 }
 
-
+#' @rdname cor.holdout
+#' @param x A cor.holdout object.
+#' @param ... Ignored.
+#' @export
 print.cor.holdout<-function(x,...){
   # cat(sep="",
   #     "h = ",x$h,"; h.prop = ",x$h.prop,"\n",
@@ -119,23 +125,51 @@ registerS3method("print","cor.holdout",print.cor.holdout)
 # lm.holdout #
 ##############
 
-# 
-# Sigma<-matrix(0,ncol=3,nrow=3)
-# Sigma[1,]<-Sigma[,1]<- -.5
-# diag(Sigma)<-1
-# fakedata<-MASS::mvrnorm(n=1000,mu=c(0,0,0),Sigma=Sigma,empirical=T)
-# fakedata<-as.data.frame(fakedata)
-# 
-# 
-# lmmod<-lm(V1~V2*V3,data=fakedata)
-# 
-# 
-# kk<-lm.holdout(lmmod,goal="nsig")
 
 
 
-
-lm.holdout<-function(model,goal=c("nsig","flip"),preds=NULL,alpha=.05,verbose=F){
+#' Linear Regression Holdouts
+#' Repeatedly remove the most influential observation using
+#' influence functions until a model term is 
+#' either no longer significant or has changed its sign
+#' 
+#' @param model A \code{lm} model
+#' @param goal Objective of observation removal: 
+#' "nsig" (no longer significant) or "flip" (change of sign).
+#' @param terms Names of model terms to compute holdout statistics for. 
+#' When NULL, it defaults to all model terms.
+#' @param alpha 
+#' Maximum p value for significance (only relevant when aiming to make value insignificant)
+#' @param verbose Should the function generate verbose output? Defaults to no.
+#'
+#' @return A list, containing
+#' - \code{holdouts}: a \code{data.frame} where each row is a predictor; as for the columns: 
+#'  - \code{h} - the number of observations needed to reach the goal
+#'  - \code{h.prop} - the percentage of excludable observations that were excluded to reach the goal
+#'  - \code{final.beta} - the final beta value of the predictor after exclusions
+#'  - \code{final.p} - the final p value of the predictor after exclusions
+#' - \code{exclusion.matrix}
+#' - \code{model}
+#' 
+#' @md
+#' @export
+#'
+#' @examples
+#' 
+#' Sigma <- diag(1,nrow=3)
+#' Sigma[1,-1] <- Sigma[-1,1]<- -.5
+#' fakedata <- MASS::mvrnorm(n=1000,mu=c(0,0,0),Sigma=Sigma,empirical=TRUE)
+#' fakedata <- as.data.frame(fakedata)
+#' 
+#' lmmod <- lm(V1~V2*V3,data=fakedata)
+#' 
+#' lmmod.h <- lm.holdout(lmmod,goal="nsig")
+#' print(lmmod.h)
+#' 
+#' lmmod.h2 <- lm.holdout(lmmod,goal="flip")
+#' print(lmmod.h2)
+#' 
+lm.holdout<-function(model,goal=c("nsig","flip"),terms=NULL,alpha=.05,verbose=FALSE){
   
   origcoefs<-coef(model)
   origcoef.signs<-sign(origcoefs)
@@ -152,8 +186,8 @@ lm.holdout<-function(model,goal=c("nsig","flip"),preds=NULL,alpha=.05,verbose=F)
     }
   }
   
-  if(is.null(preds)){
-    preds<-terms(model) |> attr("factors") |> colnames()
+  if(is.null(terms)){
+    terms<-terms(model) |> attr("factors") |> colnames()
   }
   
   mf<-model.frame(model)
@@ -186,13 +220,13 @@ lm.holdout<-function(model,goal=c("nsig","flip"),preds=NULL,alpha=.05,verbose=F)
                   final_p=summary(currmod)$coefficients[pred,"Pr(>|t|)"],
                   success=success,
                   h=sum(!incl),
-                  rem=incl,
+                  rem=!incl,
                   h.prop=sum(!incl)/(nrow(mf)-2))
   }
   
   
   output<-list()
-  for(pred in preds){
+  for(pred in terms){
     output[[pred]]<-lm.holdout.single(pred)
   }
   out<-list(holdouts=data.frame(h=sapply(output,\(x)x$h),
@@ -205,13 +239,11 @@ lm.holdout<-function(model,goal=c("nsig","flip"),preds=NULL,alpha=.05,verbose=F)
   return(out)
 }
 
-
 print.lm.holdout<-function(x,...){
   cat("Holdout values for linear regression model\n")
   print(formula(x$model))
   print(x$holdouts)
 }
-
 
 registerS3method("print","lm.holdout",print.lm.holdout)
 
