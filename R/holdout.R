@@ -22,23 +22,31 @@ cor.influence<-function(x,y){
 #' @param x,y Numeric vectors of variables to correlate
 #' @param goal Objective of observation removal: 
 #' "nsig" (no longer significant) or "flip" (change of sign).
-#' @param method Correlation method, either pearson or spearman
+#' @param method Correlation method, either "pearson" or "spearman"
 #' @param alpha Alpha level for significance testing
-#' @param verbose Logical; if TRUE, will produce more output
+#' @param verbose Should the function generate verbose output? Defaults to FALSE.
 #'
 #' @return A list with...
 #' - h: number of observations needed to reach objective
-#' - h.prop: h but as a percentage
-#' - final_r: the correlation after removal of observations
-#' - final_p: the p value after removal of observations
+#' - h.prop: h but as a percentage of the total degrees of freedom 
+#' (total number of observations - 2)
+#' - final.r: the correlation after removal of observations
+#' - final.p: the p value after removal of observations
 #' - omit: logical vector denoting which observations were omitted to obtain result
 #' @export
 #'
 #' @examples
 #' 
 #' xval<-rnorm(100)
+#' 
+#' # Flip sign
 #' cor.holdout(x=rnorm(100)+xval,y=rnorm(100)+xval,goal="flip")
-#' cor.holdout(x=rnorm(100),y=rnorm(100)+xval,goal="nsig",method="spearman")
+#' 
+#' # Make insignificant
+#' cor.holdout(x=rnorm(100)+xval,y=rnorm(100)+xval,goal="nsig",method="spearman")
+#' 
+#' # No true correlation
+#' cor.holdout(x=rnorm(100),y=rnorm(100),goal="nsig")
 #' 
 cor.holdout<-function(x,y,
                       goal=c("nsig","flip"),
@@ -98,8 +106,8 @@ cor.holdout<-function(x,y,
   
   lastdf<-sum(incl)-2
   
-  outlist<-list(final_r=rval,
-                final_p=(rval |> r2t(df=lastdf) |> abs() |> pt(df=lastdf,lower.tail=F))*2,
+  outlist<-list(final.r=rval,
+                final.p=(rval |> r2t(df=lastdf) |> abs() |> pt(df=lastdf,lower.tail=F))*2,
                 success=success,
                 h=sum(!incl),
                 omit=!incl,
@@ -115,8 +123,8 @@ cor.holdout<-function(x,y,
 print.cor.holdout<-function(x,...){
   # cat(sep="",
   #     "h = ",x$h,"; h.prop = ",x$h.prop,"\n",
-  #     "final r = ",x$final_r,"; final p = ",x$final_p)
-  x[c("h","h.prop","final_r","final_p")] |> unlist() |> print()
+  #     "final r = ",x$final.r,"; final p = ",x$final.p)
+  x[c("h","h.prop","final.r","final.p")] |> unlist() |> print()
 }
 
 registerS3method("print","cor.holdout",print.cor.holdout)
@@ -129,18 +137,19 @@ registerS3method("print","cor.holdout",print.cor.holdout)
 
 
 #' Linear Regression Holdouts
+#' 
 #' Repeatedly remove the most influential observation using
 #' influence functions until a model term is 
-#' either no longer significant or has changed its sign
+#' either no longer significant or has changed its sign.
 #' 
-#' @param model A \code{lm} model
+#' @param model A \code{lm} model.
 #' @param goal Objective of observation removal: 
 #' "nsig" (no longer significant) or "flip" (change of sign).
 #' @param terms Names of model terms to compute holdout statistics for. 
 #' When NULL, it defaults to all model terms.
 #' @param alpha 
-#' Maximum p value for significance (only relevant when aiming to make value insignificant)
-#' @param verbose Should the function generate verbose output? Defaults to no.
+#' Maximum p value for significance (only relevant when aiming to make value insignificant).
+#' @param verbose Should the function generate verbose output? Defaults to \code{FALSE}.
 #'
 #' @return A list, containing
 #' - \code{holdouts}: a \code{data.frame} where each row is a predictor; as for the columns: 
@@ -150,6 +159,12 @@ registerS3method("print","cor.holdout",print.cor.holdout)
 #'  - \code{final.p} - the final p value of the predictor after exclusions
 #' - \code{exclusion.matrix}
 #' - \code{model}
+#' 
+#' @details
+#' Datapoints to exclude are found with the function \code{[stats::lm.influence()]}.
+#' 
+#' The plot function displays a scatterplot of each predictor with the dependent variable, 
+#' with the excluded datapoints colored differently. 
 #' 
 #' @md
 #' @export
@@ -216,8 +231,8 @@ lm.holdout<-function(model,goal=c("nsig","flip"),terms=NULL,alpha=.05,verbose=FA
       }
     }
     
-    outlist<-list(final_beta=coef(currmod)[pred],
-                  final_p=summary(currmod)$coefficients[pred,"Pr(>|t|)"],
+    outlist<-list(final.beta=coef(currmod)[pred],
+                  final.p=summary(currmod)$coefficients[pred,"Pr(>|t|)"],
                   success=success,
                   h=sum(!incl),
                   rem=!incl,
@@ -231,14 +246,18 @@ lm.holdout<-function(model,goal=c("nsig","flip"),terms=NULL,alpha=.05,verbose=FA
   }
   out<-list(holdouts=data.frame(h=sapply(output,\(x)x$h),
                                 h.prop=sapply(output,\(x)x$h.prop),
-                                final_beta=sapply(output,\(x)x$final_beta),
-                                final_p=sapply(output,\(x)x$final_p)),
+                                final.beta=sapply(output,\(x)x$final.beta),
+                                final.p=sapply(output,\(x)x$final.p)),
             exclusion.matrix=sapply(output,\(x)x$rem),
             model=model)
   out<-structure(.Data=out,class="lm.holdout")
   return(out)
 }
 
+#' @rdname lm.holdout
+#' @param x A \code{lm.holdout} object.
+#' @param ... Additional plotting parameters for \code{[base::plot()]}; ignored for \code{print}.
+#' @export
 print.lm.holdout<-function(x,...){
   cat("Holdout values for linear regression model\n")
   print(formula(x$model))
@@ -247,6 +266,33 @@ print.lm.holdout<-function(x,...){
 
 registerS3method("print","lm.holdout",print.lm.holdout)
 
+#' @rdname lm.holdout
+#' @export
+plot.lm.holdout<-function(x,...){
+  plotterms<-colnames(x$exclusion.matrix)
+  modmat<-attr(terms(x$model),"factors")
+  dv<-rownames(modmat)[1]
+  dat<-x$model$model
+  
+  oldmfrow<-par("mfrow")
+  rowz<-ceiling(sqrt(length(plotterms)))
+  colz<-ceiling(length(plotterms)/rowz)
+  par(mfrow=c(rowz,colz))
+  for(cn in plotterms){
+    cns<-strsplit(cn,":")[[1]]
+    if(length(cns)==1){
+      xvar<-dat[[cns]]
+    }else{
+      xvar<-Reduce(`*`,dat[cns])
+    }
+    plot(x=xvar,y=dat[[dv]],col=1+x$exclusion.matrix[,cn]*2,
+         xlab=cn,ylab=dv,...)
+  }
+  par(mfrow=oldmfrow)
+  return()
+}
+
+registerS3method("plot","lm.holdout",plot.lm.holdout)
 
 
 
