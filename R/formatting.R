@@ -1,9 +1,11 @@
-#' Pecher theme for ggplot
-#' Based on the plot design style of prof. Diane Pecher.
+#' @rdname ggplot.themes
+NULL
+
+#' @describeIn ggplot.themes Based on the plot design style of prof. Diane Pecher.
 #' @export
-#'
 #' @examples
 #' ggplot(mtcars,aes(x=mpg,y=wt)) + geom_point() + theme_pecher()
+#' 
 theme_pecher<-function(){
   theme_bw() + 
     theme(text = element_text(size=14, family="serif"),
@@ -19,7 +21,10 @@ theme_pecher<-function(){
           strip.background=element_blank())
 }
 
-# ggplot theme appropriate for manuscripts
+#' @describeIn ggplot.themes Theme appropriate for APA manuscripts
+#' @examples
+#' ggplot(mtcars,aes(x=mpg,y=wt)) + geom_point() + apatheme()
+#' 
 apatheme<-function(){
   theme_bw() + 
     theme(legend.position="bottom",panel.grid=element_blank(),
@@ -36,8 +41,23 @@ apatheme<-function(){
           axis.text.y=element_text(margin=unit(c(0,8,0,0),"pt")))
 }
 
-# Remove leading zero from formatted numbers (taken from stackoverflow, and edited)
+#' Drop leading zeros
+#' Remove leading zeroes and return as a character vector.
+#'
+#' @param x Numeric vector to remove leading zeros from
+#'
+#' @return
+#' @author Adapted from [m.evans on StackOverflow](https://stackoverflow.com/a/48431993).
+#' @export
+#' @md
+#'
+#' @examples
+#' dropLeadingZero(c(-1,0,1,0.5,-0.5,1.5,-1.5))
 dropLeadingZero <- function(x){
+  gsub("(?<![0-9])0+(?=\\.)", "", x, perl = TRUE)
+}
+
+dropLeadingZero_old <- function(x){
   xnew <- c()
   for(i in x){
     if(isTRUE(i==0)){

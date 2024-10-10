@@ -1,12 +1,22 @@
 
-# goals right now: 
-# add help file to every function
-# ensure these functions behave normally with already insignificant models
 
+# Remains undocumented, helper function...
 r2t<-function(r,df){
   sqrt(r^2*df / (1-r^2))
 }
 
+#' Influence function of the Pearson correlation coefficient
+#'
+#' @param x,y Numeric vectors
+#'
+#' @return Influence values of all observations.
+#' @export
+#'
+#' @examples
+#' outlier<-numeric(100)
+#' outlier[1]<-1000
+#' cor.influence(rnorm(100)+outlier,rnorm(100)+outlier)
+#' 
 cor.influence<-function(x,y){
   x<-x-mean(x)
   y<-y-mean(y)
@@ -134,8 +144,6 @@ registerS3method("print","cor.holdout",print.cor.holdout)
 ##############
 
 
-
-
 #' Linear Regression Holdouts
 #' 
 #' Repeatedly remove the most influential observation using
@@ -183,6 +191,8 @@ registerS3method("print","cor.holdout",print.cor.holdout)
 #' 
 #' lmmod.h2 <- lm.holdout(lmmod,goal="flip")
 #' print(lmmod.h2)
+#' 
+#' plot(lmmod.h)
 #' 
 lm.holdout<-function(model,goal=c("nsig","flip"),terms=NULL,alpha=.05,verbose=FALSE){
   
