@@ -34,6 +34,34 @@ clamp0 <- function(val,minval=0,maxval=1){
   val
 }
 
+# duplicated() determines which elements of a vector or data frame are 
+# duplicates of elements with smaller subscripts, and returns a logical vector 
+# indicating which elements (rows) are duplicates.
+
+#' Count duplicate values in a vector
+#' 
+#' which.duplidate() determines for each element of a vector 
+#' how many times it has occurred so far.
+#' It works similarly to [base::duplicated()] which only determines 
+#' whether a value has occurred before and not how many times.
+#' 
+#' @param x A vector
+#'
+#' @return A vector of the same length as \code{x}, where each value has been replaced
+#' with the number of times its value has been repeated so far.
+#' @export
+#'
+#' @examples
+#' which.duplicate(c(1,6,5,2,1,1,8,6,5))
+which.duplicate<-function(x){
+  vals<-unique(x)
+  repvec<-numeric(length(vals))
+  for(v in vals){
+    repvec[x==v]<-seq_len(sum(x==v))
+  }
+  return(repvec)
+}
+
 #' Scale a vector
 #' 
 #' Like scale() but returns a vector and is faster
@@ -217,9 +245,6 @@ trypackages<-function(...){
     }
   }
 }
-
-
-# CorrCrunch ####
 
 
 #' Compound tokens without overflowing memory and crashing R
@@ -435,6 +460,24 @@ DivideSeries<-function(x,divs,divlen){
   }
 }
 
+divide2<-function(x,chunksize=NULL,chunks=NULL){
+  lx<-length(x)
+  if(!is.null(chunksize)){
+    chunks<-ceiling(lx/chunksize)
+  }else if(!is.null(chunks)){
+    chunksize<-ceiling(lx/chunks)
+  }
+  chvec<-rep(seq_len(chunks),each=chunksize,length.out=lx)
+  newx<-unname(split(x,chvec))
+  return(newx)
+}
+
+# divide(1:16,length=5)
+# 
+# DivideSeries(letters[1:16],divs=7)
+# DivideSeries(1:16,divlen=7)
+
+
 
 # Remove rows with OLs from data frame
 removeOLs<-function(.tbl,olvars,groups=NULL){
@@ -528,15 +571,7 @@ print.cor<-function(x,y,method="pearson"){
       ", p = ",dropLeadingZero(format(h$p.value,digits=3)),"\n",sep="")
 }
 
-# return a vector revealing for each value which Nth repetition of that unique value it is
-which.duplicate<-function(vec){
-  vals<-unique(vec)
-  repvec<-numeric(length(vals))
-  for(v in vals){
-    repvec[vec==v]<-seq_len(sum(vec==v))
-  }
-  return(repvec)
-}
+
 
 getMetrics<-function(origdata,preddata){
   cm<-table(origdata,preddata)
