@@ -1,3 +1,6 @@
+# Files that are "up to standard": holdout.R and formatting.R
+
+
 .onLoad<-function(libname, pkgname){
   packageStartupMessage("Thank you for loading skMisc v0.01")
 }
@@ -47,31 +50,6 @@ vec.scale<-function(x){
   xt<-na.omit(x)
   m<-mean.default(xt)
   (x-m)/sqrt((sum((xt-m)^2)/(length(xt)-1)))
-}
-
-#' Crunch Outliers
-#'
-#' @param x Numeric vector to remove outliers from
-#' @param DS A positive numeric value. If value exceeds this many standard deviations, it is counted as an outlier
-#' @param hardlimit A numeric vector with two values. If set, values below the first value and above the second will be counted as outliers, and means/standard deviations will be computed from values within these bounds only.
-#'
-#' @return Vector with outlying values set to NA
-#' @export
-#' 
-#' 
-OLcrunch<-function(x,DS=3,rerun=F,hardlimit=NULL){
-  if(!missing(hardlimit)){
-    x[x<hardlimit[1] | x>hardlimit[2]]<-NA
-  }
-  m<-mean(x,na.rm=T)
-  s<-sd(x,na.rm=T)
-  x[(x>m+s*DS) | (x<m-s*DS)]<-NA
-  if(rerun){
-    while(any( abs(scale(x))>DS, na.omit=T )){
-      x[which(abs(scale(x))>DS)]<-NA
-    }
-  }
-  return(x)
 }
 
 #' Smooth a numeric vector using a moving window algorithm
