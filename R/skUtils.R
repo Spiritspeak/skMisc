@@ -62,6 +62,38 @@ which.duplicate<-function(x){
   return(repvec)
 }
 
+
+unwrap.matrix<-function(x){
+  unwrap<-expand.grid(row=rownames(x),col=colnames(x),stringsAsFactors=F)
+  unwrap[["value"]]<-as.vector(x)
+  return(unwrap)
+}
+
+#' Install packages if neccesary, then load them.
+#' @param ... Unquoted names of packages to try loading, and if unable, install and load.
+#'
+#' @examples trypackages(stats,utils,compiler)
+#' @export
+trypackages<-function(...){
+  packs<-args2strings(...)
+  for(pack in packs){
+    if(!require(pack,character.only=T)){
+      install.packages(pack)
+      require(pack,character.only=T)
+    }
+  }
+}
+
+#' Initiate an empty data frame
+#'
+#' @param namelist A character vector of column names.
+#'
+#' @return A data.frame with 0 rows.
+#' @export
+df.init<-function(namelist){
+  setNames(data.frame(matrix(ncol = length(namelist), nrow = 0)), namelist)
+}
+
 #' Scale a vector
 #' 
 #' Like scale() but returns a vector and is faster
@@ -113,16 +145,6 @@ smoothvect<-function(vect,width=2,both.sides=T,alg=c("mean","gauss")){
     }
   }
   output
-}
-
-#' Initiate an empty data frame
-#'
-#' @param namelist A character vector of column names.
-#'
-#' @return A data.frame with 0 rows.
-#' @export
-df.init<-function(namelist){
-  setNames(data.frame(matrix(ncol = length(namelist), nrow = 0)), namelist)
 }
 
 #' Change classes of columns in a data.frame
@@ -230,22 +252,6 @@ read.csv.folder<-function(folder="./", readfunc=list(read.csv,read.csv2,read.tab
   }
   return(combodat)
 }
-
-#' Install packages if neccesary, then load them.
-#' @param ... Unquoted names of packages to try loading, and if unable, install and load.
-#'
-#' @examples trypackages(stats,utils,compiler)
-#' @export
-trypackages<-function(...){
-  packs<-args2strings(...)
-  for(pack in packs){
-    if(!require(pack,character.only=T)){
-      install.packages(pack)
-      require(pack,character.only=T)
-    }
-  }
-}
-
 
 #' Compound tokens without overflowing memory and crashing R
 #' @description A wrapper around \link[quanteda]{tokens_compound} that processes your tokens in chunks, 
@@ -624,53 +630,7 @@ multiple.cor<-function(x,ymat,use="everything"){
 }
 
 
-# Asymmetric CorMat with CorrCrunch ####
-#' Create a Correlation Table
-#'
-#' @param df A data.frame. 
-#' @param rowids,columnids character vectors containing column names from \code{df} that need to be correlated.  
-#' @param rowdf,columndf data.frames whose columns need to be correlated. 
-#' Either \code{df, rowids, & columnids} or \code{rowdf & columndf} are required.
-#'
-#' @return A formatted markdown table containing correlation coefficients, p-values, and 
-#' the number and percentage of cases that need to be removed to flip the sign of each correlation coefficient.
-#' @export
-#'
-#' @examples CorTable(mtcars,rowids=c("mpg","disp","hp"),columnids=c("drat","wt","qsec"))
-#' 
-#' CorTable(rowdf=mtcars[,c(1,3,4)],columndf=mtcars[,5:7])
-CorTable<-function(df,rowids,columnids,rowdf,columndf){
-  if(missing(df) | missing(rowids) | missing(columnids)){
-    df<-cbind(rowdf,columndf)
-    rowids<-colnames(rowdf)
-    columnids<-colnames(columndf)
-  }
-  
-  cormat<-matrix(NA,nrow=length(rowids),ncol=length(columnids))
-  colnames(cormat)<-columnids
-  rownames(cormat)<-rowids
-  dfmat<-pmat<-hmat<-cormat
-  
-  for(i in rowids){
-    for(j in columnids){
-      corobj<-cor.test(df[,i],df[,j])
-      cormat[i,j]<-corobj$estimate
-      pmat[i,j]<-corobj$p.value
-      hmat[i,j]<-CorrCrunch(df[,i],df[,j])$h
-      dfmat[i,j]<-corobj$parameter
-    }
-  }
-  
-  outmat<-matrix("",ncol=length(columnids),nrow=length(rowids)*5-1)
-  colnames(outmat)<-abbreviate(columnids)
-  outrows<-rep("",length(rowids)*5-1)
-  outrows[5*(0:(length(rowids)-1))+1]<-rowids
-  rownames(outmat)<-outrows
-  
-  outmat[5*(0:(length(rowids)-1))+1,]<-gsub("0\\.","\\.",paste0("r=  ",format(cormat,nsmall=2)))
-  outmat[5*(0:(length(rowids)-1))+2,]<-gsub("0\\.","\\.",paste0("p=  ",format(pmat,nsmall=3)))
-  outmat[5*(0:(length(rowids)-1))+3,]<-gsub("0\\.","\\.",paste0("h=    ",format(hmat)))
-  outmat[5*(0:(length(rowids)-1))+4,]<-gsub("0\\.","\\.",paste0("h/df=",format(hmat/dfmat,nsmall=2)))
-  knitr::kable(outmat,digits=2,align="r")
-}
+
+# Rework CorTable() this into a rcorr() function that incorporates cor.holdout
+
 

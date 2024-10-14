@@ -7,10 +7,10 @@
 #' @return A named list containing character vectors with random terms; names are group variables.
 #' @export
 #'
-#' @examples ExtractRandomTerms(grade ~ ChildIQ * TeacherSkill * SchoolType + 
+#' @examples 
+#' ExtractRandomTerms(grade ~ ChildIQ * TeacherSkill * SchoolType + 
 #'                               (ChildIQ * TeacherSkill | School))
-#' #$School
-#' #[1] "ChildIQ"              "TeacherSkill"         "ChildIQ:TeacherSkill"
+#'                               
 ExtractRandomTerms<-function(form){
   bars<-findbars(form)
   terms<-lapply(bars,FUN=function(x){
