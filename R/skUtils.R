@@ -105,13 +105,29 @@ trypackages<-function(...){
 
 #' Initiate an empty data frame
 #'
-#' @param namelist A character vector of column names.
+#' @param x A character vector of column names.
 #'
 #' @return A data.frame with 0 rows.
 #' @export
-df.init<-function(namelist){
-  setNames(data.frame(matrix(ncol = length(namelist), nrow = 0)), namelist)
+df.init<-function(x){
+  setNames(data.frame(matrix(ncol = length(x), nrow = 0)), x)
 }
+
+#' Set column and row names of an object
+#' These are convenience functions that return an object with its column or row names changed.
+#' Use it in pipes.
+#' 
+#' @param x an object
+#' @param names column or row names to be assigned to the object
+#' 
+#' @export
+#' @examples 
+#' setColNames(ToothGrowth,c("length","supplement","dosage"))
+#' setRowNames(BOD,BOD$Time)
+setColNames<-function(x,names){ colnames(x)<-names; return(x) }
+#' @export
+#' @rdname setColNames
+setRowNames<-function(x,names){ rownames(x)<-names; return(x) }
 
 #' Scale a vector
 #' 
@@ -341,23 +357,6 @@ wtd.median<-function(x,wts,na.rm=T){
   }
   return(out)
 }
-
-
-#' Set column and row names of an object
-#' These are convenience functions that return an object with its column or row names changed.
-#' Use it in pipes.
-#' 
-#' @param x an object
-#' @param names column or row names to be assigned to the object
-#' 
-#' @export
-#' @examples 
-#' setColNames(ToothGrowth,c("length","supplement","dosage"))
-#' setRowNames(BOD,BOD$Time)
-setColNames<-function(x,names){ colnames(x)<-names; return(x) }
-#' @export
-#' @rdname setColNames
-setRowNames<-function(x,names){ rownames(x)<-names; return(x) }
 
 #' Levenshtein distance
 #' 
@@ -598,8 +597,18 @@ print.cor<-function(x,y,method="pearson"){
 
 
 
-getMetrics<-function(origdata,preddata){
-  cm<-table(origdata,preddata)
+#' Get machine learning cross-validation accuracy metrics
+#'
+#' @param x The true class memberships
+#' @param y The predicted class memberships
+#'
+#' @return 
+#' @export
+#'
+#' @examples
+#' 
+CVMetrics<-function(x,y){
+  cm<-table(x,y)
   return(c(acc=acc<-sum(diag(cm))/sum(cm),
            chance_acc=chance_acc<-max(rowSums(cm))/sum(cm),
            kappa=(acc-chance_acc)/(1-chance_acc),
