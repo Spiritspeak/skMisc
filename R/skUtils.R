@@ -47,12 +47,13 @@ clamp0 <- function(val,minval=0,maxval=1){
 #' 
 #' @param x A vector
 #'
-#' @return A vector of the same length as \code{x}, where each value has been replaced
-#' with the number of times its value has been repeated so far.
+#' @return A vector of the same length as \code{x}, where each element represents
+#' the number of times its value in \code{x} has been repeated so far.
 #' @export
 #'
 #' @examples
 #' which.duplicate(c(1,6,5,2,1,1,8,6,5))
+#' 
 which.duplicate<-function(x){
   vals<-unique(x)
   repvec<-numeric(length(vals))
@@ -62,9 +63,27 @@ which.duplicate<-function(x){
   return(repvec)
 }
 
-
+#' Turn a matrix into a long-format data.frame
+#'
+#' @param x A matrix
+#'
+#' @return a \code{data.frame} with three columns: \code{row} and \code{col} indicating the
+#' row and column names, and \code{value} indicating the respective value in the matrix. 
+#' If no row or column names are available, the row or column number is used instead.
+#' @export
+#'
+#' @examples
+#' mymatrix<-matrix(1:80,ncol=8,nrow=10)
+#' unwrap.matrix(mymatrix)
+#' 
+#' carmatrix<-as.matrix(mtcars)
+#' unwrap.matrix(carmatrix)
+#' 
 unwrap.matrix<-function(x){
-  unwrap<-expand.grid(row=rownames(x),col=colnames(x),stringsAsFactors=F)
+  dn<-dimnames(x)
+  unwrap<-expand.grid(row=if(is.null(dn[[1]])){ seq_len(nrow(x)) }else{ dn[[1]] },
+                      col=if(is.null(dn[[2]])){ seq_len(ncol(x)) }else{ dn[[2]] },
+                      stringsAsFactors=F)
   unwrap[["value"]]<-as.vector(x)
   return(unwrap)
 }
