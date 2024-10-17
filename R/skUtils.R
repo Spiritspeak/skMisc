@@ -147,41 +147,6 @@ vec.scale<-function(x){
   (x-m)/sqrt((sum((xt-m)^2)/(length(xt)-1)))
 }
 
-#' Smooth a numeric vector using a moving window algorithm
-#'
-#' @param vect Numeric vector to be smoothened
-#' @param width Over how many values should the vector be averaged?  
-#' @param both.sides If TRUE (default), takes the mean of \code{width} values before and after the current index. If FALSE, only takes values ahead of the current index.
-#' @param alg Method by which to smooth the vector. 'mean' or 'gauss' are supported.
-#'
-#' @return Smoothed numeric vector
-#' @export
-#'
-#' @examples temp<- smoothvect(beaver1$temp)
-#' plot(temp,type="l")
-smoothvect<-function(vect,width=2,both.sides=T,alg=c("mean","gauss")){
-  output<-numeric()
-  
-  normsum<-function(x){x/sum(x)}
-  
-  if(alg=="mean"){
-    for(i in seq_len(length(vect))){
-      output[i]<-mean(vect[ max(i-width*both.sides,1):min(i+width,length(vect))],na.rm=T)
-    }
-  }
-  if(alg=="gauss"){
-    winvect<- (-width*both.sides):(width)
-    window<-dnorm(winvect/length(vect)*3)
-    for(i in seq_len(length(vect))){
-      output[i]<-sum(
-        vect[max(i-width*both.sides,1):min(i+width,length(vect))] * 
-          normsum(window[ (max(i-width,1)-i):(min(i+width,length(vect))-i) +width+1])
-        ,na.rm=T)
-    }
-  }
-  output
-}
-
 #' Change classes of columns in a data.frame
 #' @description \code{retype()} changes the class of specific columns; \code{retype_all()} changes the class of all columns of a given class.
 #'
