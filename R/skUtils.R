@@ -134,17 +134,18 @@ quantize<-function(x,n){
 #' DivideSeries(letters,divs=5)
 #' DivideSeries(1:10,divlen=3)
 DivideSeries<-function(x,divs,divlen){
+  xl<-length(x)
   if(missing(divlen)){
-    divlen<-(length(x)+1)/divs
-    stopifnot(length(x)/divs>=1)
-    cs<-ceiling(cumsum(rep(divlen,divs)))
-    a<-c(0,cs[-length(cs)])
-    b<-cs-1
+    divlen<-(xl+1)/divs
+    stopifnot(xl/divs>=1)
+    cs<-ceiling(cumsum(rep(divlen,divs-1)))
+    a<-c(0,cs)
+    b<-c(cs-1,xl)
   }else if(missing(divs)){
-    divs<-ceiling(length(x)/divlen)
+    divs<-ceiling(xl/divlen)
     cs<-cumsum(c(1,rep(divlen,divs-1)))
     a<-cs
-    b<-c(cs[-1],length(x))
+    b<-c(cs[-1],xl)
   }
   exli<-vector(mode="list",length=divs)
   for(i in seq_len(divs)){
