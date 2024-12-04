@@ -73,6 +73,32 @@ which.duplicate<-function(x){
   return(repvec)
 }
 
+
+# For each duplicated value in the vector, this gives the index of the original value
+where.duplicated<-function(x){
+  ux<-unique(x)
+  newx<-rep(NA,length(x))
+  for(u in ux){
+    idvec<-which(x==u)
+    newx[idvec[-1]]<-idvec[1]
+  }
+  return(newx)
+}
+
+# Which weekday of the month is it?
+# Function name and description needs to be clearer
+nthWeekdayOfMonth<-function(dates){
+  dates <- as.Date(dates)
+  out <- numeric(length(dates))
+  for(i in seq_along(dates)){
+    monthday <- as.numeric(format(dates[i],'%d'))
+    wdayvec <- weekdays(dates[i]-0:monthday)
+    out[i] <- sum(wdayvec[length(wdayvec)] == wdayvec)
+  }
+  return(out)
+}
+
+
 #' Quantize vector
 #' Will replace vector values with their quantile.
 #' 
@@ -210,6 +236,7 @@ vec.scale<-function(x){
   m<-mean.default(xt)
   (x-m)/sqrt((sum((xt-m)^2)/(length(xt)-1)))
 }
+
 
 #' Change classes of columns in a data.frame
 #' @description \code{retype()} changes the class of specific columns; \code{retype_all()} changes the class of all columns of a given class.

@@ -1,6 +1,6 @@
 
 
-# Remains undocumented, helper function...
+# Remains undocumented, helper function.
 r2t<-function(r,df){
   sqrt(r^2*df / (1-r^2))
 }
@@ -21,6 +21,11 @@ cor.influence<-function(x,y){
   x<-x-mean(x)
   y<-y-mean(y)
   x*y-(x^2+y^2)/2*cor(x,y)
+}
+
+# Seeks most bivariate-outlying pair of values
+cor.influence2<-function(x,y){
+  vec.scale(x) * vec.scale(y)
 }
 
 #' Correlation holdouts
@@ -93,7 +98,7 @@ cor.holdout<-function(x,y,
   
   # Function for finding the next entry to delete
   findNextToDelete<-function(){
-    inf<-cor.influence(x[incl],y[incl])
+    inf<-cor.influence2(x[incl],y[incl])
     return(which.max(inf*origsign))
   }
   
