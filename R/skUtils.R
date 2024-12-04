@@ -34,9 +34,19 @@ clamp0 <- function(val,minval=0,maxval=1){
   val
 }
 
-# duplicated() determines which elements of a vector or data frame are 
-# duplicates of elements with smaller subscripts, and returns a logical vector 
-# indicating which elements (rows) are duplicates.
+#' Negative %in%
+#' Returns which values in the left vector are not in the right vector.
+#' @param x Values whose presence will be checked for in \code(table)
+#' @param table Values that will yield a \code(FALSE) if they exist in \code(x)
+#'
+#' @return A logical vector indicating whether each value of \code(x) lacks a match in \code(table)
+#' @export
+#'
+#' @examples
+#' (1:5) %nin% (1:3)
+`%nin%` <- function(x,table){
+  !(x %in% table)
+}
 
 #' Count duplicate values in a vector
 #' 
