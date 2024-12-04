@@ -76,7 +76,7 @@ which.duplicate<-function(x){
 #' a<-rnorm(100)
 #' quantize(a,5)
 quantize<-function(x,n){
-  quants<-quantile(x,seq_len(n-1)/n)
+  quants<-quantile(x,seq_len(n-1)/n,na.rm=T)
   quants<-c(-Inf,quants,Inf)
   cut(x,breaks=quants,labels=seq_len(n))
 }
@@ -456,15 +456,20 @@ DivideSeries<-function(x,divs,divlen){
   if(missing(divlen)){
     divlen<-(length(x)+1)/divs
     stopifnot(length(x)/divs>=1)
-    mapply(a=ceiling(cumsum(c(0,rep(divlen,divs-1)))),
-           b=ceiling(cumsum(rep(divlen,divs))-1),
-           FUN=function(a,b){x[a:b]},SIMPLIFY=F)
+    cs<-ceiling(cumsum(rep(divlen,divs)))
+    a<-c(0,cs[-length(cs)])
+    b<-cs-1
   }else if(missing(divs)){
-    reps<-ceiling(length(x)/divlen)
-    mapply(a=cumsum(c(1,rep(divlen,reps -1))),
-           b=replace(cumsum(rep(divlen,reps)),reps,length(x)),
-           FUN=function(a,b){x[a:b]},SIMPLIFY=F)
+    divs<-ceiling(length(x)/divlen)
+    cs<-cumsum(c(1,rep(divlen,divs-1)))
+    a<-cs
+    b<-c(cs[-1],length(x))
   }
+  exli<-vector(mode="list",length=divs)
+  for(i in seq_len(divs)){
+    exli[[i]]<-x[a[i]:b[i]]
+  }
+  return(exli)
 }
 
 divide2<-function(x,chunksize=NULL,chunks=NULL){
