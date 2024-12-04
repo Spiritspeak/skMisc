@@ -81,6 +81,42 @@ quantize<-function(x,n){
   cut(x,breaks=quants,labels=seq_len(n))
 }
 
+
+#' Divide a vector or list
+#' 
+#' Divide a vector or list into parts of (preferably) equal length.
+#' Either the length or the number of the parts can be set.
+#'
+#' @param x the to-be-divided object
+#' @param divs,divlen The number of divisions and the preferred length of divisions. 
+#' One and only one of \code{divs} and \code{divlen} must be given.
+#'
+#' @return A list consisting of \code{x}, divided in parts.
+#' @export
+#'
+#' @examples
+#' DivideSeries(letters,divs=5)
+#' DivideSeries(1:10,divlen=3)
+DivideSeries<-function(x,divs,divlen){
+  if(missing(divlen)){
+    divlen<-(length(x)+1)/divs
+    stopifnot(length(x)/divs>=1)
+    cs<-ceiling(cumsum(rep(divlen,divs)))
+    a<-c(0,cs[-length(cs)])
+    b<-cs-1
+  }else if(missing(divs)){
+    divs<-ceiling(length(x)/divlen)
+    cs<-cumsum(c(1,rep(divlen,divs-1)))
+    a<-cs
+    b<-c(cs[-1],length(x))
+  }
+  exli<-vector(mode="list",length=divs)
+  for(i in seq_len(divs)){
+    exli[[i]]<-x[a[i]:b[i]]
+  }
+  return(exli)
+}
+
 #' Turn a matrix into a long-format data.frame
 #'
 #' @param x A matrix
@@ -437,60 +473,6 @@ multimerge<-function(x,...){
 }
 
 
-#' Divide a vector or list
-#' 
-#' Divide a vector or list into parts of (preferably) equal length.
-#' Either the length or the number of the parts can be set.
-#'
-#' @param x the to-be-divided object
-#' @param divs,divlen The number of divisions and the preferred length of divisions. 
-#' One and only one of \code{divs} and \code{divlen} must be given.
-#'
-#' @return A list consisting of \code{x}, divided in parts.
-#' @export
-#'
-#' @examples
-#' DivideSeries(letters,divs=5)
-#' DivideSeries(1:10,divlen=3)
-DivideSeries<-function(x,divs,divlen){
-  if(missing(divlen)){
-    divlen<-(length(x)+1)/divs
-    stopifnot(length(x)/divs>=1)
-    cs<-ceiling(cumsum(rep(divlen,divs)))
-    a<-c(0,cs[-length(cs)])
-    b<-cs-1
-  }else if(missing(divs)){
-    divs<-ceiling(length(x)/divlen)
-    cs<-cumsum(c(1,rep(divlen,divs-1)))
-    a<-cs
-    b<-c(cs[-1],length(x))
-  }
-  exli<-vector(mode="list",length=divs)
-  for(i in seq_len(divs)){
-    exli[[i]]<-x[a[i]:b[i]]
-  }
-  return(exli)
-}
-
-divide2<-function(x,chunksize=NULL,chunks=NULL){
-  lx<-length(x)
-  if(!is.null(chunksize)){
-    chunks<-ceiling(lx/chunksize)
-  }else if(!is.null(chunks)){
-    chunksize<-ceiling(lx/chunks)
-  }
-  chvec<-rep(seq_len(chunks),each=chunksize,length.out=lx)
-  newx<-unname(split(x,chvec))
-  return(newx)
-}
-
-# divide(1:16,length=5)
-# 
-# DivideSeries(letters[1:16],divs=7)
-# DivideSeries(1:16,divlen=7)
-
-
-
 # Remove rows with OLs from data frame
 removeOLs<-function(.tbl,olvars,groups=NULL){
   newtbl<-.tbl %>% group_by(across(all_of(groups))) %>% 
@@ -647,6 +629,6 @@ multiple.cor<-function(x,ymat,use="everything"){
 
 
 
-# Rework CorTable() this into a rcorr() function that incorporates cor.holdout
+# Rework CorTable() into a rcorr() function that incorporates cor.holdout
 
 
