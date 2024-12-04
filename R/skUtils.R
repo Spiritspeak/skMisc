@@ -63,6 +63,24 @@ which.duplicate<-function(x){
   return(repvec)
 }
 
+#' Quantize vector
+#' Will replace vector values with their quantile.
+#' 
+#' @param x A numeric vector to quantize
+#' @param n The number of quantiles to divide it into
+#'
+#' @return A vector with values replaced by their quantile membership
+#' @export
+#'
+#' @examples
+#' a<-rnorm(100)
+#' quantize(a,5)
+quantize<-function(x,n){
+  quants<-quantile(x,seq_len(n-1)/n)
+  quants<-c(-Inf,quants,Inf)
+  cut(x,breaks=quants,labels=seq_len(n))
+}
+
 #' Turn a matrix into a long-format data.frame
 #'
 #' @param x A matrix
