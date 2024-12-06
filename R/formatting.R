@@ -46,8 +46,7 @@ apatheme<-function(){
 #'
 #' @param x Numeric vector to remove leading zeros from
 #'
-#' @return
-#' @author Adapted from [m.evans on StackOverflow](https://stackoverflow.com/a/48431993).
+#' @return A character vector of numbers with leading zeros removed.
 #' @export
 #' @md
 #'

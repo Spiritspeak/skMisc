@@ -36,10 +36,10 @@ clamp0 <- function(val,minval=0,maxval=1){
 
 #' Negative %in%
 #' Returns which values in the left vector are not in the right vector.
-#' @param x Values whose presence will be checked for in \code(table)
-#' @param table Values that will yield a \code(FALSE) if they exist in \code(x)
+#' @param x Values whose presence will be checked for in \code{table}
+#' @param table Values that will yield a \code{FALSE} if they exist in \code{x}
 #'
-#' @return A logical vector indicating whether each value of \code(x) lacks a match in \code(table)
+#' @return A logical vector indicating whether each value of \code{x} lacks a match in \code{table}
 #' @export
 #'
 #' @examples
@@ -74,7 +74,18 @@ which.duplicate<-function(x){
 }
 
 
-# For each duplicated value in the vector, this gives the index of the original value
+#' Find the index of the first occurrence of each value
+#' For each duplicated value in the vector, this gives the index of the original value in that vector
+#' @param x A vector
+#'
+#' @return A vector of the length of \code{x} with each value representing either 
+#' \code{NA} if it is the first occurrence of a unique value, or 
+#' the index of the first instance of each value in \code{x} if it is a duplicated value
+#' @export
+#'
+#' @examples
+#' where.duplicated(c("a","b","a","k"))
+#' 
 where.duplicated<-function(x){
   ux<-unique(x)
   newx<-rep(NA,length(x))
@@ -85,19 +96,27 @@ where.duplicated<-function(x){
   return(newx)
 }
 
-# Which weekday of the month is it?
-# Function name and description needs to be clearer
-nthWeekdayOfMonth<-function(dates){
-  dates <- as.Date(dates)
-  out <- numeric(length(dates))
-  for(i in seq_along(dates)){
-    monthday <- as.numeric(format(dates[i],'%d'))
-    wdayvec <- weekdays(dates[i]-0:monthday)
+#' Convert dates to Nth weekday of the month values
+#' Computes which weekday of the month each date represents. 
+#' E.g., for each "second monday of the month", it gives 2.
+#' @param x Date(s) to convert
+#'
+#' @return A vector of Nth weekday of the month values
+#' @export
+#'
+#' @examples
+#' nthWeekdayOfMonth("2000-04-08")
+#' 
+nthWeekdayOfMonth<-function(x){
+  x <- as.Date(x)
+  out <- numeric(length(x))
+  for(i in seq_along(x)){
+    monthday <- as.numeric(format(x[i],'%d'))
+    wdayvec <- weekdays(x[i]-0:monthday)
     out[i] <- sum(wdayvec[length(wdayvec)] == wdayvec)
   }
   return(out)
 }
-
 
 #' Quantize vector
 #' Will replace vector values with their quantile.
@@ -131,9 +150,9 @@ quantize<-function(x,n){
 #' @export
 #'
 #' @examples
-#' DivideSeries(letters,divs=5)
-#' DivideSeries(1:10,divlen=3)
-DivideSeries<-function(x,divs,divlen){
+#' subdivide(letters,divs=5)
+#' subdivide(1:10,divlen=3)
+subdivide<-function(x,divs,divlen){
   xl<-length(x)
   if(missing(divlen)){
     divlen<-(xl+1)/divs
