@@ -1,5 +1,6 @@
 # Files that are "up to standard": holdout.R and formatting.R
-
+# Add a match.merge like function that just gives the matching indices
+# Consider changing where.duplicated to which.unique() and add an option to limit it to only duplicated values
 
 .onLoad<-function(libname, pkgname){
   packageStartupMessage("Thank you for loading skMisc v0.01")
@@ -94,6 +95,12 @@ where.duplicated<-function(x){
     newx[idvec[-1]]<-idvec[1]
   }
   return(newx)
+}
+
+unique.set<-function(x){
+  x<-t(apply(x,1,sort))
+  x<-apply(x,1,paste,collapse="-")
+  duplicated(x)
 }
 
 #' Convert dates to Nth weekday of the month values
@@ -685,6 +692,34 @@ multiple.cor<-function(x,ymat,use="everything"){
 }
 
 
+#' Bonferroni-Holm significance evaluation
+#' Evaluate the significance of a vector of p-values according to
+#' the Bonferroni-Holm method
+#' 
+#' @param x A vector of p-values.
+#' @param alpha An experiment-wise alpha-level to test against.
+#'
+#' @return A vector indicating whether values in \code{x} were significant
+#' according to the Bonferroni-Holm method.
+#' @export
+#'
+#' @examples
+#' bonferroniHolm(c(1,.05,.001,.002,.01))
+#' 
+bonferroniHolm<-function(x,alpha=.05){
+  xord<-rank(x)
+  xlen<-length(x)
+  sigvec<-rep_len(F,length.out=xlen)
+  for(i in sort(unique(xord))){
+    idx<-which(xord==i)
+    if(x[idx[1]]<alpha/(xlen-sum(sigvec))){
+      sigvec[idx]<-T
+    }else{
+      break
+    }
+  }
+  return(sigvec)
+}
 
 # Rework CorTable() into a rcorr() function that incorporates cor.holdout
 
