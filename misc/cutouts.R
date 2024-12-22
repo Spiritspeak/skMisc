@@ -56,3 +56,46 @@ tokens_compound_stepwise<-function(x, pattern, stepsize=100, concatenator = "_",
 logistic<-function(x){
   1/(1+exp(-x))
 }
+
+
+#wtd.median
+#' Weighted Median
+#'
+#' @param x an input vector
+#' @param wts a vector of weights
+#' @param na.rm Logical indicating whether NA values in the input and weight vectors should be stripped. 
+#'
+#' @return A weighted median of the input values and weights.
+#' @export
+#'
+#' @examples
+#' wtd.median(1:5,c(.5,4,1,2,1))
+#' 
+wtd.median<-function(x,wts,na.rm=T){
+  #clean
+  if(na.rm){
+    to.include<-which(!(is.na(x) | is.na(wts)))
+    x<-x[to.include]
+    wts<-wts[to.include]
+  }
+  
+  #sort
+  xord<-order(x)
+  x<-x[xord]
+  wts<-wts[xord]
+  
+  #standardize
+  wts<-wts/sum(wts)
+  
+  #find middle
+  cumwts<-cumsum(wts)-.5
+  sig<-sign(cumwts)
+  if(!any(sig==0)){
+    midx<-which(sig==1)[1]
+    out<-x[midx]
+  }else{
+    midx<-c(which(sig==1)[1],which(sig==0)[1])
+    out<-mean(x[midx])
+  }
+  return(out)
+}
