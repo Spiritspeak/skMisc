@@ -10,3 +10,8 @@
 #' @name skMisc
 #' 
 #' @importFrom tidyr spread
+NULL
+
+.onLoad<-function(libname, pkgname){
+  packageStartupMessage("Thank you for loading skMisc v0.01")
+}

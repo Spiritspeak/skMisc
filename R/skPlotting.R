@@ -14,6 +14,7 @@
 #' plot(mtcars$mpg,mtcars$wt,col=mtcars$cyl)
 #' hilight(27,2.5,"Light and\nefficient")
 #' hilight(17,4.5,"Heavy and\ninefficient")
+#' 
 hilight<-function(x,y,s, bg="yellow") {
   text.width <- strwidth(s)
   text.height <- strheight(s)
@@ -34,6 +35,7 @@ hilight<-function(x,y,s, bg="yellow") {
 #'
 #' @examples
 #' AutocorPlot(ds=ToothGrowth,ppvar="supp",rtvar="len",scope=10)
+#' 
 AutocorPlot<-function(ds,ppvar,rtvar,scope=64){
   if(missing(ds)){
     ds<-data.frame(ppvar=ppvar,rtvar=rtvar,stringsAsFactors = F)

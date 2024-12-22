@@ -2,9 +2,6 @@
 # Add a match.merge like function that just gives the matching indices
 # Consider changing where.duplicated to which.unique() and add an option to limit it to only duplicated values
 
-.onLoad<-function(libname, pkgname){
-  packageStartupMessage("Thank you for loading skMisc v0.01")
-}
 
 #I don't want to import rlang, so it will be done this way instead.
 args2strings <- function(...) sapply(substitute({ ... })[-1], deparse)
@@ -279,6 +276,7 @@ vec.scale<-function(x){
 #' sapply(ToothGrowth,class)
 #' NewToothGrowth <- retype(ToothGrowth, supp = character(), dose = factor())
 #' sapply(NewToothGrowth,class)
+#' 
 retype<-function(df, ...){
   args<-list(...)
 
@@ -305,6 +303,7 @@ retype<-function(df, ...){
 #' sapply(mtcars,class)
 #' newmtcars <- retype_all(mtcars,from="numeric",to="character")
 #' sapply(newmtcars,class)
+#' 
 retype_all<-function(df,from,to){
   for(i in which(sapply(df,class)==from)){
     df[[i]]<-as(df[[i]],to)
@@ -321,6 +320,7 @@ retype_all<-function(df,from,to){
 #'
 #' @examples
 #' try(verify_types(character="test",numeric=0000,character=12345))
+#' 
 verify_types<-function(...){
   args<-list(...)
   call<-as.list(match.call()[-1])
@@ -369,34 +369,6 @@ read.csv.folder<-function(folder="./", readfunc=list(read.csv,read.csv2,read.tab
     }
   }
   return(combodat)
-}
-
-#' Compound tokens without overflowing memory and crashing R
-#' @description A wrapper around \link[quanteda]{tokens_compound} that processes your tokens in chunks, 
-#' set by argument \code{stepsize}. See \link[quanteda]{tokens_compound} for more info.
-#'
-#' @export
-#' @examples 
-#' toks<-tokens(data_corpus_inaugural)
-#' compounded<-tokens_compound_stepwise(x=toks,pattern="I am",stepsize=10)
-#' 
-#' #note: does not work?
-#' 
-tokens_compound_stepwise<-function(x, pattern, stepsize=100, concatenator = "_", 
-                                   valuetype = c("glob", "regex", "fixed"), 
-                                   case_insensitive = TRUE, join = TRUE){
-  valuetype<-match.arg(valuetype)
-  output<-list()
-  lx<-length(x)
-  mxsteps<-ceiling(lx/stepsize)
-  for(i in seq_len(mxsteps)){
-    cat("\rCompounding tokens... ",round(100*(i-1)/mxsteps,digits=2),"%",sep="")
-    range<-(1+(i-1)*stepsize):min(i*stepsize, lx)
-    currcomp<-quanteda::tokens_compound(x[range],pattern,concatenator,valuetype,case_insensitive,join)
-    output<-c(output,currcomp)
-  }
-  cat("\rCompounding tokens... finished.")
-  return(output)
 }
 
 #wtd.median
@@ -518,7 +490,7 @@ splitColumn<-function(x,sep=";"){
 #'   colnames(testlist[[i]])[2]<-paste0("info",i)
 #' }
 #' multimerge(testlist,by="key",all=T)
-multimerge<-function(x,...){
+multimerge<-function(x, ...){
   while(length(x)>1){
     out<-list()
     while(length(x)>0){
@@ -670,6 +642,7 @@ CVMetrics<-function(x,y){
 #'
 #' @examples
 #' multiple.cor(mtcars[,1],mtcars[,2:4])
+#' 
 multiple.cor<-function(x,ymat,use="everything"){
   if(missing(ymat)){
     cv<-cor(x,use=use)

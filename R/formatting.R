@@ -56,16 +56,3 @@ dropLeadingZero <- function(x){
   gsub("(?<![0-9])0+(?=\\.)", "", x, perl = TRUE)
 }
 
-dropLeadingZero_old <- function(x){
-  xnew <- c()
-  for(i in x){
-    if(isTRUE(i==0)){
-      xnew <- c(xnew,"0")
-    } else if (isTRUE(i>=1) | isTRUE(i<=-1)){
-      xnew <- c(xnew, as.character(i))
-    } else
-      xnew <- c(xnew, gsub("(?<![0-9])0+(?=\\.)", "", i, perl = TRUE))
-  }
-  return(xnew)
-}
-
