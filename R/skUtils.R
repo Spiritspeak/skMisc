@@ -477,24 +477,27 @@ LevenshteinDistance<-function(source,target){
 #' Split a character column into multiple values
 #'
 #' @param x a character vector to split into columns
-#' @param sep a caracter separating the different values
+#' @param sep a character separating the different values
 #'
-#' @return a \code{data.frame} of boolean values, with rows representing the unpacked
-#' vector entries and columns indicating whether the specific value
+#' @return a \code{data.frame} of boolean values, with each row representing 
+#' a value of x and each column representing a unique value 
+#' in \code{x} following splitting. A column is marked TRUE in a specific row if
+#' the value representing that column was present in that row.
+#' 
 #' @export
 #'
 #' @examples
 #' unsplit<-c("flour;salt;baking soda;steak;sugar;water;sauce;vinegar",
 #' "flour;sauce;mustard;salt;pepper;vinegar;baking soda;water;tomatoes;onion;steak")
-#' splitColumn(unsplit)
-splitColumn<-function(x,sep=";"){
-  vals<-lapply(x,function(y){strsplit(y,sep)[[1]]})
-  uniques<-unique(unlist(vals))
-  idx<-t(sapply(vals,function(y){uniques %in% y}))
-  colnames(idx)<-ifelse(is.na(uniques),"NA",uniques)
-  return(as.data.frame(idx))
+#' vector2columns(unsplit)
+vector2columns<-function(x, sep=";"){
+  vals <- strsplit(x, sep)
+  uniques <- unique(unlist(vals))
+  idx <- t(sapply(vals, function(y){ uniques %in% y }))
+  colnames(idx) <- ifelse(is.na(uniques), "NA", uniques)
+  out <- as.data.frame(idx)
+  return(out)
 }
-
 
 #' Merge Multiple Data Frames
 #' 
