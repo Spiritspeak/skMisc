@@ -15,35 +15,35 @@ min2<-function(x){
   } 
 }
 
-match.pps<-function(ia, da, ib, db){
-  ma <- rep(NA, length(ia))
-  mb <- rep(NA, length(ib))
+match.pps<-function(x.ids, x.dates, y.ids, y.dates){
+  uids <- unique(c(x.ids,y.ids))
   
-  ua <- unique(ia)
-  ub <- unique(ib)
-  
-  matchset <- data.frame(aid=NA, bid=NA)[F,]
-  for(u in ua){
-    sm <- expand.grid(aid=which(ia==u), bid=which(ib==u))
+  matchlist <- list()
+  for(uid in uids){
+    sm <- expand.grid(x.rowid=which(x.ids == uid), 
+                      y.rowid=which(y.ids == uid))
     if(nrow(sm) > 0){
-      sm$diff <- db[sm$bid] - da[sm$aid]
-      sm %<>% group_by(aid) %>% filter(diff>=0) %>% 
+      sm$diff <- y.dates[sm$y.rowid] - x.dates[sm$x.rowid]
+      sm %<>% group_by(x.rowid) %>% filter(diff >= 0) %>% 
         filter(diff == min2(diff)) %>% as.data.frame()
-      matchset <- rbind(matchset, sm[,-3])
+      matchlist[[length(matchlist) + 1]] <- sm[,-3]
     }
   }
+  matchset <- do.call(rbind,matchlist)
   return(matchset)
 }
 
 
-match.merge<-function(a, ia, da, b, ib, db, by, ...){
-  matches <- match.pps(ia, da, ib, db)
-  a$rowmatch <- NA
-  b$rowmatch <- NA
-  a$rowmatch[matches[[1]]] <- seq_along(matches[[1]])
-  b$rowmatch[matches[[2]]] <- seq_along(matches[[2]])
-  z <- do.call(merge, list(x=a, y=b, by=c(by,"rowmatch"), ...))
-  z$rowmatch <- NULL
+match.merge<-function(x, x.ids, x.dates, 
+                      y, y.ids, y.dates, 
+                      by, ...){
+  matches <- match.pps(x.ids, x.dates, y.ids, y.dates)
+  x$.rowmatch <- NA
+  y$.rowmatch <- NA
+  x$.rowmatch[matches[[1]]] <- seq_along(matches[[1]])
+  y$.rowmatch[matches[[2]]] <- seq_along(matches[[2]])
+  z <- do.call(merge, list(x=x, y=y, by=c(by,".rowmatch"), ...))
+  z$.rowmatch <- NULL
   return(z)
 }
 
