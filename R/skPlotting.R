@@ -37,25 +37,26 @@ hilight<-function(x,y,s, bg="yellow") {
 AutocorPlot<-function(ds,ppvar,rtvar,scope=64){
   if(missing(ds)){
     ds<-data.frame(ppvar=ppvar,rtvar=rtvar,stringsAsFactors = F)
-    ppvar<-"ppvar"
-    rtvar<-"rtvar"
+    ppvar <- "ppvar"
+    rtvar <- "rtvar"
   }
-  ds%<>%as.data.frame()
-  pplist<-unique(ds[,ppvar])%>%as.vector
-  npp<-length(pplist)
-  cormat<-matrix(nrow=scope,ncol=npp)
-  ct<-0
-  for(pp in pplist){
-    ct<-ct+1
-    tds<-ds%>%filter((!!sym(ppvar)) ==pp)
-    autocor<-numeric()
+  ds %<>% as.data.frame()
+  ppvec <- unique(ds[,ppvar]) %>% as.vector()
+  npp <- length(ppvec)
+  cormat <- matrix(nrow=scope,ncol=npp)
+  ct <- 0
+  for(pp in ppvec){
+    ct <- ct+1
+    tds <- ds[ds[[ppvar]] == pp,]
+    autocor <- numeric(scope)
     for(i in seq_len(scope)){
-      autocor[i]<-cor(tds[,rtvar],lag(tds[,rtvar],i),use="complete.obs")
+      autocor[i] <- cor(tds[,rtvar],dplyr::lag(tds[,rtvar],i),use="complete.obs")
     }
-    cormat[,ct]<-autocor
+    cormat[,ct] <- autocor
   }
-  colnames(cormat)<-pplist
-  plot(rowMeans(cormat),type="s",xlab="lag",ylab="autocorrelation",main=paste("Variable",rtvar,"autocorrelation"),
+  colnames(cormat) <- ppvec
+  plot(rowMeans(cormat),type="l",xlab="lag",ylab="autocorrelation",
+       main=paste("Variable",rtvar,"autocorrelation"),
        ylim=c(min(cormat),max(cormat)))
   for(i in seq_len(npp)){ lines(x=cormat[,i],pch=".",col=rgb(0,0,0,0.1),type="l") }
   abline(h=0,col="gray")
@@ -74,7 +75,9 @@ AutocorPlot<-function(ds,ppvar,rtvar,scope=64){
 #' 
 #' @examples
 #' TransformPlots(mtcars$disp)
+#' 
 TransformPlots<-function(x){
+  oldPars<-par("mfrow","mar")
   par(mfrow=c(2,2),mar=c(3,2,3,1))
   inv<-function(x){ 1/x }
   nothing<-function(x){ x }
@@ -87,6 +90,7 @@ TransformPlots<-function(x){
                                  "\nKS-test D = ",round(ks$statistic,digits=3),
                                  ", p = ",round(ks$p.value,digits=3)))
   }
+  par(oldPars)
 }
 
 
