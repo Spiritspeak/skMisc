@@ -34,6 +34,29 @@ match.pps<-function(x.ids, x.dates, y.ids, y.dates){
 }
 
 
+#' Match and merge two data.frames by ID and date
+#' 
+#' the rows from \code{y} are matched with rows from \code{x} that 
+#' share the same ID and directly precede them in date.
+#' 
+#' This is useful for matching participant data from different datasets,
+#' where one dataset is always collected after another.
+#'
+#' @param x,y The \code{data.frame}s to merge.
+#' @param x.ids,y.ids Vectors of participant/session IDs.
+#' @param x.dates,y.dates 
+#' @param by Additional variables to merge by
+#' @param ... Additional arguments passed to \code{base::merge()}
+#'
+#' @return A merged \code{data.frame} where rows of \code{x}
+#' are merged with rows of \code{y} that match by session id and where
+#' the date of each row from \code{x} directly precedes the 
+#' date of the matched row from \code{y}.
+#' @export
+#'
+#' @examples
+#' 
+#' 
 match.merge<-function(x, x.ids, x.dates, 
                       y, y.ids, y.dates, 
                       by, ...){
