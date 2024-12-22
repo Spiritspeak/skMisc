@@ -41,8 +41,9 @@ AutocorPlot<-function(ds,ppvar,rtvar,scope=64){
     ds<-data.frame(ppvar=ppvar,rtvar=rtvar,stringsAsFactors = F)
     ppvar <- "ppvar"
     rtvar <- "rtvar"
+  }else{
+    ds <- as.data.frame(ds)
   }
-  ds %<>% as.data.frame()
   ppvec <- unique(ds[,ppvar]) %>% as.vector()
   npp <- length(ppvec)
   cormat <- matrix(nrow=scope,ncol=npp)
@@ -88,9 +89,10 @@ TransformPlots<-function(x){
   for(i in 1:4){
     y<-do.call(transforms[[i]],list(x))
     ks<-try(ks.test(y,"pnorm"),silent=T)
-    car::qqp(y,"norm",main=paste(titles[i],
-                                 "\nKS-test D = ",round(ks$statistic,digits=3),
-                                 ", p = ",round(ks$p.value,digits=3)))
+    plottitle<-paste(titles[i],
+                     "\nKS-test D = ",round(ks$statistic,digits=3),
+                     ", p = ",round(ks$p.value,digits=3))
+    car::qqp(y,"norm",main=plottitle)
   }
   par(oldPars)
 }
