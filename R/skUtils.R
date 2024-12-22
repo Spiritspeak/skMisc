@@ -100,6 +100,34 @@ unique.set<-function(x){
   duplicated(x)
 }
 
+
+#' Generate unique pairs or N-tuplets
+#'
+#' @param nval Number of values to arrange into unique tuplets
+#' @param ntuplet N-tuplets to arrange the values uniquely into
+#'
+#' @return A matrix where each row is a unique N-tuplet
+#' @export
+#'
+#' @examples
+#' allpairs(nval=20,ntuplet=3)
+#' 
+allpairs<-function(nval,ntuplet){
+  currmat<-matrix(seq_len(nval),ncol=1)
+  for(tuple in seq_len(ntuplet)[-1]){
+    newmats<-list()
+    for(i in seq_len(nrow(currmat))){
+      startval<-currmat[i,tuple-1]+1
+      if(startval<=nval){
+        itervec<-startval:nval
+        newmats[[i]]<-do.call(cbind,c(as.list(currmat[i,]),list(itervec)))
+      }
+    }
+    currmat<-do.call(rbind,newmats)
+  }
+  return(currmat)
+}
+
 #' Convert dates to Nth weekday of the month values
 #' Computes which weekday of the month each date represents. 
 #' E.g., for each "second monday of the month", it gives 2.
