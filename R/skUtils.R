@@ -18,6 +18,7 @@ args2strings <- function(...) sapply(substitute({ ... })[-1], deparse)
 #' @examples 
 #' clamp(0:10,2,8)
 #' clamp0(rnorm(10))
+#' 
 clamp <- function(val,minval=-Inf,maxval=Inf){
   val[val<minval]<-minval
   val[val>maxval]<-maxval
@@ -42,6 +43,7 @@ clamp0 <- function(val,minval=0,maxval=1){
 #'
 #' @examples
 #' (1:5) %nin% (1:3)
+#' 
 `%nin%` <- function(x,table){
   !(x %in% table)
 }
@@ -162,6 +164,7 @@ nthWeekdayOfMonth<-function(x){
 #' @examples
 #' a<-rnorm(100)
 #' quantize(a,5)
+#' 
 quantize<-function(x,n){
   quants<-quantile(x,seq_len(n-1)/n,na.rm=T)
   quants<-c(-Inf,quants,Inf)
@@ -184,6 +187,7 @@ quantize<-function(x,n){
 #' @examples
 #' subdivide(letters,divs=5)
 #' subdivide(1:10,divlen=3)
+#' 
 subdivide<-function(x,divs,divlen){
   xl<-length(x)
   if(missing(divlen)){
@@ -266,6 +270,7 @@ df.init<-function(x){
 #' @examples 
 #' setColNames(ToothGrowth,c("length","supplement","dosage"))
 #' setRowNames(BOD,BOD$Time)
+#' 
 setColNames<-function(x,names){ colnames(x)<-names; return(x) }
 #' @export
 #' @rdname setColNames
@@ -291,7 +296,8 @@ vec.scale<-function(x){
 
 
 #' Change classes of columns in a data.frame
-#' @description \code{retype()} changes the class of specific columns; \code{retype_all()} changes the class of all columns of a given class.
+#' @description \code{retype()} changes the class of specific columns; 
+#' \code{retype_all()} changes the class of all columns of a given class.
 #'
 #' @param df a data frame
 #' @param ... Unquoted column names, paired with the desired class, e.g. 
@@ -321,8 +327,12 @@ retype<-function(df, ...){
 
 #' @rdname retype
 #' @param df A data.frame
-#' @param from An empty vector of the class to convert from, or a string. Columns sharing the class of argument \code{from} will be converted to the class of argument \code{to}.
-#' @param to An empty vector of the class to convert to, or a string. Columns sharing the class of argument \code{from} will be converted to the class of argument \code{to}.
+#' @param from An empty vector of the class to convert from, or a string. 
+#' Columns sharing the class of argument \code{from} will be converted 
+#' to the class of argument \code{to}.
+#' @param to An empty vector of the class to convert to, or a string. 
+#' Columns sharing the class of argument \code{from} will be converted 
+#' to the class of argument \code{to}.
 #'
 #' @export
 #'
@@ -368,10 +378,14 @@ verify_types<-function(...){
 #' Read and merge all .csv files in a folder
 #'
 #' @param folder path to a folder
-#' @param readfunc list of functions that will be used to read the files; if the first function fails, the second function will be used, etc.
+#' @param readfunc list of functions that will be used to read the files; 
+#' if the first function fails, the second function will be used, etc.
 #'
 #' @return A data.frame containing all merged .csv files 
 #' @export
+#' 
+#' @examples 
+#' 
 read.csv.folder<-function(folder="./", readfunc=list(read.csv,read.csv2,read.table)){
   flist<-list.files(folder)
   flist<-flist[grepl(".csv",flist)]
@@ -410,6 +424,7 @@ read.csv.folder<-function(folder="./", readfunc=list(read.csv,read.csv2,read.tab
 #' @export
 #'
 #' @examples LevenshteinDistance("Yoghurt","Youtube")
+#' 
 LevenshteinDistance<-function(source,target){
   source<-strsplit(source,"")[[1]]
   target<-strsplit(target,"")[[1]]
@@ -448,6 +463,7 @@ LevenshteinDistance<-function(source,target){
 #' unsplit<-c("flour;salt;baking soda;steak;sugar;water;sauce;vinegar",
 #' "flour;sauce;mustard;salt;pepper;vinegar;baking soda;water;tomatoes;onion;steak")
 #' vector2columns(unsplit)
+#' 
 vector2columns<-function(x, sep=";"){
   vals <- strsplit(x, sep)
   uniques <- unique(unlist(vals))
@@ -466,7 +482,6 @@ vector2columns<-function(x, sep=";"){
 #' @param ... all other arguments for \code{merge} can be provided here
 #'
 #' @return A single, merged \code{data.frame}
-#' @author Sercan Kahveci
 #' @export
 #'
 #' @examples
@@ -481,19 +496,19 @@ vector2columns<-function(x, sep=";"){
 #' multimerge(testlist,by="key",all=T)
 #' 
 multimerge<-function(x, ...){
-  while(length(x)>1){
-    out<-list()
-    while(length(x)>0){
-      if(length(x)>=2){
-        out[[length(out)+1]]<-merge(x[[1]],x[[2]],...)
-        x[[1]]<-NULL
-        x[[1]]<-NULL
+  while(length(x) > 1){
+    out <- list()
+    while(length(x) > 0){
+      if(length(x) >= 2){
+        out[[length(out) + 1]] <- merge(x[[1]], x[[2]], ...)
+        x[[1]] <- NULL
+        x[[1]] <- NULL
       }else{
-        out[[length(out)+1]]<-x[[1]]
-        x[[1]]<-NULL
+        out[[length(out) + 1]] <- x[[1]]
+        x[[1]] <- NULL
       }
     }
-    x<-out
+    x <- out
   }
   return(x)
 }
