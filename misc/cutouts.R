@@ -99,3 +99,34 @@ wtd.median<-function(x,wts,na.rm=T){
   }
   return(out)
 }
+
+
+#' Downweight outliers
+#' @description Computes weights; trials within certain bounds of the mean receive the maximum weight while trials
+#' outside these bounds are downweighted to 0 or an optional minimum.
+#'
+#' @param x A numeric vector
+#' @param mean An optional mean of the vector
+#' @param s An optional standard deviation of the vector
+#' @param sdist The number of standard deviations beyond which values should be downweighted
+#' @param taper A number indicating how strongly values exceeding the standard deviation should taper off
+#' @param scale How the weight vector should be scaled: "norm" sets the sum to 1, "max" sets the maximum to 1.
+#' @param min A minimum weight. 
+#'
+#' @return A numeric vector of weights
+#' @export
+#'
+#' @examples
+logit.weightfun<-function(x,mean=mean(x),s=sd(x),
+                          sdist=3,taper=10,
+                          scale=c("max","norm"),min=0){
+  scale <- match.arg(scale)
+  zx <- (x-m)/s * taper
+  out <- inv.logit((zx-sdist*taper)) * inv.logit((-zx-sdist*taper))
+  out <- (out/max(out)) * (1-min) + min
+  if(scale== "norm"){
+    out < -out / sum(out)
+  }
+  return(out)
+}
+
