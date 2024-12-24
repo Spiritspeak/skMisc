@@ -1,11 +1,12 @@
 
 
 #' Sort a square matrix
-#' This is a crude iterative algorithm that swaps the rows and columns of a matrix 
+#' This uses an iterative algorithm that swaps the rows and columns of a matrix 
 #' to ensure the highest values are either in the middle or the bottom-right.
 #'
 #' @param mat Square numeric matrix to be sorted
-#' @param sorttype Where the highest values should appear - "middle" or "bottomright".
+#' @param sorttype Where the highest values should appear - 
+#' "diag", "center", or "bottomright".
 #'
 #' @return A sorted square matrix
 #' @export
@@ -17,19 +18,22 @@
 #' 
 #' newmat1<-sortmat(mat,"bottomright")
 #' 
-#' newmat2<-sortmat(mat,"middle")
+#' newmat2<-sortmat(mat,"diag")
 #' 
+#' newmat3<-sortmat(mat,"center")
 #' 
-sortmat<-function(mat,sorttype=c("middle","bottomright")){
+sortmat<-function(mat,sorttype=c("diag","center","bottomright")){
   dims<-dim(mat)
   k<-dims[1]
   
-  if(sorttype=="middle"){
+  if(sorttype=="diag"){
     wt <- (mean(dims)/2-abs(row(mat)-col(mat)))
+  }else if(sorttype=="center"){
+    wt <- prod(dims/2)-abs((row(mat)-(nrow(mat)+1)/2)*(col(mat)-(ncol(mat)+1)/2))
   }else if(sorttype=="bottomright"){
     wt <- row(mat)+col(mat)
   }
-
+  
   allswaps<-expand.grid(row=seq_len(k),col=seq_len(k))
   tryswaps<-seq_len(nrow(allswaps)) |> sample()
   oldscore<-sum(mat*wt)
@@ -45,7 +49,7 @@ sortmat<-function(mat,sorttype=c("middle","bottomright")){
       mat<-propmat
     }
   }
-
+  
   return(mat)
 }
 
