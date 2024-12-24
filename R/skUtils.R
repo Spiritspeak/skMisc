@@ -106,6 +106,7 @@ which.first <- function(x, na.first=FALSE){
   return(newx)
 }
 
+# This should support sets of unequal length
 unique.set<-function(x){
   x<-t(apply(x,1,sort))
   x<-apply(x,1,paste,collapse="-")
@@ -117,6 +118,7 @@ unique.set<-function(x){
 #'
 #' @param nval Number of values to arrange into unique tuplets
 #' @param ntuplet N-tuplets to arrange the values uniquely into
+#' @incl.self Determines whether a value can be paired with itself
 #'
 #' @return A matrix where each row is a unique N-tuplet
 #' @export
@@ -124,12 +126,13 @@ unique.set<-function(x){
 #' @examples
 #' allpairs(nval=20,ntuplet=3)
 #' 
-allpairs<-function(nval,ntuplet=2){
+allpairs<-function(nval,ntuplet=2,incl.self=FALSE){
   currmat<-matrix(seq_len(nval),ncol=1)
+  offset<-ifelse(incl.self,0,1)
   for(tuple in seq_len(ntuplet)[-1]){
     newmats<-list()
     for(i in seq_len(nrow(currmat))){
-      startval<-currmat[i,tuple-1]+1
+      startval<-currmat[i,tuple-1]+offset
       if(startval<=nval){
         itervec<-startval:nval
         newmats[[i]]<-do.call(cbind,c(as.list(currmat[i,]),list(itervec)))
