@@ -4,7 +4,9 @@
 #'
 #' @param form A formula
 #'
-#' @return A named list containing character vectors with random terms; names are group variables.
+#' @return A named list containing character vectors with random terms; 
+#' names are group variables.
+#' 
 #' @export
 #'
 #' @examples 
@@ -14,18 +16,18 @@
 ExtractRandomTerms<-function(form){
   bars<-findbars(form)
   terms<-lapply(bars,FUN=function(x){
-    x%<>%as.character()
+    x %<>% as.character()
     if(x[2]!="1"){
-      x%<>%magrittr::extract(2)%>%reformulate%>%terms%>%attr("term.labels")
+      x %<>% magrittr::extract(2)%>%reformulate%>%terms%>%attr("term.labels")
     }else{
       x<-"1"
     }
     x
   })
   names(terms)<-lapply(bars,FUN=function(x){
-    x%<>%as.character()
+    x %<>% as.character()
     if(length(x)>1){
-      x%<>%extract2(3)
+      x %<>% extract2(3)
     }else{
       x<-gsub(".*\\|","",x)%>%trimws
     }
@@ -38,11 +40,13 @@ ExtractRandomTerms<-function(form){
 #'
 #' @param form a formula
 #'
-#' @return A character vector containing all model terms that are not moderated by a higher-order interaction.
+#' @return A character vector containing all model terms that are not moderated 
+#' by a higher-order interaction.
 #' @export
 #'
 #' @examples FindTopTerms(speed ~ skill + weight * friction)
 #' #[1] "skill"           "weight:friction"
+#' 
 FindTopTerms<-function(form){
   #Do my 1's fit in another column's 1's?
   form%<>%terms()%>%attr("factors")
@@ -64,6 +68,7 @@ FindTopTerms<-function(form){
 #'
 #' @examples ExpandFormula(rt ~ pull * target + (pull * target | subjectid))
 #' #rt ~ pull + target + pull:target + (pull + target + pull:target | subjectid)
+#' 
 ExpandFormula<-function(form){
   labs<-form%>%terms%>%attr("term.labels")
   norandos<- labs[!grepl("\\|",labs)]
@@ -83,9 +88,12 @@ ExpandFormula<-function(form){
 #' Remove all possible models with one unmoderated term removed
 #'
 #' @param form A formula
-#' @param randeff The name of the group from which unmoderated terms should be removed. To remove from fixed effects, use \code{""} (the default).
+#' @param randeff The name of the group from which unmoderated terms should be removed. 
+#' To remove from fixed effects, use \code{""} (the default).
 #'
-#' @return A list of formulas which have one unmoderated term removed each. The name of each list item is the term which was removed.
+#' @return A list of formulas which have one unmoderated term removed each. 
+#' The name of each list item is the term which was removed.
+#' 
 #' @export
 #'
 #' @examples RemoveTopTerms(a ~ b * c + d + (1|e))
@@ -93,9 +101,11 @@ ExpandFormula<-function(form){
 #' #a ~ b + c + b:c + (1 | e)
 #' #$`b:c`
 #' #a ~ b + c + d + (1 | e)
+#' 
 RemoveTopTerms<-function(form,randeff=""){
   if(randeff==""){
-    remform<-form %>% nobars %>% as.character() %>% extract(3) %>% reformulate %>% terms %>% attr("term.labels")
+    remform<-form %>% nobars %>% as.character() %>% extract(3) %>% 
+      reformulate %>% terms %>% attr("term.labels")
     remcomps<-form %>% nobars %>%FindTopTerms()
     redform<-paste(as.character(form)[2],as.character(form)[1], as.character(form)[3] %>% 
                      paste(remcomps,sep="-")) %>% sapply(FUN=as.formula,USE.NAMES=F)
@@ -114,8 +124,10 @@ RemoveTopTerms<-function(form,randeff=""){
     for(i in seq_len(length(nonremform))){
       miscforms[i]<- paste0("(",paste(nonremform[[i]],collapse=" + ")," | ",names(nonremform[i]),")")
     }
-    redform<- paste((form %>% nobars %>% as.character() %>% extract(3)),revcomp,paste(miscforms,collapse=" + "),sep=" + ")
-    redform<-paste(as.character(form)[2],as.character(form)[1], redform) %>% sapply(FUN=as.formula,USE.NAMES=F)
+    redform<- paste((form %>% nobars %>% as.character() %>% extract(3)),
+                    revcomp,paste(miscforms,collapse=" + "),sep=" + ")
+    redform<-paste(as.character(form)[2],as.character(form)[1], redform) %>% 
+      sapply(FUN=as.formula,USE.NAMES=F)
     names(redform)<-paste0("(",remcomps," | ",randeff,")")
   }
   
@@ -166,13 +178,18 @@ ComputeLowerModels2<-function(model,data,group="",...){
 #' Compare multilevel models
 #'
 #' @param ... Model objects to be compared
-#' @param fullmodel A model to which all other models are to be compared; only use if \code{...} is not specified.
+#' @param fullmodel A model to which all other models are to be compared; 
+#' only use if \code{...} is not specified.
 #' @param models Models to compare to \code{fullmodel}. Only use if \code{...} is not specified.
-#' @param serial If TRUE, models are compared serially; if false, all models will be compared to the first.
+#' @param serial If TRUE, models are compared serially; 
+#' if false, all models will be compared to the first.
 #' @param suppress Character vector of column names to suppress in printed output.
 #'
-#' @return A data.frame containing model fit metrics such as AIC, BIC, marginal R-squared (the effect size of fixed effects only),
-#' conditional R-squared (the effect size of all model terms), loglikelihood, deviance, and a likelihood ratio test.
+#' @return A data.frame containing model fit metrics such as AIC, BIC, 
+#' marginal R-squared (the effect size of fixed effects only),
+#' conditional R-squared (the effect size of all model terms), loglikelihood, 
+#' deviance, and a likelihood ratio test.
+#' 
 #' @export 
 #'
 #' @examples 
