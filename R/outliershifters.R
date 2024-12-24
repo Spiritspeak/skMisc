@@ -14,13 +14,13 @@ suppressor<-function(x,soft,hard, strength){
 }
 
 std.suppressor<-function(x,soft=2.5,hard=3,strength=1){
-  m<-mean(x)
-  s<-sd(x)
+  m<-mean.default(x)
+  s<-sqrt(sum((x-m)^2)/(length(x)-1))
   suppressor((x-m)/s,soft,hard,strength)*s+m
 }
 
 loop.suppressor<-function(x,soft=2.5,hard=3,strength=1){
-  while(any(abs(scale(x))>3)){
+  while(any(abs(vec.scale(x))>3)){
     x<-std.suppressor(x,soft,hard,strength)
   }
   x
