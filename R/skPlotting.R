@@ -23,56 +23,54 @@ hilight<-function(x,y,s, bg="yellow") {
 }
 
 
-#FullAutocorPlot
-#' Per-subject Autocorrelation Plotting
+#' Multi-series Autocorrelation Plotting
 #'
-#' @param ds an ordered \code{data.frame}
-#' @param ppvar name of the variable indicating participant ID
-#' @param rtvar name of the variable indicating reaction time
-#' @param lag.max numeric, the maximum lag at which to compute autocorrelation.
+#' @param x Variable to compute the autocorrelation of.
+#' @param index Grouping ID variable of the same length as \code{X}.
+#' @param lag.max The maximum lag at which to compute autocorrelation.
+#' @param plot Should a plot be made? Default is \code{TRUE}.
 #'
 #' @export
 #'
 #' @examples
-#' mycors<-AutocorPlot(ds=ToothGrowth,ppvar="supp",rtvar="len",lag.max=10)
+#' mycors<-AutocorPlot(x=ToothGrowth$len,index=ToothGrowth$supp,lag.max=10)
 #' 
-AutocorPlot<-function(ds,ppvar,rtvar,lag.max=64){
-  if(missing(ds)){
-    ds<-data.frame(ppvar=ppvar,rtvar=rtvar,stringsAsFactors = F)
-    ppvar <- "ppvar"
-    rtvar <- "rtvar"
-  }else{
-    ds <- as.data.frame(ds)
+AutocorPlot<-function(x,index,lag.max=64,plot=TRUE){
+  mylag<-function(x,i){
+    len<-length(x)
+    if(i<=len){
+      idx<-seq_len(len-i)
+    }
+    c(rep(NA,i),x[idx])
   }
-  ppvec <- unique(ds[,ppvar]) %>% as.vector()
-  npp <- length(ppvec)
-  cormat <- matrix(nrow=lag.max,ncol=npp)
-  ct <- 0
-  for(pp in ppvec){
-    ct <- ct+1
-    tds <- ds[ds[[ppvar]] == pp,]
+  indices <- as.vector(unique(index))
+  nindices <- length(indices)
+  cormat <- matrix(nrow=lag.max,ncol=nindices,dimnames=list(NULL,indices))
+  for(currindex in indices){
+    currx <- x[index == currindex]
     autocor <- numeric(lag.max)
     for(i in seq_len(lag.max)){
-      autocor[i] <- cor(tds[,rtvar],dplyr::lag(tds[,rtvar],i),use="complete.obs")
+      autocor[i] <- cor(currx,mylag(currx,i),use="complete.obs")
     }
-    cormat[,ct] <- autocor
+    cormat[,currindex] <- autocor
   }
-  colnames(cormat) <- ppvec
-  plot(rowMeans(cormat),type="l",xlab="lag",ylab="autocorrelation",
-       main=paste("Variable",rtvar,"autocorrelation"),
-       ylim=c(min(cormat),max(cormat)))
-  for(i in seq_len(npp)){ lines(x=cormat[,i],pch=".",col=rgb(0,0,0,0.1),type="l") }
-  abline(h=0,col="gray")
-  return(invisible(cormat))
+  if(plot){
+    plot(rowMeans(cormat),type="l",xlab="lag",ylab="autocorrelation",
+         ylim=c(min(cormat),max(cormat)))
+    for(i in seq_len(nindices)){ 
+      lines(x=cormat[,i],col=rgb(0,0,0,1/sqrt(nindices)))
+    }
+    abline(h=0,col="gray")
+    lines(x=rowMeans(cormat))
+  }
+  return(invisible(t(cormat)))
 }
 
 # Use for testing.
 # library(dplyr)
-# erotica %>% dplyr::arrange(subject,blocknum,trialnum) %>% 
-#   mutate(index=paste0(subject,"-",blocknum)) %>%
-#   AutocorPlot(ppvar="index",rtvar="RT",lag.max=32)
-
-
+# newdata <- erotica %>% dplyr::arrange(subject,blocknum,trialnum) %>%
+#   mutate(index=paste0(subject,"-",blocknum))
+# AutocorPlot(x=newdata$RT,index=newdata$index,lag.max=30)
 
 #TransformPlots
 #' Data Transformation Plots
