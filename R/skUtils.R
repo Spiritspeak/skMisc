@@ -75,8 +75,11 @@ which.duplicate<-function(x){
 
 
 #' Find the index of the first occurrence of each value
-#' For each duplicated value in the vector, this gives the index of the original value in that vector
+#' This replaces all values with the index of their first occurrence
+#' 
 #' @param x A vector
+#' @param na.first Logical value indicating whether to replace the first
+#' occurrence of each value with its index (if \code{FALSE}) or with NA (if \code{TRUE}).
 #'
 #' @return A vector of the length of \code{x} with each value representing either 
 #' \code{NA} if it is the first occurrence of a unique value, or 
@@ -84,14 +87,21 @@ which.duplicate<-function(x){
 #' @export
 #'
 #' @examples
-#' where.duplicated(c("a","b","a","k"))
+#' which.first(c("a","b","a","k"))
 #' 
-where.duplicated<-function(x){
+which.first <- function(x, na.first=FALSE){
   ux<-unique(x)
   newx<-rep(NA,length(x))
-  for(u in ux){
-    idvec<-which(x==u)
-    newx[idvec[-1]]<-idvec[1]
+  if(na.first){
+    for(u in ux){
+      idvec<-which(x==u)
+      newx[idvec[-1]]<-idvec[1]
+    }
+  }else{
+    for(u in ux){
+      idvec<-which(x==u)
+      newx[idvec]<-idvec[1]
+    }
   }
   return(newx)
 }
@@ -114,7 +124,7 @@ unique.set<-function(x){
 #' @examples
 #' allpairs(nval=20,ntuplet=3)
 #' 
-allpairs<-function(nval,ntuplet){
+allpairs<-function(nval,ntuplet=2){
   currmat<-matrix(seq_len(nval),ncol=1)
   for(tuple in seq_len(ntuplet)[-1]){
     newmats<-list()
@@ -374,6 +384,62 @@ verify_types<-function(...){
   return(T)
 }
 
+#' Create substrings with a maximal length by splitting at specific characters
+#' 
+#' This function splits a string into substrings of length \code{width} or shorter.
+#' The splitting is done at the characters specified in \code{split}, in order of preference.
+#' 
+#' This combines the functionality of [base::strwrap()] and [base::strsplit()]; 
+#' instead of a string wrapped with newlines, the result is multiple substrings.
+#'
+#' @param x A character vector of length 1.
+#' @param width The maximum character length to break the vector at.
+#' @param split A vector of regular expressions to match a character to break the string at.
+#' The function will try to break the string at the first value specified in this argument;
+#' if that fails, it will move on to the second, then the third, etc.
+#'
+#' @return A character vector consisting of strings of length \code{width} or shorter, 
+#' and split at the characters specified in \code{split}.
+#' 
+#' @export
+#' @md
+#'
+#' @examples
+#' thanks <- paste(readLines(file.path(R.home("doc"), "THANKS")), collapse = "\n")
+#' strsplit.wrap(thanks,width=80)
+#' 
+#' alphabet <- paste0(letters,collapse="")
+#' strsplit.wrap(alphabet,width=3)
+strsplit.wrap <- function(x, width=2000, split=c("\n"," ",",","")){
+  output <- character()
+  if(!any(split=="")){ split <- c(split,"") }
+  while(nchar(x) > 0){
+    cstr <- substr(x,1,width)
+    if(nchar(cstr) < width){
+      output[length(output)+1] <- x
+      x <- ""
+    }else{
+      for(splitchar in split){
+        
+        if(nzchar(splitchar)){
+          nls <- gregexpr(splitchar,cstr)[[1]]
+          end <- nls[length(nls)]
+          if(end!=-1){
+            output[length(output)+1] <- 
+              trimws(substr(cstr,1,end),whitespace=splitchar)
+            x <- substr(x, end+1, nchar(x))
+            break
+          }
+        }else{
+          output[length(output)+1] <- substr(cstr,1,width)
+          x <- substr(x, width+1, nchar(x))
+        }
+        
+      }
+    }
+  }
+  return(output)
+}
 
 #' Read and merge all .csv files in a folder
 #'

@@ -160,7 +160,6 @@ CVMetrics <- function(x, y){
            spec=cm[1,1] / sum(cm[1,]) ))
 }
 
-
 #' Multiple correlation
 #' Computes the \href{https://en.wikipedia.org/wiki/Multiple_correlation}{multiple correlation coefficient}
 #' of variables in \code{ymat} with the variable \code{x}
