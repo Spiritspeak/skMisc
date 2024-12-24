@@ -1,6 +1,4 @@
-# Files that are "up to standard": holdout.R and formatting.R
-# Add a match.merge like function that just gives the matching indices
-# Consider changing where.duplicated to which.unique() and add an option to limit it to only duplicated values
+# Files that are "up to standard": holdout.R, formatting.R, skUtils.R
 
 
 #I don't want to import rlang, so it will be done this way instead.

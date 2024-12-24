@@ -228,3 +228,9 @@ bonferroniHolm <- function(x, alpha=.05){
 }
 
 # Rework CorTable() into a rcorr() function that incorporates cor.holdout
+# it should have these functions:
+# 1. r, p, and h values printed in a single kable in the same cells, or cells opposite
+# 2. pairwise or listwise outlier exclusion
+# 3. a similar list of matrices for r, n, p, and h
+
+

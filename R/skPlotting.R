@@ -26,17 +26,17 @@ hilight<-function(x,y,s, bg="yellow") {
 #FullAutocorPlot
 #' Per-subject Autocorrelation Plotting
 #'
-#' @param ds a dataset
+#' @param ds an ordered \code{data.frame}
 #' @param ppvar name of the variable indicating participant ID
 #' @param rtvar name of the variable indicating reaction time
-#' @param scope numeric, the maximum lag at which to compute autocorrelation.
+#' @param lag.max numeric, the maximum lag at which to compute autocorrelation.
 #'
 #' @export
 #'
 #' @examples
-#' AutocorPlot(ds=ToothGrowth,ppvar="supp",rtvar="len",scope=10)
+#' mycors<-AutocorPlot(ds=ToothGrowth,ppvar="supp",rtvar="len",lag.max=10)
 #' 
-AutocorPlot<-function(ds,ppvar,rtvar,scope=64){
+AutocorPlot<-function(ds,ppvar,rtvar,lag.max=64){
   if(missing(ds)){
     ds<-data.frame(ppvar=ppvar,rtvar=rtvar,stringsAsFactors = F)
     ppvar <- "ppvar"
@@ -46,13 +46,13 @@ AutocorPlot<-function(ds,ppvar,rtvar,scope=64){
   }
   ppvec <- unique(ds[,ppvar]) %>% as.vector()
   npp <- length(ppvec)
-  cormat <- matrix(nrow=scope,ncol=npp)
+  cormat <- matrix(nrow=lag.max,ncol=npp)
   ct <- 0
   for(pp in ppvec){
     ct <- ct+1
     tds <- ds[ds[[ppvar]] == pp,]
-    autocor <- numeric(scope)
-    for(i in seq_len(scope)){
+    autocor <- numeric(lag.max)
+    for(i in seq_len(lag.max)){
       autocor[i] <- cor(tds[,rtvar],dplyr::lag(tds[,rtvar],i),use="complete.obs")
     }
     cormat[,ct] <- autocor
@@ -65,6 +65,13 @@ AutocorPlot<-function(ds,ppvar,rtvar,scope=64){
   abline(h=0,col="gray")
   return(invisible(cormat))
 }
+
+# Use for testing.
+# library(dplyr)
+# erotica %>% dplyr::arrange(subject,blocknum,trialnum) %>% 
+#   mutate(index=paste0(subject,"-",blocknum)) %>%
+#   AutocorPlot(ppvar="index",rtvar="RT",lag.max=32)
+
 
 
 #TransformPlots
