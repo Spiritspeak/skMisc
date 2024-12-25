@@ -245,6 +245,17 @@ cor.influence<-function(x,y){
   x*y-(x^2+y^2)/2*cor(x,y)
 }
 
+CorTable <- function(x,method=c("pearson","spearman")){
+  method <- match.arg(method)
+  
+  testpairs <- allpairs(nval=ncol(x))
+  res <- vector(mode="list",length=NROW(testpairs))
+  for(i in seq_along(res)){
+    cor.holdout(x=x[testpairs[i,1]],y=x[testpairs[i,2]],
+                goal="nsig",method=method)
+  }
+}
+
 # Rework CorTable() into a rcorr() function that incorporates cor.holdout
 # it should have these functions:
 # 1. r, p, and h values printed in a single kable in the same cells, or cells opposite
