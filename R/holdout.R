@@ -1,37 +1,23 @@
 
+# TODO:
+# plot.lm.holdout needs plot titles with the h value
+
+
 
 # Remains undocumented, helper function.
 r2t<-function(r,df){
   sqrt(r^2*df / (1-r^2))
 }
 
-#' Influence function of the Pearson correlation coefficient
-#'
-#' @param x,y Numeric vectors
-#'
-#' @return Influence values of all observations.
-#' @export
-#'
-#' @examples
-#' outlier<-numeric(100)
-#' outlier[1]<-1000
-#' cor.influence(rnorm(100)+outlier,rnorm(100)+outlier)
-#' 
-cor.influence<-function(x,y){
-  x<-x-mean(x)
-  y<-y-mean(y)
-  x*y-(x^2+y^2)/2*cor(x,y)
-}
-
 # Seeks most bivariate-outlying pair of values
-cor.influence2<-function(x,y){
+cor.outlying<-function(x,y){
   vec.scale(x) * vec.scale(y)
 }
 
 #' Correlation holdouts
 #' 
-#' Repeatedly remove the most influential observation using
-#' influence functions until a correlation coefficient is 
+#' Repeatedly remove the observation whose removal will most strongly 
+#' move the correlation coefficient to zero, until it is 
 #' either no longer significant or has changed its sign
 #'
 #' @param x,y Numeric vectors of variables to correlate
@@ -66,7 +52,7 @@ cor.influence2<-function(x,y){
 cor.holdout<-function(x,y,
                       goal=c("nsig","flip"),
                       method=c("pearson","spearman"),
-                      alpha=.05,verbose=F){
+                      alpha=.05,verbose=FALSE){
   
   # prep for spearman
   method<-match.arg(method)
@@ -98,7 +84,7 @@ cor.holdout<-function(x,y,
   
   # Function for finding the next entry to delete
   findNextToDelete<-function(){
-    inf<-cor.influence2(x[incl],y[incl])
+    inf<-cor.outlying(x[incl],y[incl])
     return(which.max(inf*origsign))
   }
   
@@ -151,15 +137,15 @@ registerS3method("print","cor.holdout",print.cor.holdout)
 
 #' Linear Regression Holdouts
 #' 
-#' Repeatedly remove the most influential observation using
-#' influence functions until a model term is 
-#' either no longer significant or has changed its sign.
+#' Repeatedly remove the observation whose removal will move a model term 
+#' most strongly to zero, until it is either no longer significant 
+#' or has changed its sign.
 #' 
 #' @param model A \code{lm} model.
 #' @param goal Objective of observation removal: 
 #' "nsig" (no longer significant) or "flip" (change of sign).
 #' @param terms Names of model terms to compute holdout statistics for. 
-#' When NULL, it defaults to all model terms.
+#' When \code{NULL}, it defaults to all model terms.
 #' @param alpha 
 #' Maximum p value for significance (only relevant when aiming to make value insignificant).
 #' @param verbose Should the function generate verbose output? Defaults to \code{FALSE}.
@@ -293,6 +279,7 @@ plot.lm.holdout<-function(x,...){
   rowz<-ceiling(sqrt(length(plotterms)))
   colz<-ceiling(length(plotterms)/rowz)
   par(mfrow=c(rowz,colz))
+  
   for(cn in plotterms){
     cns<-strsplit(cn,":")[[1]]
     if(length(cns)==1){

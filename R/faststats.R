@@ -227,6 +227,24 @@ bonferroniHolm <- function(x, alpha=.05){
   return(sigvec)
 }
 
+#' Influence function of the Pearson correlation coefficient
+#'
+#' @param x,y Numeric vectors
+#'
+#' @return Influence values of all observations.
+#' @export
+#'
+#' @examples
+#' outlier<-numeric(100)
+#' outlier[1]<-1000
+#' cor.influence(rnorm(100)+outlier,rnorm(100)+outlier)
+#' 
+cor.influence<-function(x,y){
+  x<-x-mean(x)
+  y<-y-mean(y)
+  x*y-(x^2+y^2)/2*cor(x,y)
+}
+
 # Rework CorTable() into a rcorr() function that incorporates cor.holdout
 # it should have these functions:
 # 1. r, p, and h values printed in a single kable in the same cells, or cells opposite
