@@ -249,34 +249,34 @@ CorTable <- function(x,method=c("pearson","spearman"),alpha=.05){
   method <- match.arg(method)
   
   testpairs <- allpairs(nval=ncol(x))
-  emptymat <- matrix(NA,nrow=ncol(x),ncol=ncol(x))
+  emptymat <- matrix(NA, nrow=ncol(x), ncol=ncol(x))
   output <- list(r=emptymat,
                  n=emptymat,
                  p=emptymat,
                  h=emptymat)
+  
   for(i in seq_len(NROW(testpairs))){
     trow<-testpairs[i,1]
     tcol<-testpairs[i,2]
     currvars<-na.omit(x[,c(trow,tcol)])
-    output$r[trow,tcol] <- tcor<- cor(currvars,method=method)[1,2]
+    output$r[trow,tcol] <- tcor <- cor(currvars,method=method)[1,2]
     output$n[trow,tcol] <- tn <- NROW(currvars)
-    output$p[trow,tcol] <- 2*pt(-abs(r2t(tcor,tn-2)),df=tn-2)
-    hobj <- cor.holdout(x=currvars[,1,drop=T],y=currvars[,2,drop=T],
-                        goal="nsig",method=method,alpha=alpha)
+    output$p[trow,tcol] <- 2*pt(-abs(r2t(tcor,tn-2)), df=tn-2)
+    hobj <- cor.holdout(x=currvars[,1,drop=T], y=currvars[,2,drop=T],
+                        goal="nsig", method=method, alpha=alpha)
     output$h[trow,tcol] <- hobj$h
   }
   output$r[lower.tri(output$r)] <- t(output$r)[lower.tri(output$r)]
   output$n[lower.tri(output$n)] <- t(output$n)[lower.tri(output$n)]
   output$p[lower.tri(output$p)] <- t(output$p)[lower.tri(output$p)]
   output$h[lower.tri(output$h)] <- t(output$h)[lower.tri(output$h)]
+  output <- structure(output,class=c("CorTable","list"))
   
   return(output)
 }
 
-# Rework CorTable() into a rcorr() function that incorporates cor.holdout
+# Make CorTable() print function
 # it should have these functions:
 # 1. r, p, and h values printed in a single kable in the same cells, or cells opposite
-# 2. pairwise or listwise outlier exclusion
-# 3. a similar list of matrices for r, n, p, and h
 
 
