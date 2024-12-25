@@ -245,20 +245,18 @@ cor.influence<-function(x,y){
   x*y-(x^2+y^2)/2*cor(x,y)
 }
 
-CorTable <- function(x,method=c("pearson","spearman"),alpha=.05){
+CorTable <- function(x, method=c("pearson","spearman"), alpha=.05){
   method <- match.arg(method)
   
-  testpairs <- allpairs(nval=ncol(x))
   emptymat <- matrix(NA, nrow=ncol(x), ncol=ncol(x))
-  output <- list(r=emptymat,
-                 n=emptymat,
-                 p=emptymat,
-                 h=emptymat)
+  coefs<-c("r","n","p","h")
+  output <- setNames(lapply(coefs,function(x) { emptymat }),coefs)
   
+  testpairs <- allpairs(nval=ncol(x))
   for(i in seq_len(NROW(testpairs))){
-    trow<-testpairs[i,1]
-    tcol<-testpairs[i,2]
-    currvars<-na.omit(x[,c(trow,tcol)])
+    trow <- testpairs[i,1]
+    tcol <- testpairs[i,2]
+    currvars <- na.omit(x[,c(trow,tcol)])
     output$r[trow,tcol] <- tcor <- cor(currvars,method=method)[1,2]
     output$n[trow,tcol] <- tn <- NROW(currvars)
     output$p[trow,tcol] <- 2*pt(-abs(r2t(tcor,tn-2)), df=tn-2)
@@ -266,15 +264,19 @@ CorTable <- function(x,method=c("pearson","spearman"),alpha=.05){
                         goal="nsig", method=method, alpha=alpha)
     output$h[trow,tcol] <- hobj$h
   }
-  output$r[lower.tri(output$r)] <- t(output$r)[lower.tri(output$r)]
-  output$n[lower.tri(output$n)] <- t(output$n)[lower.tri(output$n)]
-  output$p[lower.tri(output$p)] <- t(output$p)[lower.tri(output$p)]
-  output$h[lower.tri(output$h)] <- t(output$h)[lower.tri(output$h)]
+  
+  # Form output object
+  output <- lapply(output, function(x){
+    x[lower.tri(x)] <- t(x)[lower.tri(x)]
+    return(x)
+  })
   output <- structure(output,class=c("CorTable","list"))
   
   return(output)
 }
 
+
+# In holdout function, turn 'omit' into an integer vector
 # Make CorTable() print function
 # it should have these functions:
 # 1. r, p, and h values printed in a single kable in the same cells, or cells opposite
