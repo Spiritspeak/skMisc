@@ -245,6 +245,7 @@ cor.influence<-function(x,y){
   x*y-(x^2+y^2)/2*cor(x,y)
 }
 
+# CorTable(mtcars)
 CorTable <- function(x, method=c("pearson","spearman"), alpha=.05){
   method <- match.arg(method)
   
@@ -275,6 +276,15 @@ CorTable <- function(x, method=c("pearson","spearman"), alpha=.05){
   return(output)
 }
 
+print.CorTable<-function(x, ...){
+  printx <- lapply(x,function(y){
+    y <- round(y,digits=2)
+    y <- matrix(dropLeadingZero(y),nrow=nrow(y),ncol=ncol(y))
+    diag(y)<-"*"
+    y
+  })
+  print(printx,quote=F)
+}
 
 # In holdout function, turn 'omit' into an integer vector
 # Make CorTable() print function
