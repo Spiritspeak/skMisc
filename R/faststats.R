@@ -245,15 +245,32 @@ cor.influence<-function(x,y){
   x*y-(x^2+y^2)/2*cor(x,y)
 }
 
-CorTable <- function(x,method=c("pearson","spearman")){
+CorTable <- function(x,method=c("pearson","spearman"),alpha=.05){
   method <- match.arg(method)
   
   testpairs <- allpairs(nval=ncol(x))
-  res <- vector(mode="list",length=NROW(testpairs))
-  for(i in seq_along(res)){
-    cor.holdout(x=x[testpairs[i,1]],y=x[testpairs[i,2]],
-                goal="nsig",method=method)
+  emptymat <- matrix(NA,nrow=ncol(x),ncol=ncol(x))
+  output <- list(r=emptymat,
+                 n=emptymat,
+                 p=emptymat,
+                 h=emptymat)
+  for(i in seq_len(NROW(testpairs))){
+    trow<-testpairs[i,1]
+    tcol<-testpairs[i,2]
+    currvars<-na.omit(x[,c(trow,tcol)])
+    output$r[trow,tcol] <- tcor<- cor(currvars,method=method)[1,2]
+    output$n[trow,tcol] <- tn <- NROW(currvars)
+    output$p[trow,tcol] <- 2*pt(-abs(r2t(tcor,tn-2)),df=tn-2)
+    hobj <- cor.holdout(x=currvars[,1,drop=T],y=currvars[,2,drop=T],
+                        goal="nsig",method=method,alpha=alpha)
+    output$h[trow,tcol] <- hobj$h
   }
+  output$r[lower.tri(output$r)] <- t(output$r)[lower.tri(output$r)]
+  output$n[lower.tri(output$n)] <- t(output$n)[lower.tri(output$n)]
+  output$p[lower.tri(output$p)] <- t(output$p)[lower.tri(output$p)]
+  output$h[lower.tri(output$h)] <- t(output$h)[lower.tri(output$h)]
+  
+  return(output)
 }
 
 # Rework CorTable() into a rcorr() function that incorporates cor.holdout
