@@ -1,4 +1,5 @@
 # lme4tools
+# TODO: annotate all lines of code so it is clear what's going on here
 
 #' Extract random terms from a lme4 formula
 #'
@@ -10,30 +11,34 @@
 #' @export
 #'
 #' @examples 
-#' ExtractRandomTerms(grade ~ ChildIQ * TeacherSkill * SchoolType + 
-#'                               (ChildIQ * TeacherSkill | School))
+#'  ExtractRandomTerms(grade ~ ChildIQ * TeacherSkill * SchoolType +
+#'                                (ChildIQ * TeacherSkill | Class/School))
 #'                               
 ExtractRandomTerms<-function(form){
-  bars<-findbars(form)
-  terms<-lapply(bars,FUN=function(x){
+  bars <- findbars(form)
+  
+  modterms <- lapply(bars, FUN=function(x){
     x %<>% as.character()
-    if(x[2]!="1"){
-      x %<>% magrittr::extract(2)%>%reformulate%>%terms%>%attr("term.labels")
+    if(x[2] != "1"){
+      x %<>% magrittr::extract(2) %>% reformulate() %>% 
+        terms() %>% attr("term.labels")
     }else{
-      x<-"1"
+      x <- "1"
     }
     x
   })
-  names(terms)<-lapply(bars,FUN=function(x){
+  
+  names(modterms) <- lapply(bars,FUN=function(x){
     x %<>% as.character()
-    if(length(x)>1){
+    if(length(x) > 1){
       x %<>% extract2(3)
     }else{
-      x<-gsub(".*\\|","",x)%>%trimws
+      x <- gsub(".*\\|","",x) %>% trimws()
     }
     x
   })
-  terms
+  
+  return(modterms)
 }
 
 #' Find all model terms that are not moderated by a higher-order interaction
@@ -47,10 +52,10 @@ ExtractRandomTerms<-function(form){
 #' @examples FindTopTerms(speed ~ skill + weight * friction)
 #' #[1] "skill"           "weight:friction"
 #' 
-FindTopTerms<-function(form){
+FindTopTerms <- function(form){
   #Do my 1's fit in another column's 1's?
-  form%<>%terms()%>%attr("factors")
-  dep<-rep(0,ncol(form))
+  form %<>% terms() %>% attr("factors")
+  dep <- rep(0,ncol(form))
   for(i in seq_len(ncol(form))){
     for(j in seq_len(ncol(form))[-i]){
       #dep[i]<- dep[i] + all(which(as.logical(form[,i])) %in% which(as.logical(form[,j])))
@@ -67,20 +72,23 @@ FindTopTerms<-function(form){
 #' @export
 #'
 #' @examples ExpandFormula(rt ~ pull * target + (pull * target | subjectid))
-#' #rt ~ pull + target + pull:target + (pull + target + pull:target | subjectid)
+#' #> rt ~ pull + target + pull:target + (pull + target + pull:target | subjectid)
 #' 
-ExpandFormula<-function(form){
-  labs<-form%>%terms%>%attr("term.labels")
-  norandos<- labs[!grepl("\\|",labs)]
+ExpandFormula <- function(form){
+  labs <- form %>% terms() %>% attr("term.labels")
+  norandos <- labs[!grepl("\\|",labs)]
   #norandos<-form%>%nobars%>%terms%>%attr("term.labels")
-  randos<- ExtractRandomTerms(form)
-  randlist<-character()
+  randos <- ExtractRandomTerms(form)
+  randlist <- character()
   for(i in seq_len(length(randos))){
-    randlist[i]<-paste0("(",paste(randos[[i]],collapse=" + "),"|",names(randos)[[i]],")")
+    randlist[i] <- paste0("(",paste(randos[[i]],collapse=" + "),
+                          "|", names(randos)[[i]],")")
   }
-  rhs<-paste(paste(norandos,collapse=" + "),paste(randlist,collapse=" + "),sep=" + ")
-  formstring<-as.character(form)
-  fullform<-paste(formstring[2],formstring[1],rhs) %>%as.formula
+  rhs <- paste(paste(norandos, collapse=" + "),
+               paste(randlist, collapse=" + "),
+               sep=" + ")
+  formstring <- as.character(form)
+  fullform <- paste(formstring[2], formstring[1], rhs) %>% as.formula()
   return(fullform)
 }
 
@@ -97,82 +105,92 @@ ExpandFormula<-function(form){
 #' @export
 #'
 #' @examples RemoveTopTerms(a ~ b * c + d + (1|e))
-#' #$d
-#' #a ~ b + c + b:c + (1 | e)
-#' #$`b:c`
-#' #a ~ b + c + d + (1 | e)
+#' #> $d
+#' #> a ~ b + c + b:c + (1 | e)
+#' #> $`b:c`
+#' #> a ~ b + c + d + (1 | e)
 #' 
-RemoveTopTerms<-function(form,randeff=""){
-  if(randeff==""){
-    remform<-form %>% nobars %>% as.character() %>% extract(3) %>% 
-      reformulate %>% terms %>% attr("term.labels")
-    remcomps<-form %>% nobars %>%FindTopTerms()
-    redform<-paste(as.character(form)[2],as.character(form)[1], as.character(form)[3] %>% 
-                     paste(remcomps,sep="-")) %>% sapply(FUN=as.formula,USE.NAMES=F)
-    redform%<>%lapply(ExpandFormula)
-    names(redform)<-remcomps
+RemoveTopTerms<-function(form, randeff=""){
+  if(randeff == ""){
+    remform<-form %>% nobars() %>% as.character() %>% extract(3) %>% 
+      reformulate %>% terms() %>% attr("term.labels")
+    remcomps<-form %>% nobars %>% FindTopTerms()
+    
+    redform <- paste(as.character(form)[2],
+                     as.character(form)[1],
+                     as.character(form)[3] %>% paste(remcomps,sep="-")) %>% 
+        sapply(FUN=as.formula, USE.NAMES=F)
+    
+    redform %<>% lapply(ExpandFormula)
+    names(redform) <- remcomps
   }else{
-    remform<-ExtractRandomTerms(form)[[randeff]]
-    remcomps<-FindTopTerms(reformulate(paste(remform,collapse="+")))
-    revcomp<-character()
+    remform <- ExtractRandomTerms(form)[[randeff]]
+    remcomps <- FindTopTerms(reformulate(paste(remform, collapse="+")))
+    revcomp <- character()
     for(i in seq_len(length(remcomps))){
-      revcomp[i]<- paste0("(",paste(remform[remform != remcomps[i]],collapse=" + ")," | ",randeff,")")
+      revcomp[i]<- paste0("(", paste(remform[remform != remcomps[i]], collapse=" + "),
+                          " | ",randeff,")")
     }
-    nonremform<-ExtractRandomTerms(form)
-    nonremform<-nonremform[names(nonremform) != randeff]
-    miscforms<-character()
+    nonremform <- ExtractRandomTerms(form)
+    nonremform <- nonremform[names(nonremform) != randeff]
+    miscforms <- character()
     for(i in seq_len(length(nonremform))){
-      miscforms[i]<- paste0("(",paste(nonremform[[i]],collapse=" + ")," | ",names(nonremform[i]),")")
+      miscforms[i] <- paste0("(",paste(nonremform[[i]], collapse=" + "),
+                             " | ",names(nonremform[i]),")")
     }
-    redform<- paste((form %>% nobars %>% as.character() %>% extract(3)),
-                    revcomp,paste(miscforms,collapse=" + "),sep=" + ")
-    redform<-paste(as.character(form)[2],as.character(form)[1], redform) %>% 
-      sapply(FUN=as.formula,USE.NAMES=F)
-    names(redform)<-paste0("(",remcomps," | ",randeff,")")
+    
+    redform <- paste((form %>% nobars() %>% as.character() %>% extract(3)),
+                     revcomp, 
+                     paste(miscforms,collapse=" + "),
+                     sep=" + ")
+    
+    redform <- paste(as.character(form)[2], as.character(form)[1], redform) %>% 
+      sapply(FUN=as.formula, USE.NAMES=F)
+    names(redform) <- paste0("(",remcomps," | ",randeff,")")
   }
   
   return(redform)
 }
 
-ComputeLowerModels<-function(form,data,group="",...){
-  args<-list(...)
-  cluster<-makeCluster(detectCores()-1)
+ComputeLowerModels <- function(form, data, group="", ...){
+  args <- list(...)
+  cluster <- makeCluster(detectCores()-1)
   registerDoParallel(cluster)
-  testforms<-RemoveTopTerms(form,group)
+  testforms <- RemoveTopTerms(form,group)
   
-  results<-
-    foreach(currform=testforms,.packages="lmerTest") %dopar% {
-      do.call(lmer,c(list(formula=currform,data=data),args))
+  results <-
+    foreach(currform=testforms, .packages="lmerTest") %dopar% {
+      do.call(lmer, c(list(formula=currform, data=data), args))
     }
   
   stopCluster(cluster)
-  results
+  return(results)
 }
 
-ComputeLowerModels2<-function(model,data,group="",...){
-  for(pack in c("magrittr","dplyr","tidyr","lme4","doParallel")){ require(pack,character.only=T) }
-  form<-formula(model)
-  data<-model.frame(model)
-  #data<-model@call$data
-  args<-list(...)
-  testforms<-RemoveTopTerms(form,group)
+ComputeLowerModels2 <- function(model, data, group="", ...){
+  for(pack in c("magrittr","dplyr","tidyr","lme4","doParallel")){ require(pack, character.only=T) }
+  form <- formula(model)
+  data <- model.frame(model)
+  #data <- model@call$data
+  args <- list(...)
+  testforms <- RemoveTopTerms(form, group)
   
-  cluster<-makeCluster(detectCores()-1)
+  cluster <- makeCluster(detectCores())
   registerDoParallel(cluster)
   results<-
     foreach(currform=testforms,.packages="lmerTest") %dopar% {
-      do.call(lmer,c(list(formula=currform,data=data,REML=F),args))
+      do.call(lmer,c(list(formula=currform, data=data, REML=F), args))
     }
   stopCluster(cluster)
-  names(results)<-names(testforms)
+  names(results) <- names(testforms)
   
-  warns<-sapply(results,function(x){ paste(x@optinfo$warnings,collapse="\n") })
-  message(paste0("Warning in model ",names(results)[warns!=""],": ",warns[warns!=""]))
+  warns <- sapply(results, function(x){ paste(x@optinfo$warnings, collapse="\n") })
+  message(paste0("Warning in model ", names(results)[warns!=""], ": ", warns[warns != ""]))
   
-  anovatable<-AnovaTable(model,results)
+  anovatable<-AnovaTable(model, results)
   
   print(anovatable)
-  return(invisible(list(anovatable=anovatable,models=results)))
+  return(invisible(list(anovatable=anovatable, models=results)))
 }
 
 #' Compare multilevel models
@@ -194,28 +212,40 @@ ComputeLowerModels2<-function(model,data,group="",...){
 #'
 #' @examples 
 #' 
-AnovaTable<-function(...,fullmodel,models,serial=F,suppress=c("AIC","deviance","logLik")){
+AnovaTable<-function(...,fullmodel, models, serial=FALSE, 
+                     suppress=c("AIC","deviance","logLik")){
   if(missing(models) & missing(fullmodel)){    
-    models<-list(...)
-    fullmodel<-models[[1]]
-    models<-models[-1]
+    models <- list(...)
+    fullmodel <- models[[1]]
+    models <- models[-1]
   }
-  mumin<-MuMIn::r.squaredGLMM(fullmodel)
-  anovatable<-data.frame(Df=logLik(fullmodel)%>%attr("df"),
-                         AIC=AIC(fullmodel),BIC=BIC(fullmodel),dBIC=0,
-                         logLik=logLik(fullmodel),deviance=deviance(fullmodel),
-                         R2m=mumin[1],R2c=mumin[2],dR2m=0,dR2c=0,
-                         Chisq=NA,ChiDf=NA,P=NA)
+  mumin <- MuMIn::r.squaredGLMM(fullmodel)
+  LL <- logLik(fullmodel)
+  anovatable <- data.frame(Df=LL %>% attr("df"),
+                           AIC=AIC(fullmodel),
+                           BIC=BIC(fullmodel),
+                           dBIC=0,
+                           logLik=LL,
+                           deviance=deviance(fullmodel),
+                           R2m=mumin[1],
+                           R2c=mumin[2],
+                           dR2m=0,
+                           dR2c=0,
+                           Chisq=NA,
+                           ChiDf=NA,
+                           P=NA)
+  
   i<-1
   for(mod in models){
     i<-i+1
     mumin<-MuMIn::r.squaredGLMM(mod)
-    anovatable%<>%rbind(
-      data.frame(Df=logLik(mod)%>%attr("df"),
+    LL <- logLik(mod)
+    anovatable %<>% rbind(
+      data.frame(Df=LL %>% attr("df"),
                  AIC=AIC(mod),
                  BIC=BIC(mod),
                  dBIC=BIC(mod) - ifelse(serial, anovatable[i-1,]$BIC, anovatable[1,]$BIC),
-                 logLik=logLik(mod),
+                 logLik=LL,
                  deviance=deviance(mod),
                  R2m=mumin[1],
                  R2c=mumin[2],
@@ -226,21 +256,23 @@ AnovaTable<-function(...,fullmodel,models,serial=F,suppress=c("AIC","deviance","
                  P=NA))
   }
   for(i in 2:nrow(anovatable)){
-    anovatable[i,]$Chisq<-anovatable[ifelse(serial,i-1,1),]$deviance-anovatable[i,]$deviance
-    anovatable[i,]$ChiDf<-anovatable[ifelse(serial,i-1,1),]$Df - anovatable[i,]$Df
-    anovatable[i,]$P<-pchisq(q = -anovatable[i,]$Chisq,df = anovatable[i,]$ChiDf)
+    anovatable[i,]$Chisq <- anovatable[ifelse(serial,i-1,1),]$deviance - anovatable[i,]$deviance
+    anovatable[i,]$ChiDf <- anovatable[ifelse(serial,i-1,1),]$Df - anovatable[i,]$Df
+    anovatable[i,]$P <- pchisq(q = -anovatable[i,]$Chisq, df = anovatable[i,]$ChiDf)
   }
   
-  modnames<-c("Full Model",names(models))
-  if(length(modnames)<length(models)){ 
-    modnames<-args2strings(...)
+  modnames <- c("Full Model",names(models))
+  if(length(modnames) < length(models)){ 
+    modnames <- args2strings(...)
   }
-  rownames(anovatable)<-modnames
+  rownames(anovatable) <- modnames
   
-  formulas<-c(fullmodel,models) %>% sapply(function(x){ x@call$formula })
-  header<-paste0(modnames,": ",formulas,"\n",collapse="") %>%paste0("\n")
+  formulas <- c(fullmodel,models) %>% sapply(function(x){ x@call$formula })
+  header <- paste0(modnames,": ", formulas, "\n", collapse="") %>% paste0("\n")
   
-  anovatable<-structure(.Data=anovatable,class=c("AnovaTable","data.frame"),suppress=suppress,
+  anovatable<-structure(.Data=anovatable,
+                        class=c("AnovaTable","data.frame"),
+                        suppress=suppress,
                         header=header)
   return(anovatable)
 }
@@ -248,9 +280,10 @@ AnovaTable<-function(...,fullmodel,models,serial=F,suppress=c("AIC","deviance","
 #' 
 #' @export
 #' @describeIn AnovaTable Print generic for anova tables.
+#' 
 print.AnovaTable<-function(x, ...){
-  attr(x,"header") %>% cat
+  attr(x,"header") %>% cat()
   x<-x[,which(!(colnames(x) %in% attr(x,"suppress")))]
-  print.data.frame(x,digits=3)
+  print.data.frame(x, digits=3)
 }
 registerS3method("print","AnovaTable",print.AnovaTable)
