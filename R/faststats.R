@@ -266,7 +266,7 @@ CorTable <- function(x, method=c("pearson","spearman"), alpha=.05,
     output$p[trow,tcol] <- 2*pt(-abs(r2t(tcor,tn-2)), df=tn-2)
     hobj <- cor.holdout(x=currvars[,1,drop=T], y=currvars[,2,drop=T],
                         goal=holdout.goal, method=method, alpha=alpha)
-    output$h[trow,tcol] <- hobj$h
+    output$h[trow,tcol] <- ifelse(hobj$success,hobj$h,NA)
   }
   
   # Form output object
@@ -323,8 +323,5 @@ print.CorTable<-function(x, type=c("full","r/p","r/h"),
   return(invisible(printx))
 }
 
-# In holdout function, turn 'omit' into an integer vector
-# And fix what makes this crash: 
-# CorTable(mtcars,holdout.goal="flip") |> print(type="r/h",alpha=0)
 
 

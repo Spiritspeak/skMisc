@@ -33,7 +33,10 @@ cor.outlying<-function(x,y){
 #' (total number of observations - 2)
 #' - final.r: the correlation after removal of observations
 #' - final.p: the p value after removal of observations
-#' - omit: logical vector denoting which observations were omitted to obtain result
+#' - omit: integer vector denoting which observations were omitted 
+#' at which iteration to obtain the result. A zero value indicates that 
+#' the observation was excluded beforehand due to presence of NAs.
+#' 
 #' @export
 #'
 #' @examples
@@ -60,13 +63,14 @@ cor.holdout<-function(x,y,
     x<-rank(x)
     y<-rank(y)
   }
-  
   goal<-match.arg(goal)
-  
   
   rval<-origrval<-cor(x,y)
   origsign<-sign(origrval)
-  incl<-rep(TRUE,length(x))
+  excl<-rep(NA,length(x))
+  excl[is.na(x) | is.na(y)]<-0
+  incl<-is.na(excl)
+  iter<-0
   
   # Set goal-reached checker
   if(goal=="nsig"){
@@ -75,12 +79,11 @@ cor.holdout<-function(x,y,
       p<-2*pt(q=abs(t),df=df,lower.tail=F)
       return(p>alpha)
     }
-  }else
-    if(goal=="flip"){
-      checkGoal<-function(r,...){
-        return(sign(r)!=origsign)
-      }
+  }else if(goal=="flip"){
+    checkGoal<-function(r,...){
+      return(sign(r)!=origsign)
     }
+  }
   
   # Function for finding the next entry to delete
   findNextToDelete<-function(){
@@ -89,30 +92,34 @@ cor.holdout<-function(x,y,
   }
   
   while(T){
+    iter<-iter+1
     # Evaluate termination conditions
-    rval<-cor(x[incl],y[incl])
     currn<-sum(incl)
-    if(currn<=2){
+    if(currn<=2 | var(x[incl])==0 | var(y[incl])==0){
       success<-F
       break 
-    }else
+    }else{
+      rval<-cor(x[incl],y[incl])
       if(checkGoal(r=rval,df=sum(incl)-2)){
         success<-T
         break
       }
-    
+    }
     idx<-findNextToDelete()
+    excl[incl][idx]<-iter
     incl[incl][idx]<-F
   }
   
-  lastdf<-sum(incl)-2
+  h<-sum(excl>0,na.rm=T)
+  lastdf<-h-2
   
+  # Prepare output
   outlist<-list(final.r=rval,
                 final.p=(rval |> r2t(df=lastdf) |> abs() |> pt(df=lastdf,lower.tail=F))*2,
                 success=success,
-                h=sum(!incl),
-                omit=!incl,
-                h.prop=sum(!incl)/(length(x)-2))
+                h=h,
+                omit=excl,
+                h.prop=h/(sum(!is.na(x) & !is.na(y))-2))
   out<-structure(.Data=outlist,class="cor.holdout")
   return(out)
 }
