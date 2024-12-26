@@ -13,8 +13,11 @@
 #' @examples 
 #'  ExtractRandomTerms(grade ~ ChildIQ * TeacherSkill * SchoolType +
 #'                                (ChildIQ * TeacherSkill | Class/School))
-#'                               
-ExtractRandomTerms<-function(form){
+#'
+#'  ExtractRandomTerms(grade ~ ChildIQ * TeacherSkill * SchoolType +
+#'                                (ChildIQ * TeacherSkill || Class/School))
+#'                                
+ExtractRandomTerms <- function(form){
   bars <- findbars(form)
   
   modterms <- lapply(bars, FUN=function(x){
@@ -28,7 +31,7 @@ ExtractRandomTerms<-function(form){
     x
   })
   
-  names(modterms) <- lapply(bars,FUN=function(x){
+  names(modterms) <- lapply(bars, FUN=function(x){
     x %<>% as.character()
     if(length(x) > 1){
       x %<>% extract2(3)
@@ -58,8 +61,7 @@ FindTopTerms <- function(form){
   dep <- rep(0,ncol(form))
   for(i in seq_len(ncol(form))){
     for(j in seq_len(ncol(form))[-i]){
-      #dep[i]<- dep[i] + all(which(as.logical(form[,i])) %in% which(as.logical(form[,j])))
-      dep[i] <- dep[i] + all(and(form[,i], form[,j])==form[,i])
+      dep[i] <- dep[i] + all(and(form[,i], form[,j]) == form[,i])
     }
   }
   return(colnames(form)[!dep])
@@ -187,7 +189,7 @@ ComputeLowerModels2 <- function(model, data, group="", ...){
   warns <- sapply(results, function(x){ paste(x@optinfo$warnings, collapse="\n") })
   message(paste0("Warning in model ", names(results)[warns!=""], ": ", warns[warns != ""]))
   
-  anovatable<-AnovaTable(model, results)
+  anovatable <- AnovaTable(model, results)
   
   print(anovatable)
   return(invisible(list(anovatable=anovatable, models=results)))
@@ -212,8 +214,8 @@ ComputeLowerModels2 <- function(model, data, group="", ...){
 #'
 #' @examples 
 #' 
-AnovaTable<-function(...,fullmodel, models, serial=FALSE, 
-                     suppress=c("AIC","deviance","logLik")){
+AnovaTable<-function(..., fullmodel, models, serial=FALSE, 
+                     suppress=c("AIC", "deviance", "logLik")){
   if(missing(models) & missing(fullmodel)){    
     models <- list(...)
     fullmodel <- models[[1]]
@@ -235,10 +237,10 @@ AnovaTable<-function(...,fullmodel, models, serial=FALSE,
                            ChiDf=NA,
                            P=NA)
   
-  i<-1
+  i <- 1
   for(mod in models){
-    i<-i+1
-    mumin<-MuMIn::r.squaredGLMM(mod)
+    i <- i+1
+    mumin <- MuMIn::r.squaredGLMM(mod)
     LL <- logLik(mod)
     anovatable %<>% rbind(
       data.frame(Df=LL %>% attr("df"),
@@ -255,6 +257,7 @@ AnovaTable<-function(...,fullmodel, models, serial=FALSE,
                  ChiDf=NA,
                  P=NA))
   }
+  
   for(i in 2:nrow(anovatable)){
     anovatable[i,]$Chisq <- anovatable[ifelse(serial,i-1,1),]$deviance - anovatable[i,]$deviance
     anovatable[i,]$ChiDf <- anovatable[ifelse(serial,i-1,1),]$Df - anovatable[i,]$Df
@@ -270,10 +273,10 @@ AnovaTable<-function(...,fullmodel, models, serial=FALSE,
   formulas <- c(fullmodel,models) %>% sapply(function(x){ x@call$formula })
   header <- paste0(modnames,": ", formulas, "\n", collapse="") %>% paste0("\n")
   
-  anovatable<-structure(.Data=anovatable,
-                        class=c("AnovaTable","data.frame"),
-                        suppress=suppress,
-                        header=header)
+  anovatable <- structure(.Data = anovatable,
+                          class = c("AnovaTable","data.frame"),
+                          suppress = suppress,
+                          header = header)
   return(anovatable)
 }
 
@@ -283,7 +286,7 @@ AnovaTable<-function(...,fullmodel, models, serial=FALSE,
 #' 
 print.AnovaTable<-function(x, ...){
   attr(x,"header") %>% cat()
-  x<-x[,which(!(colnames(x) %in% attr(x,"suppress")))]
+  x <- x[,which(!(colnames(x) %in% attr(x,"suppress")))]
   print.data.frame(x, digits=3)
 }
 registerS3method("print","AnovaTable",print.AnovaTable)
