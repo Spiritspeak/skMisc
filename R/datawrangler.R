@@ -1,5 +1,5 @@
 #########
-# Assorted code from the switch project that I haven't yet generalized
+# Functions for matching and merging datasets with each other by ID and date
 
 min2<-function(x){ 
   if(length(x) == 0){ 
@@ -71,29 +71,44 @@ match.pps<-function(x.ids, x.dates, y.ids, y.dates){
 #' \code{x} is always administered before \code{y}.
 #'
 #' @param x,y The \code{data.frame}s to merge.
-#' @param x.ids,y.ids Vectors of participant/session IDs.
-#' @param x.dates,y.dates 
-#' @param by Additional variables to merge by
-#' @param ... Additional arguments passed to \code{base::merge()}
+#' @param idvar Name of the variable holding participant/session IDs in both x and y.
+#' @param datevar Name of the variable holding dates in both x and y.
+#' @param keep.unmatched When no match is found for a row, should it be kept or removed?
 #'
 #' @return A merged \code{data.frame} where rows of \code{x}
 #' are merged with rows of \code{y} that match by session id and where
 #' the date of each row from \code{x} directly precedes the 
 #' date of the matched row from \code{y}.
+#' 
+#' @details This matches using [match.pps()] and merges using [dplyr::full_join()].
 #' @export
 #'
 #' @examples
+#' x <- data.frame(id=c(1,2,2,3,3,4),
+#'                 date=as.POSIXct(c(1,1,3,1,3,1)),
+#'                info=letters[1:6])
+#' y <- data.frame(id=c(1,2,3,3,4),
+#'                date=as.POSIXct(c(2,2,4,2,0)),
+#'                 data=LETTERS[1:5])
+#' match.merge(x=x,y=y,idvar="id",datevar="date",keep.unmatched="all")
+#' match.merge(x=x,y=y,idvar="id",datevar="date",keep.unmatched="none")
 #' 
-#' 
-match.merge<-function(x, x.ids, x.dates, 
-                      y, y.ids, y.dates, 
-                      by, ...){
-  matches <- match.pps(x.ids, x.dates, y.ids, y.dates)
+match.merge <- function(x, y, idvar, datevar,
+                        keep.unmatched = c("all","x","y","none")){
+  keep.unmatched <- match.arg(keep.unmatched)
+  matches <- match.pps(x[[idvar]], x[[datevar]], y[[idvar]], y[[datevar]])
   x$.rowmatch <- NA
   y$.rowmatch <- NA
   x$.rowmatch[matches[[1]]] <- seq_along(matches[[1]])
   y$.rowmatch[matches[[2]]] <- seq_along(matches[[2]])
-  z <- do.call(merge, list(x = x, y = y, by = c(by,".rowmatch"), ...))
+  if(any(keep.unmatched==c("y","none"))){ x<-x[!is.na(x$.rowmatch),] }
+  if(any(keep.unmatched==c("x","none"))){ y<-y[!is.na(y$.rowmatch),] }
+  
+  args <- list(x = x, y = y, 
+               by = ".rowmatch",
+               na_matches = "never")
+  
+  z <- do.call(full_join, args)
   z$.rowmatch <- NULL
   return(z)
 }
