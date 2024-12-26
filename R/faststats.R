@@ -246,8 +246,10 @@ cor.influence<-function(x,y){
 }
 
 # test<-CorTable(mtcars)
-CorTable <- function(x, method=c("pearson","spearman"), alpha=.05){
+CorTable <- function(x, method=c("pearson","spearman"), alpha=.05,
+                     holdout.goal = c("nsig","flip")){
   method <- match.arg(method)
+  holdout.goal <- match.arg(holdout.goal)
   
   emptymat <- matrix(NA, nrow=ncol(x), ncol=ncol(x),
                      dimnames=list(colnames(x),colnames(x)))
@@ -263,7 +265,7 @@ CorTable <- function(x, method=c("pearson","spearman"), alpha=.05){
     output$n[trow,tcol] <- tn <- NROW(currvars)
     output$p[trow,tcol] <- 2*pt(-abs(r2t(tcor,tn-2)), df=tn-2)
     hobj <- cor.holdout(x=currvars[,1,drop=T], y=currvars[,2,drop=T],
-                        goal="nsig", method=method, alpha=alpha)
+                        goal=holdout.goal, method=method, alpha=alpha)
     output$h[trow,tcol] <- hobj$h
   }
   
@@ -272,25 +274,57 @@ CorTable <- function(x, method=c("pearson","spearman"), alpha=.05){
     x[lower.tri(x)] <- t(x)[lower.tri(x)]
     return(x)
   })
+  output$parameters <- list(method=method,alpha=alpha,holdout.goal=holdout.goal)
   output <- structure(output,class=c("CorTable","list"))
   
   return(output)
 }
 
-print.CorTable<-function(x, alpha=.05, ...){
-  printx <- lapply(x,function(y){
-    y <- round(y,digits=2)
+# CorTable(mtcars) |> print(type="r/h",alpha=0)
+print.CorTable<-function(x, type=c("full","r/p","r/h"),
+                         alpha=.05, digits=2, ...){
+  type <- match.arg(type)
+  
+  # Format the values
+  printx <- lapply(x[names(x)!="parameters"],function(y){
+    y <- round(y,digits=digits)
     y[] <- dropLeadingZero(y)
     diag(y)<-"."
     y
   })
+  printx$r[which(x$p<alpha)]<-paste0("*",printx$r[which(x$p<alpha)])
+  
+  hdesc<-paste0("minimum number of cases to be removed to achieve ",
+                ifelse(x$parameters$holdout.goal=="nsig",
+                       paste0("non-significance with alpha ",x$parameters$alpha),
+                       "a sign flip"))
+  
+  # Print parameters and prepare final printed matrix
+  if(type=="full"){
+    cat("Correlation type: ",x$parameters$method,
+        "\nh coefficient type: ",hdesc,
+        "\n",sep="")
+  }else{
+    newprintx<-printx$r
+    cat("Lower triangle: ",method," correlations\n",sep="")
+    if(type=="r/p"){
+      cat("Upper triangle: p-values\n")
+      newprintx[upper.tri(newprintx)] <- printx$p[upper.tri(newprintx)]
+    }else if(type=="r/h"){
+      cat("Upper triangle: ",hdesc,
+          "\n",sep="")
+      newprintx[upper.tri(newprintx)] <- printx$h[upper.tri(newprintx)]
+    }
+    printx <- newprintx
+  }
+  
+  # Print
   print(printx,quote=F,right=T)
   return(invisible(printx))
 }
 
 # In holdout function, turn 'omit' into an integer vector
-# Make CorTable() print function
-# it should have these functions:
-# 1. r, p, and h values printed in a single kable in the same cells, or cells opposite
+# And fix what makes this crash: 
+# CorTable(mtcars,holdout.goal="flip") |> print(type="r/h",alpha=0)
 
 
