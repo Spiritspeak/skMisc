@@ -249,8 +249,8 @@ cor.influence<-function(x,y){
 #' Generate a correlation table
 #' 
 #' This computes correlations from the imputed data, yielding a correlation matrix
-#' as well as matrices for sample size, p-values, and holdout values computed with
-#' [cor.holdout()]. The latter is a robustness check for the obtained correlation,
+#' as well as matrices for sample size, p-values, and holdout values (computed with
+#' [cor.holdout()]). The latter is a robustness check for the obtained correlation,
 #' denoting how many observations need to be removed before a certain goal is achieved,
 #' such as non-significance, or a flip of the sign of the correlation coefficient
 #' (represented by the argument \code{holdout.goal}).
