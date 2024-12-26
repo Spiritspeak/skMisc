@@ -245,9 +245,42 @@ cor.influence<-function(x,y){
   x*y-(x^2+y^2)/2*cor(x,y)
 }
 
-# test<-CorTable(mtcars)
-CorTable <- function(x, method=c("pearson","spearman"), alpha=.05,
-                     holdout.goal = c("nsig","flip")){
+
+#' Generate a correlation table
+#' 
+#' This computes correlations from the imputed data, yielding a correlation matrix
+#' as well as matrices for sample size, p-values, and holdout values computed with
+#' [cor.holdout()]. The latter is a robustness check for the obtained correlation,
+#' denoting how many observations need to be removed before a certain goal is achieved,
+#' such as non-significance, or a flip of the sign of the correlation coefficient
+#' (represented by the argument \code{holdout.goal}).
+#'
+#' @param x A matrix or data.frame of which the columns will be correlated with each other
+#' @param method Whether to use pearson or spearman correlations
+#' @param holdout.goal When computing the holdout statistic with [cor.holdout()], what should
+#' the goal be - non-significance ("nsig") or a flip of the sign ("flip")?
+#' @param alpha Alpha level for non-significance testing in case \code{holdout.goal="nsig"}
+#' 
+#' @details The output of this object can be printed with [print.CorTable()].
+#'
+#' @return A list with 5 items - 4 matrices 
+#' (r - correlation, n = sample size, p = p-value, h = holdout value) 
+#' and a list of parameters, such as the correlation type.
+#' NA values among the holdout values indicate that computation failed, e.g. 
+#' due to insufficient variance or an inability to achieve the holdout goal
+#' without depleting the sample size.
+#' 
+#' @export
+#'
+#' @examples
+#' test<-CorTable(mtcars,holdout.goal="flip")
+#' print(test)
+#' 
+#' test<-CorTable(mtcars,holdout.goal="nsig")
+#' print(test,type="r/h")
+#' 
+CorTable <- function(x, method=c("pearson","spearman"),
+                     holdout.goal = c("nsig","flip"), alpha=.05){
   method <- match.arg(method)
   holdout.goal <- match.arg(holdout.goal)
   
@@ -281,17 +314,45 @@ CorTable <- function(x, method=c("pearson","spearman"), alpha=.05,
 }
 
 # CorTable(mtcars) |> print(type="r/h",alpha=0)
+
+#' Print a \code{CorTable} object
+#'
+#' @param x a \code{CorTable} object
+#' @param type The type of table to print. 
+#' * \code{"full"} Separately print the correlation, sample size, p-value, and holdout matrices
+#' * \code{"r/p"} Print a single matrix with p-values in the upper triangle and 
+#' correlations in the lower triangle 
+#' * \code{"r/h"} Print a single matrix with holdout values in the upper triangle and
+#' correlations in the lower triangle 
+#' @param alpha Correlations with a p-value below this value will be highlighted 
+#' with an asterisk.
+#' @param digits Digits to round the values by. p-values will be rounded by this value +1
+#' @param ... 
+#'
+#' @return The printed character matrix is silently returned.
+#' 
+#' @md
+#' @export
+#'
+#' @examples
+#' test<-CorTable(mtcars,holdout.goal="flip")
+#' print(test)
+#' 
+#' test<-CorTable(mtcars,holdout.goal="nsig")
+#' print(test,type="r/h")
+#' 
 print.CorTable<-function(x, type=c("full","r/p","r/h"),
-                         alpha=.05, digits=2, ...){
+                         alpha=0, digits=2, ...){
   type <- match.arg(type)
   
   # Format the values
-  printx <- lapply(x[names(x)!="parameters"],function(y){
-    y <- round(y,digits=digits)
+  printx <- list()
+  for(i in 1:4){
+    y <- round(x[[i]],digits=digits+ifelse(names(x)[i]=="p",1,0))
     y[] <- dropLeadingZero(y)
     diag(y)<-"."
-    y
-  })
+    printx[[ names(x)[i] ]]<-y
+  }
   printx$r[which(x$p<alpha)]<-paste0("*",printx$r[which(x$p<alpha)])
   
   hdesc<-paste0("minimum number of cases to be removed to achieve ",
