@@ -30,10 +30,15 @@ min2<-function(x){
 #' # and participant 4 has no match between x and y because the observation in y
 #' # occurs before that in x
 #' x <- data.frame(id=c(1,2,2,3,3,4),
-#'                 date=as.POSIXct(c(1,1,3,1,2,1)))
+#'                 date=as.POSIXct(c(1,1,3,1,3,1)))
 #' y <- data.frame(id=c(1,2,3,3,4),
-#'                 date=as.POSIXct(c(2,2,4,3,0)))
+#'                 date=as.POSIXct(c(2,2,4,2,0)))
 #' match.pps(x.ids=x$id,x.dates=x$date,y.ids=y$id,y.dates=y$date)
+#' #>   x.rowid y.rowid
+#' #> 1       1       1
+#' #> 2       2       2
+#' #> 3       5       3
+#' #> 4       4       4
 #' 
 match.pps<-function(x.ids, x.dates, y.ids, y.dates){
   uids <- unique(c(x.ids, y.ids))
@@ -43,16 +48,18 @@ match.pps<-function(x.ids, x.dates, y.ids, y.dates){
     sm <- expand.grid(x.rowid = which(x.ids == uid), 
                       y.rowid = which(y.ids == uid))
     if(nrow(sm) > 0){
-      sm$diff <- y.dates[sm$y.rowid] - x.dates[sm$x.rowid]
-      sm <- sm %>% group_by(x.rowid) %>% filter(diff >= 0) %>% 
-        filter(diff == min2(diff)) %>% as.data.frame()
+      sm$diff <- as.numeric(y.dates[sm$y.rowid]) - as.numeric(x.dates[sm$x.rowid])
+      sm <- sm %>% filter(diff >= 0) %>% 
+        group_by(x.rowid) %>% filter(diff == min2(diff)) %>% 
+        group_by(y.rowid) %>% filter(diff == min2(diff)) %>% 
+        as.data.frame()
       matchlist[[length(matchlist) + 1]] <- sm[, -3]
     }
   }
   matchset <- do.call(rbind,matchlist)
   return(matchset)
 }
-# Fix this code
+
 
 #' Match and merge two data.frames by ID and date
 #' 
