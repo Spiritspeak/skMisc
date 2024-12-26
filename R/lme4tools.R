@@ -76,10 +76,13 @@ FindTopTerms <- function(form){
 #' @examples ExpandFormula(rt ~ pull * target + (pull * target | subjectid))
 #' #> rt ~ pull + target + pull:target + (pull + target + pull:target | subjectid)
 #' 
+#' ExpandFormula(rt ~ pull * target + (pull * target || subjectid))
+#' 
 ExpandFormula <- function(form){
   labs <- form %>% terms() %>% attr("term.labels")
   norandos <- labs[!grepl("\\|",labs)]
-  #norandos<-form%>%nobars%>%terms%>%attr("term.labels")
+  #norandos<-form %>% nobars %>% terms %>% 
+  attr("term.labels")
   randos <- ExtractRandomTerms(form)
   randlist <- character()
   for(i in seq_len(length(randos))){

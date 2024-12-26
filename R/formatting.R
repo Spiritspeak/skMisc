@@ -6,7 +6,7 @@ NULL
 #' @examples
 #' ggplot(mtcars,aes(x=mpg,y=wt)) + geom_point() + theme_pecher()
 #' 
-theme_pecher<-function(){
+theme_pecher <- function(){
   theme_bw() + 
     theme(text = element_text(size=14, family="serif"),
           plot.title = element_text(hjust = 0.5),
@@ -23,9 +23,9 @@ theme_pecher<-function(){
 
 #' @describeIn ggplot.themes Theme appropriate for APA manuscripts
 #' @examples
-#' ggplot(mtcars,aes(x=mpg,y=wt)) + geom_point() + apatheme()
+#' ggplot(mtcars,aes(x=mpg,y=wt)) + geom_point() + theme_apa()
 #' 
-apatheme<-function(){
+theme_apa <- function(){
   theme_bw() + 
     theme(legend.position="bottom",panel.grid=element_blank(),
           panel.border = element_blank(),

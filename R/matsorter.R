@@ -44,18 +44,12 @@ sortmat<-function(mat,sorttype=c("diag","center","bottomright")){
     propmat<-mat[key,key]
     newscore<-sum(propmat*wt)
     if(newscore>oldscore){
-      #message("Gain: i=",i,", +",newscore-oldscore)
       oldscore<-newscore
       mat<-propmat
     }
   }
   
   return(mat)
-}
-
-# For viewing the matrix as image
-showmat<-function(x){
-  image(x[,rev(seq_len(dim(x)[2]))])
 }
 
 
