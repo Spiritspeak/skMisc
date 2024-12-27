@@ -39,74 +39,81 @@ vec.removeOLs <- function(x){
 # Formatted t-test comparing to zero
 zerodiff <- function(x){
   x <- na.omit(x)
-  tt <- t.test(x)
-  cat("t (", tt$parameter, ") = ", tt$statistic,
-      ", p = ", tt$p.value,
-      ", g = ", format(CohenD(x,correct=T), digits=5),
-      ", M = ", format(mean(x), digits=5),
+  test <- t.test(x)
+  cat("t (", test$parameter, ") = ", dropLeadingZero(format(test$statistic, digits=2)),
+      ", p = ", dropLeadingZero(format(test$p.value, digits=3)),
+      ", g = ", dropLeadingZero(format(CohenD(x, correct=T), digits=2)),
+      ", M = ", dropLeadingZero(format(mean(x), digits=2)),
       "\n", sep="")
+  return(invisible(test))
 }
 
 # Formatted t-test
-twodiff <- function(form,data,paired=F){
+twodiff <- function(form, data, paired=FALSE){
   term <- as.character(form)[3]
   outcome <- as.character(form)[2]
   data <- data[,c(term, outcome)]
   data <- na.omit(data)
   
-  tt <- t.test(form, data, paired=paired)
+  test <- t.test(form, data, paired=paired)
   x <- data[[outcome]][ data[[term]] == unique(data[[term]])[1] ]
   y <- data[[outcome]][ data[[term]] == unique(data[[term]])[2] ]
-  cat("t (", tt$parameter, ") = ", tt$statistic, 
-      ", p = ", tt$p.value,
-      ", g = ", format(CohenD(x=x, y=y, correct=T), digits=5),
-      ", Mdiff = ", format(mean(x) - mean(y), digits=5),
+  cat("t (", test$parameter, ") = ", dropLeadingZero(format(test$statistic, digits=2)),
+      ", p = ", dropLeadingZero(format(test$p.value, digits=3)),
+      ", g = ", dropLeadingZero(format(CohenD(x=x, y=y, correct=T), digits=2)),
+      ", Mdiff = ", dropLeadingZero(format(mean(x) - mean(y), digits=2)),
       "\n", sep="")
+  return(invisible(test))
 }
 
 # Formatted t-test for two inputs
-twodiff2 <- function(x, y, paired=F){
-  tt <- t.test(x=x, y=y, paired=paired)
-  cat("t (", tt$parameter, ") = ", tt$statistic, 
-      ", p = ", tt$p.value,
-      ", g = ", format(CohenD(x=x, y=y, correct=T), digits=5),
-      ", Mdiff = ", format(mean(x) - mean(y), digits=5),
+twodiff2 <- function(x, y, paired=FALSE){
+  test <- t.test(x=x, y=y, paired=paired)
+  cat("t (", test$parameter, ") = ", dropLeadingZero(format(test$statistic, digits=2)),
+      ", p = ", dropLeadingZero(format(test$p.value, digits=3)),
+      ", g = ", dropLeadingZero(format(CohenD(x=x, y=y, correct=T), digits=2)),
+      ", Mdiff = ", dropLeadingZero(format(mean(x) - mean(y), digits=2)),
       "\n", sep="")
+  return(invisible(test))
 }
 
 npr.zerodiff <- function(x){
   x <- na.omit(x)
   test <- coin::wilcoxsign_test(rep(0, length(x))~x, exact=T)
-  cat("Z = ", format(test@statistic@teststatistic, digits=5),
-      ", p = ", format(test@distribution@pvalue(test@statistic@teststatistic), digits=5),
-      ", Mdiff = ", format(mean(x), digits=5),
+  cat("Z = ", dropLeadingZero(format(test@statistic@teststatistic, digits=2)),
+      ", p = ", dropLeadingZero(format(test@distribution@pvalue(test@statistic@teststatistic), digits=3)),
+      ", Mdiff = ", dropLeadingZero(format(mean(x), digits=2)),
       "\n", sep="")
+  return(invisible(test))
 }
 
 # Formatted Wilcoxon test
-npr.twodiff <- function(form,data){
+npr.twodiff <- function(form, data){
   term <- as.character(form)[3]
   outcome <- as.character(form)[2]
-  data <- data[, c(term,outcome)]
+  data <- data[, c(term, outcome)]
   data[[term]] <- factor(data[[term]])
   data <- na.omit(data)
-  test <- coin::wilcox_test(form,data, distribution="exact",conf.int=T)
+  test <- coin::wilcox_test(form, data, distribution="exact", conf.int=T)
   
   x <- data[[outcome]][ data[[term]] == unique(data[[term]])[1] ]
   y <- data[[outcome]][ data[[term]] == unique(data[[term]])[2] ]
   
-  cat("Z = ", format(test@statistic@teststatistic, digits=5),
-      ", p = ", format(test@distribution@pvalue(test@statistic@teststatistic), digits=5),
-      ", Mdiff = ", format(mean(x) - mean(y), digits=5),
+  cat("Z = ", dropLeadingZero(format(test@statistic@teststatistic, digits=2)),
+      ", p = ", dropLeadingZero(format(test@distribution@pvalue(test@statistic@teststatistic), digits=3)),
+      ", Mdiff = ", dropLeadingZero(format(mean(x) - mean(y), digits=2)),
       "\n", sep="")
+  return(invisible(test))
 }
 
 # formatted correlation
 print.cor <- function(x, y, method="pearson"){
-  h <- cor.test(x, y, method=method)
-  cat(method, " r (", h$parameter, ") = ", dropLeadingZero(format(h$estimate,digits=2)),
-      ", p = ",dropLeadingZero(format(h$p.value,digits=3)),
+  test <- cor.test(x, y, method=method)
+  cat(method, " r (", test$parameter, ") = ",
+      dropLeadingZero(format(test$estimate, digits=2)),
+      ", p = ",dropLeadingZero(format(test$p.value, digits=3)),
       "\n", sep="")
+  return(invisible(test))
 }
 
 
@@ -226,25 +233,6 @@ bonferroniHolm <- function(x, alpha=.05){
   }
   return(sigvec)
 }
-
-#' Influence function of the Pearson correlation coefficient
-#'
-#' @param x,y Numeric vectors
-#'
-#' @return Influence values of all observations.
-#' @export
-#'
-#' @examples
-#' outlier<-numeric(100)
-#' outlier[1]<-1000
-#' cor.influence(rnorm(100)+outlier,rnorm(100)+outlier)
-#' 
-cor.influence<-function(x,y){
-  x<-x-mean(x)
-  y<-y-mean(y)
-  x*y-(x^2+y^2)/2*cor(x,y)
-}
-
 
 #' Generate a correlation table
 #' 

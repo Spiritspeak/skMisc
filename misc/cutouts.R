@@ -130,3 +130,23 @@ logit.weightfun<-function(x,mean=mean(x),s=sd(x),
   return(out)
 }
 
+
+
+#' Influence function of the Pearson correlation coefficient
+#'
+#' @param x,y Numeric vectors
+#'
+#' @return Influence values of all observations.
+#' @export
+#'
+#' @examples
+#' outlier<-numeric(100)
+#' outlier[1]<-1000
+#' cor.influence(rnorm(100)+outlier,rnorm(100)+outlier)
+#' 
+cor.influence<-function(x,y){
+  x<-x-mean(x)
+  y<-y-mean(y)
+  x*y-(x^2+y^2)/2*cor(x,y)
+}
+
