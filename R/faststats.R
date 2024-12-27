@@ -1,3 +1,5 @@
+# Add paired/unpaired nonparametric two-var comparison test
+# Merge remove and mask OLs functions
 
 # Remove rows with OLs from data frame
 removeOLs <- function(.tbl, olvars, groups=NULL, s=3){
@@ -26,24 +28,38 @@ maskOLs <- function(.tbl, olvars, groups=NULL, s=3){
 }
 
 # Remove OLs in a vector
-vec.removeOLs <- function(x, s=3){
+vec.removeOLs <- function(x, s=3, make.na=FALSE){
   excl <- which(abs(vec.scale(x)) > s)
   message("Excluding ", length(excl), " observations from vector")
-  if(length(excl) > 0){ 
-    return(x[-excl])
+  if(length(excl) > 0){
+    if(make.na){
+      x[excl]<-NA
+      return(x)
+    }else{
+      return(x[-excl])
+    }
   }else{ 
     return(x)
   }
+}
+
+# Statistic-printing helper functions
+mf <- function(x, digits=2, ptype=FALSE){
+  printx <- round(x, digits=digits) %>% format(scientific=F) %>% dropLeadingZero()
+  if(printx == 0 & ptype){
+    printx <- "<.001"
+  }
+  return(printx)
 }
 
 # Formatted t-test comparing to zero
 zerodiff <- function(x){
   x <- na.omit(x)
   test <- t.test(x)
-  cat("t (", test$parameter, ") = ", dropLeadingZero(format(test$statistic, digits=2)),
-      ", p = ", dropLeadingZero(format(test$p.value, digits=3)),
-      ", g = ", dropLeadingZero(format(CohenD(x, correct=T), digits=2)),
-      ", M = ", dropLeadingZero(format(mean(x), digits=2)),
+  cat("t (", test$parameter, ") = ", mf(test$statistic, digits=2),
+      ", p = ", mf(test$p.value, digits=3, ptype=T),
+      ", g = ", mf(CohenD(x, correct=T), digits=2),
+      ", M = ", mf(mean(x), digits=2),
       "\n", sep="")
   return(invisible(test))
 }
@@ -58,10 +74,10 @@ twodiff <- function(form, data, paired=FALSE){
   test <- t.test(form, data, paired=paired)
   x <- data[[outcome]][ data[[term]] == unique(data[[term]])[1] ]
   y <- data[[outcome]][ data[[term]] == unique(data[[term]])[2] ]
-  cat("t (", test$parameter, ") = ", dropLeadingZero(format(test$statistic, digits=2)),
-      ", p = ", dropLeadingZero(format(test$p.value, digits=3)),
-      ", g = ", dropLeadingZero(format(CohenD(x=x, y=y, correct=T), digits=2)),
-      ", Mdiff = ", dropLeadingZero(format(mean(x) - mean(y), digits=2)),
+  cat("t (", test$parameter, ") = ", mf(test$statistic, digits=2),
+      ", p = ", mf(test$p.value, digits=3, ptype=T),
+      ", g = ", mf(CohenD(x=x, y=y, correct=T), digits=2),
+      ", Mdiff = ", mf(mean(x) - mean(y), digits=2),
       "\n", sep="")
   return(invisible(test))
 }
@@ -69,25 +85,26 @@ twodiff <- function(form, data, paired=FALSE){
 # Formatted t-test for two inputs
 twodiff2 <- function(x, y, paired=FALSE){
   test <- t.test(x=x, y=y, paired=paired)
-  cat("t (", test$parameter, ") = ", dropLeadingZero(format(test$statistic, digits=2)),
-      ", p = ", dropLeadingZero(format(test$p.value, digits=3)),
-      ", g = ", dropLeadingZero(format(CohenD(x=x, y=y, correct=T), digits=2)),
-      ", Mdiff = ", dropLeadingZero(format(mean(x) - mean(y), digits=2)),
+  cat("t (", test$parameter, ") = ", mf(test$statistic, digits=2),
+      ", p = ", mf(test$p.value, digits=3, ptype=T),
+      ", g = ", mf(CohenD(x=x, y=y, correct=T), digits=2),
+      ", Mdiff = ", mf(mean(x) - mean(y), digits=2),
       "\n", sep="")
   return(invisible(test))
 }
 
+# Formatted Wilcoxon signed-rank test
 npr.zerodiff <- function(x){
   x <- na.omit(x)
   test <- coin::wilcoxsign_test(rep(0, length(x))~x, exact=T)
-  cat("Z = ", dropLeadingZero(format(test@statistic@teststatistic, digits=2)),
-      ", p = ", dropLeadingZero(format(test@distribution@pvalue(test@statistic@teststatistic), digits=3)),
-      ", Mdiff = ", dropLeadingZero(format(mean(x), digits=2)),
+  cat("Z = ", mf(test@statistic@teststatistic, digits=2),
+      ", p = ", mf(test@distribution@pvalue(test@statistic@teststatistic), digits=3, ptype=T),
+      ", Mdiff = ", mf(mean(x), digits=2),
       "\n", sep="")
   return(invisible(test))
 }
 
-# Formatted Wilcoxon test
+# Formatted Wilcoxon-Mann-Whitney test
 npr.twodiff <- function(form, data){
   term <- as.character(form)[3]
   outcome <- as.character(form)[2]
@@ -99,19 +116,19 @@ npr.twodiff <- function(form, data){
   x <- data[[outcome]][ data[[term]] == unique(data[[term]])[1] ]
   y <- data[[outcome]][ data[[term]] == unique(data[[term]])[2] ]
   
-  cat("Z = ", dropLeadingZero(format(test@statistic@teststatistic, digits=2)),
-      ", p = ", dropLeadingZero(format(test@distribution@pvalue(test@statistic@teststatistic), digits=3)),
-      ", Mdiff = ", dropLeadingZero(format(mean(x) - mean(y), digits=2)),
+  cat("Z = ", mf(test@statistic@teststatistic, digits=2),
+      ", p = ", mf(test@distribution@pvalue(test@statistic@teststatistic), digits=3, ptype=T),
+      ", Mdiff = ", mf(mean(x) - mean(y), digits=2),
       "\n", sep="")
   return(invisible(test))
 }
 
 # formatted correlation
-print.cor <- function(x, y, method="pearson"){
+twocor <- function(x, y, method="pearson"){
   test <- cor.test(x, y, method=method)
   cat(method, " r (", test$parameter, ") = ",
-      dropLeadingZero(format(test$estimate, digits=2)),
-      ", p = ",dropLeadingZero(format(test$p.value, digits=3)),
+      mf(test$estimate, digits=2),
+      ", p = ",mf(test$p.value, digits=3, ptype=T),
       "\n", sep="")
   return(invisible(test))
 }
