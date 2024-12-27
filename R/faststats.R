@@ -1,23 +1,23 @@
 
 # Remove rows with OLs from data frame
-removeOLs <- function(.tbl,olvars,groups=NULL){
+removeOLs <- function(.tbl, olvars, groups=NULL, s=3){
   newtbl <- .tbl %>% group_by(across(all_of(groups))) %>% 
-    filter(if_all(.cols=(olvars),.fns=function(x){ abs(vec.scale(x))<3 })) %>% 
+    filter(if_all(.cols=(olvars), .fns=function(x){ abs(vec.scale(x)) <= s })) %>% 
     ungroup()
-  message("Filtered ",nrow(.tbl)-nrow(newtbl)," rows")
+  message("Filtered ", nrow(.tbl)-nrow(newtbl), " rows")
   return(newtbl)
 }
 
 # Replace OLs with NA
-maskOLs <- function(.tbl,olvars,groups=NULL){
+maskOLs <- function(.tbl, olvars, groups=NULL, s=3){
   if(!is.null(groups)){
     groupvar <- interaction(.tbl[groups])
   }else{
-    groupvar <- rep(1,nrow(.tbl))
+    groupvar <- rep(1, nrow(.tbl))
   }
   for(olvar in olvars){
     key <- tapply(.tbl[[olvar]], groupvar,
-                  function(x) abs(vec.scale(x)) > 3) %>% 
+                  function(x) abs(vec.scale(x)) > s) %>% 
       unlist() %>% which()
     .tbl[[olvar]][key] <- NA
     message("Masked ", length(key), " outliers from variable ", olvar)
@@ -26,8 +26,8 @@ maskOLs <- function(.tbl,olvars,groups=NULL){
 }
 
 # Remove OLs in a vector
-vec.removeOLs <- function(x){
-  excl<-which(abs(vec.scale(x)) > 3)
+vec.removeOLs <- function(x, s=3){
+  excl <- which(abs(vec.scale(x)) > s)
   message("Excluding ", length(excl), " observations from vector")
   if(length(excl) > 0){ 
     return(x[-excl])
@@ -329,46 +329,46 @@ CorTable <- function(x, method=c("pearson","spearman"),
 #' test<-CorTable(mtcars,holdout.goal="nsig")
 #' print(test,type="r/h")
 #' 
-print.CorTable<-function(x, type=c("full","r/p","r/h"),
-                         alpha=0, digits=2, ...){
+print.CorTable <- function(x, type=c("full", "r/p", "r/h"),
+                           alpha=0, digits=2, ...){
   type <- match.arg(type)
   
   # Format the values
   printx <- list()
   for(i in 1:4){
-    y <- round(x[[i]],digits=digits+ifelse(names(x)[i]=="p",1,0))
+    y <- round(x[[i]], digits=digits + ifelse(names(x)[i]=="p", 1, 0))
     y[] <- dropLeadingZero(y)
-    diag(y)<-"."
-    printx[[ names(x)[i] ]]<-y
+    diag(y) <- "."
+    printx[[ names(x)[i] ]] <- y
   }
-  printx$r[which(x$p<alpha)]<-paste0("*",printx$r[which(x$p<alpha)])
+  printx$r[which(x$p<alpha)] <- paste0("*",printx$r[which(x$p<alpha)])
   
   hdesc<-paste0("minimum number of cases to be removed to achieve ",
-                ifelse(x$parameters$holdout.goal=="nsig",
-                       paste0("non-significance with alpha ",x$parameters$alpha),
+                ifelse(x$parameters$holdout.goal == "nsig",
+                       paste0("non-significance with alpha ", x$parameters$alpha),
                        "a sign flip"))
   
   # Print parameters and prepare final printed matrix
   if(type=="full"){
-    cat("Correlation type: ",x$parameters$method,
-        "\nh coefficient type: ",hdesc,
-        "\n",sep="")
+    cat("Correlation type: ", x$parameters$method,
+        "\nh coefficient type: ", hdesc,
+        "\n", sep="")
   }else{
-    newprintx<-printx$r
-    cat("Lower triangle: ",method," correlations\n",sep="")
+    newprintx <- printx$r
+    cat("Lower triangle: ", method, " correlations\n", sep="")
     if(type=="r/p"){
       cat("Upper triangle: p-values\n")
       newprintx[upper.tri(newprintx)] <- printx$p[upper.tri(newprintx)]
     }else if(type=="r/h"){
-      cat("Upper triangle: ",hdesc,
-          "\n",sep="")
+      cat("Upper triangle: ", hdesc,
+          "\n", sep="")
       newprintx[upper.tri(newprintx)] <- printx$h[upper.tri(newprintx)]
     }
     printx <- newprintx
   }
   
   # Print
-  print(printx,quote=F,right=T)
+  print(printx, quote=F, right=T)
   return(invisible(printx))
 }
 
