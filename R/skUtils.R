@@ -176,10 +176,10 @@ nthWeekdayOfMonth<-function(x){
 #' a<-rnorm(100)
 #' quantize(a,5)
 #' 
-quantize<-function(x,n){
-  quants<-quantile(x,seq_len(n-1)/n,na.rm=T)
-  quants<-c(-Inf,quants,Inf)
-  cut(x,breaks=quants,labels=seq_len(n))
+quantize <- function(x, n){
+  quants <- quantile(x, seq_len(n-1)/n, na.rm=T)
+  quants <- c(-Inf, quants, Inf)
+  cut(x, breaks=quants, labels=seq_len(n))
 }
 
 
@@ -531,7 +531,7 @@ LevenshteinDistance<-function(source,target){
 #' "flour;sauce;mustard;salt;pepper;vinegar;baking soda;water;tomatoes;onion;steak")
 #' vector2columns(unsplit)
 #' 
-vector2columns<-function(x, sep=";"){
+vector2columns <- function(x, sep=";"){
   vals <- strsplit(x, sep)
   uniques <- unique(unlist(vals))
   idx <- t(sapply(vals, function(y){ uniques %in% y }))

@@ -52,6 +52,7 @@ theme_apa <- function(){
 #'
 #' @examples
 #' dropLeadingZero(c(-1,0,1,0.5,-0.5,1.5,-1.5))
+#' 
 dropLeadingZero <- function(x){
   gsub("(?<![0-9])0+(?=\\.)", "", x, perl = TRUE)
 }

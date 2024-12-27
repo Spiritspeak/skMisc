@@ -40,7 +40,7 @@ min2<-function(x){
 #' #> 3       5       3
 #' #> 4       4       4
 #' 
-match.pps<-function(x.ids, x.dates, y.ids, y.dates){
+match.pps <- function(x.ids, x.dates, y.ids, y.dates){
   uids <- unique(c(x.ids, y.ids))
   
   matchlist <- list()
