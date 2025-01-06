@@ -300,10 +300,10 @@ setRowNames<-function(x,names){ rownames(x)<-names; return(x) }
 #' @examples
 #' vec.scale(1:10)
 #' 
-vec.scale<-function(x){
-  xt<-na.omit(x)
-  m<-mean.default(xt)
-  (x-m)/sqrt((sum((xt-m)^2)/(length(xt)-1)))
+vec.scale <- function(x){
+  xt <- na.omit(x)
+  m <- mean.default(xt)
+  (x-m) / sqrt( sum((xt-m)^2)/(length(xt)-1) )
 }
 
 
@@ -354,9 +354,9 @@ retype<-function(df, ...){
 #' newmtcars <- retype_all(mtcars,from="numeric",to="character")
 #' sapply(newmtcars,class)
 #' 
-retype_all<-function(df,from,to){
-  for(i in which(sapply(df,class)==from)){
-    df[[i]]<-as(df[[i]],to)
+retype_all <- function(df, from, to){
+  for(i in which(sapply(df, class) == from)){
+    df[[i]] <- as(df[[i]],to)
   }
   df
 }
@@ -563,7 +563,7 @@ vector2columns <- function(x, sep=";"){
 #' }
 #' multimerge(testlist,by="key",all=T)
 #' 
-multimerge<-function(x, ...){
+multimerge <- function(x, ...){
   while(length(x) > 1){
     out <- list()
     while(length(x) > 0){

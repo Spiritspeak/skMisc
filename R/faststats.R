@@ -1,28 +1,85 @@
 # Add paired/unpaired nonparametric two-var comparison test
-# Merge remove and mask OLs functions
 
-# Remove rows with OLs from data frame
-removeOLs <- function(.tbl, olvars, groups=NULL, s=3){
-  newtbl <- .tbl %>% group_by(across(all_of(groups))) %>% 
-    filter(if_all(.cols=(olvars), .fns=function(x){ abs(vec.scale(x)) <= s })) %>% 
-    ungroup()
-  message("Filtered ", nrow(.tbl)-nrow(newtbl), " rows")
-  return(newtbl)
-}
 
-# Replace OLs with NA
-maskOLs <- function(.tbl, olvars, groups=NULL, s=3){
-  if(!is.null(groups)){
-    groupvar <- interaction(.tbl[groups])
-  }else{
-    groupvar <- rep(1, nrow(.tbl))
+#' Remove rows with outliers from data.frame
+#' 
+#' Outliers are defined as values deviating more than Xstandard deviations (SDs) from the mean.
+#' 
+#' @param .tbl A \code{data.frame} to exclude outliers from
+#' @param olvars Names of the variables to detect outliers in. If \code{NULL}, all variables will
+#' be checked for outliers.
+#' @param groups (optional) name of the variable identifying groups of observations; 
+#' outlier detection will be performed separately per group.
+#' @param s If a value deviates more SDs from the mean than this value, it is marked as an outlier
+#' @param make.na If \code{FALSE} (default), excludes all rows that have an outlier in
+#' at least one variable in \code{olvars} (listwise).
+#' If \code{TRUE}, the function instead turns the individual outlying values into \code{NA},
+#' and does not exclude any rows.
+#'
+#' @return The input \code{data.frame} with outliers excluded.
+#' @export
+#' @seealso [vec.removeOLs()] for the same outlier exclusion applied to a single vector.
+#'
+#' @examples
+#' # Standard deviation limits can be set with argument s
+#' removeOLs(mtcars, olvars=c("mpg", "disp", "hp"))
+#' removeOLs(mtcars, olvars=c("mpg", "disp", "hp"), s=1)
+#' 
+#' # Replace OLs with NA with argument make.na
+#' testdata <- mtcars
+#' testdata$mpg[1] <- 40
+#' testdata$hp[2] <- 500
+#' removeOLs(testdata, olvars=c("mpg", "disp", "hp"), groups="vs", make.na=T)
+#' 
+#' # Also works on matrices
+#' testmat <- matrix(rnorm(100), nrow=10)
+#' removeOLs(testmat)
+#' 
+removeOLs <- function(.tbl, olvars=NULL, groups=NULL, s=3, make.na=FALSE){
+  if(is.null(olvars)){
+    olvars <- setdiff(colnames(.tbl),groups)
+    if(is.null(olvars)){
+      olvars <- setdiff(seq_len(NCOL(.tbl)),groups)
+    }
   }
+  if(!is.null(groups)){
+    groupvar <- interaction(.tbl[,groups])
+  }else{
+    groupvar <- rep(1, NROW(.tbl))
+  }
+  keylist<-list()
   for(olvar in olvars){
-    key <- tapply(.tbl[[olvar]], groupvar,
-                  function(x) abs(vec.scale(x)) > s) %>% 
-      unlist() %>% which()
-    .tbl[[olvar]][key] <- NA
-    message("Masked ", length(key), " outliers from variable ", olvar)
+    key <- tapply(.tbl[,olvar,drop=T], groupvar,
+                  function(x) abs(vec.scale(x)) > s) |>
+      unlist() |> which()
+    if(make.na){
+      .tbl[key,olvar] <- NA
+      message("Masked ", length(key), " outliers from variable ", olvar)
+    }else{
+      keylist[[olvar]] <- key
+    }
+  }
+  if(!make.na){
+    keys <- unique(unlist(keylist))
+    if(length(keys) > 0){
+      .tbl <- .tbl[-keys, ]
+    }
+    
+    nols<-sapply(keylist,length)
+    endstr <- paste0(nols[1]," outliers in ",olvars[1])
+    if(length(olvars) > 1){
+      laststr <- paste0("and ",nols[length(nols)]," in ",olvars[length(olvars)])
+      if(length(olvars) == 2){
+        endstr <- paste(endstr, laststr)
+      }else{
+        endstr <- paste(endstr,
+                        paste0(nols[-c(1,length(nols))]," in ",olvars[-c(1,length(olvars))],
+                               collapse=", "),
+                        laststr,
+                        sep=", ")
+      }
+    }
+    message("Filtered ", length(keys), " rows from data.frame, due to ", endstr)
   }
   return(.tbl)
 }
@@ -136,7 +193,6 @@ twocor <- function(x, y, method="pearson"){
 
 
 
-
 #' Get classification accuracy metrics
 #'
 #' @param x The true class memberships
@@ -167,9 +223,9 @@ twocor <- function(x, y, method="pearson"){
 #'                               data=mtcars,
 #'                               type="response") > 0.5)
 #' 
-#' CVMetrics(x=mtcars$am, y=newpred)
+#' ClassMetrics(x=mtcars$am, y=newpred)
 #' 
-CVMetrics <- function(x, y){
+ClassMetrics <- function(x, y){
   cm <- table(x, y)
   return(c(acc=acc <- sum(diag(cm)) / sum(cm),
            chance_acc=chance_acc <- max(rowSums(cm)) / sum(cm),
@@ -318,7 +374,6 @@ CorTable <- function(x, method=c("pearson","spearman"),
   return(output)
 }
 
-# CorTable(mtcars) |> print(type="r/h",alpha=0)
 
 #' Print a \code{CorTable} object
 #'
@@ -389,5 +444,26 @@ print.CorTable <- function(x, type=c("full", "r/p", "r/h"),
   return(invisible(printx))
 }
 
+
+#' t-distribution fitter
+#' This is a wrapper around [MASS::fitdistr()] specifically intended to
+#' fit the t-distribution.
+#' 
+#' @param x Vector of values to fit the t-distribution to
+#' @param df Starting df value
+#'
+#' @return An object of class \code{"fitdistr"}.
+#' @export
+#'
+#' @examples
+#' h<-rt(1000,df=3)*3+10
+#' tpars(h)
+#' 
+tpars <- function(x, df=30){
+  MASS::fitdistr(x=x,
+                 densfun="t",
+                 start=list(m=mean(x), s=sd(x), df=df),
+                 lower=c(m=-Inf, s=0, df=1))
+}
 
 
