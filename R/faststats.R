@@ -1,22 +1,24 @@
 # Add paired/unpaired nonparametric two-var comparison test
 
 
-#' Remove rows with outliers from data.frame
+#' Remove rows with outliers from data.frame or matrix
 #' 
 #' Outliers are defined as values deviating more than Xstandard deviations (SDs) from the mean.
 #' 
-#' @param .tbl A \code{data.frame} to exclude outliers from
-#' @param olvars Names of the variables to detect outliers in. If \code{NULL}, all variables will
-#' be checked for outliers.
-#' @param groups (optional) name of the variable identifying groups of observations; 
+#' @param .tbl A \code{data.frame} or matrix to exclude outliers from
+#' @param olvars Names or numeric index of the variables to detect outliers in. 
+#' If \code{NULL}, all variables will be checked for outliers.
+#' @param groups (optional) name or numeric index of the variable identifying groups of observations; 
 #' outlier detection will be performed separately per group.
 #' @param s If a value deviates more SDs from the mean than this value, it is marked as an outlier
 #' @param make.na If \code{FALSE} (default), excludes all rows that have an outlier in
 #' at least one variable in \code{olvars} (listwise).
 #' If \code{TRUE}, the function instead turns the individual outlying values into \code{NA},
 #' and does not exclude any rows.
+#' 
+#' @details This does not detect any outliers in groups with less than 3 non-NA observations.
 #'
-#' @return The input \code{data.frame} with outliers excluded.
+#' @return The input \code{data.frame} or matrix with outliers excluded.
 #' @export
 #' @seealso [vec.removeOLs()] for the same outlier exclusion applied to a single vector.
 #'
@@ -43,9 +45,12 @@ removeOLs <- function(.tbl, olvars=NULL, groups=NULL, s=3, make.na=FALSE){
       olvars <- setdiff(seq_len(NCOL(.tbl)),groups)
     }
   }
+  stopifnot(all(sapply(olvars,function(x)is.numeric(.tbl[,x]))))
   if(is.numeric(olvars)){ 
+    stopifnot(all(olvars <= NCOL(.tbl)))
     coltype <- "col. "
   }else{
+    stopifnot(all(olvars %in% colnames(.tbl)))
     coltype <- ""
   }
   if(!is.null(groups)){
@@ -55,9 +60,15 @@ removeOLs <- function(.tbl, olvars=NULL, groups=NULL, s=3, make.na=FALSE){
   }
   keylist <- list()
   for(olvar in olvars){
-    key <- tapply(.tbl[,olvar,drop=T], groupvar,
-                  function(x) abs(vec.scale(x)) > s) |>
-      unlist() |> which()
+    key <- ave(x=.tbl[,olvar,drop=T], 
+               groupvar,
+               FUN=function(x){ 
+                    if(sum(!is.na(x)) > 2){
+                      abs(vec.scale(x)) > s
+                    }else{
+                      rep_len(NA,length(x))
+                    }
+                  }) |> unlist() |> which()
     if(make.na){
       .tbl[key,olvar] <- NA
       message("Masked ", length(key), " outliers from ",coltype, olvar)
