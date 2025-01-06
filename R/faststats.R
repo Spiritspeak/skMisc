@@ -66,9 +66,9 @@ removeOLs <- function(.tbl, olvars=NULL, groups=NULL, s=3, make.na=FALSE){
                     if(sum(!is.na(x)) > 2){
                       abs(vec.scale(x)) > s
                     }else{
-                      rep_len(NA,length(x))
+                      rep_len(NA, length(x))
                     }
-                  }) |> unlist() |> which()
+                  }) |> which()
     if(make.na){
       .tbl[key,olvar] <- NA
       message("Masked ", length(key), " outliers from ",coltype, olvar)
@@ -90,13 +90,13 @@ removeOLs <- function(.tbl, olvars=NULL, groups=NULL, s=3, make.na=FALSE){
         endstr <- paste(endstr, laststr)
       }else{
         endstr <- paste(endstr,
-                        paste0(nols[-c(1,length(nols))]," in ", coltype, olvars[-c(1,length(olvars))],
-                               collapse=", "),
+                        paste0(nols[-c(1,length(nols))]," in ", coltype, 
+                               olvars[-c(1,length(olvars))], collapse=", "),
                         laststr,
                         sep=", ")
       }
     }
-    message("Filtered ", length(keys), " rows from data.frame, due to ", endstr)
+    message("Excluded ", length(keys), " rows, due to ", endstr)
   }
   return(.tbl)
 }
@@ -104,7 +104,7 @@ removeOLs <- function(.tbl, olvars=NULL, groups=NULL, s=3, make.na=FALSE){
 # Remove OLs in a vector
 vec.removeOLs <- function(x, s=3, make.na=FALSE){
   excl <- which(abs(vec.scale(x)) > s)
-  message("Excluding ", length(excl), " observations from vector")
+  message("Excluded ", length(excl), " observations from vector")
   if(length(excl) > 0){
     if(make.na){
       x[excl]<-NA
