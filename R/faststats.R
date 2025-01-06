@@ -32,7 +32,8 @@
 #' removeOLs(testdata, olvars=c("mpg", "disp", "hp"), groups="vs", make.na=T)
 #' 
 #' # Also works on matrices
-#' testmat <- matrix(rnorm(100), nrow=10)
+#' testmat <- matrix(rnorm(1000), ncol=5)
+#' testmat[cbind(sample(1:200,5),1:5)]<-1000
 #' removeOLs(testmat)
 #' 
 removeOLs <- function(.tbl, olvars=NULL, groups=NULL, s=3, make.na=FALSE){
@@ -42,19 +43,24 @@ removeOLs <- function(.tbl, olvars=NULL, groups=NULL, s=3, make.na=FALSE){
       olvars <- setdiff(seq_len(NCOL(.tbl)),groups)
     }
   }
+  if(is.numeric(olvars)){ 
+    coltype <- "col. "
+  }else{
+    coltype <- ""
+  }
   if(!is.null(groups)){
     groupvar <- interaction(.tbl[,groups])
   }else{
     groupvar <- rep(1, NROW(.tbl))
   }
-  keylist<-list()
+  keylist <- list()
   for(olvar in olvars){
     key <- tapply(.tbl[,olvar,drop=T], groupvar,
                   function(x) abs(vec.scale(x)) > s) |>
       unlist() |> which()
     if(make.na){
       .tbl[key,olvar] <- NA
-      message("Masked ", length(key), " outliers from variable ", olvar)
+      message("Masked ", length(key), " outliers from ",coltype, olvar)
     }else{
       keylist[[olvar]] <- key
     }
@@ -66,14 +72,14 @@ removeOLs <- function(.tbl, olvars=NULL, groups=NULL, s=3, make.na=FALSE){
     }
     
     nols<-sapply(keylist,length)
-    endstr <- paste0(nols[1]," outliers in ",olvars[1])
+    endstr <- paste0(nols[1]," outliers in ",coltype, olvars[1])
     if(length(olvars) > 1){
-      laststr <- paste0("and ",nols[length(nols)]," in ",olvars[length(olvars)])
+      laststr <- paste0("and ",nols[length(nols)]," in ", coltype, olvars[length(olvars)])
       if(length(olvars) == 2){
         endstr <- paste(endstr, laststr)
       }else{
         endstr <- paste(endstr,
-                        paste0(nols[-c(1,length(nols))]," in ",olvars[-c(1,length(olvars))],
+                        paste0(nols[-c(1,length(nols))]," in ", coltype, olvars[-c(1,length(olvars))],
                                collapse=", "),
                         laststr,
                         sep=", ")
