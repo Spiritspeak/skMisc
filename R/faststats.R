@@ -1,5 +1,5 @@
 # Add paired/unpaired nonparametric two-var comparison test
-
+# Add correct effect size for paired tests
 
 #' Remove outlying observations from a data.frame or matrix
 #' 
@@ -135,26 +135,68 @@ vec.removeOLs <- function(x, s=3, make.na=FALSE){
 
 # Statistic-printing helper functions
 mf <- function(x, digits=2, ptype=FALSE){
-  printx <- round(x, digits=digits) %>% format(scientific=F) %>% dropLeadingZero()
+  printx <- dropLeadingZero(format(round(x, digits=digits), scientific=F))
   if(printx == 0 & ptype){
     printx <- "<.001"
   }
   return(printx)
 }
 
+hedgesg <- function(x,y=NULL,paired=FALSE){
+  if(is.null(y) | (paired & !is.null(y))){
+    if(paired){
+      x <- x-y
+    }
+    mean(x)/sd(x)
+  }else if(!is.null(y) & !paired){
+    dfx <- length(x)
+    dfy <- length(y)
+    (mean(x)-mean(y)) / 
+      sqrt((dfx*var(x)+dfy*var(y))/(dfx+dfy))
+  }
+}
+
+#' @name faststats
+#' @title Statistics functions with concise output
+#' @description These were mainly created because the base stats functions
+#' produce overly verbose output without effect sizes included.
+#' 
+#' @param x,y Vectors to compare or correlate
+#' @param form A formula where the left size is the values to be compared and
+#' the right value is a binary variable defining the groups to compare
+#' @param paired whether to perform a paired or unpaired test
+#' @param data a \code{data.frame}
+#' @param method The correlation type; can be pearson, spearman, or kendall
+#' 
+#' @md
+#' 
+#' @examples 
+#' baseline <- rnorm(50)
+#' deviation <- rnorm(50,m=1)
+#' 
+#' zerodiff(deviation)
+#' 
+NULL
+
 # Formatted t-test comparing to zero
+#' @rdname faststats
+#' @export
+#' 
 zerodiff <- function(x){
   x <- na.omit(x)
   test <- t.test(x)
   cat("t (", test$parameter, ") = ", mf(test$statistic, digits=2),
       ", p = ", mf(test$p.value, digits=3, ptype=T),
-      ", g = ", mf(CohenD(x, correct=T), digits=2),
+      ", g = ", mf(hedgesg(x), digits=2),
       ", M = ", mf(mean(x), digits=2),
       "\n", sep="")
   return(invisible(test))
 }
 
 # Formatted t-test
+#' @rdname faststats
+#' @export
+#' 
 twodiff <- function(form, data, paired=FALSE){
   term <- as.character(form)[3]
   outcome <- as.character(form)[2]
@@ -166,35 +208,45 @@ twodiff <- function(form, data, paired=FALSE){
   y <- data[[outcome]][ data[[term]] == unique(data[[term]])[2] ]
   cat("t (", test$parameter, ") = ", mf(test$statistic, digits=2),
       ", p = ", mf(test$p.value, digits=3, ptype=T),
-      ", g = ", mf(CohenD(x=x, y=y, correct=T), digits=2),
+      ", g = ", mf(hedgesg(x=x, y=y, paired=paired), digits=2),
       ", Mdiff = ", mf(mean(x) - mean(y), digits=2),
       "\n", sep="")
   return(invisible(test))
 }
 
 # Formatted t-test for two inputs
+#' @rdname faststats
+#' @export
+#' 
 twodiff2 <- function(x, y, paired=FALSE){
   test <- t.test(x=x, y=y, paired=paired)
   cat("t (", test$parameter, ") = ", mf(test$statistic, digits=2),
       ", p = ", mf(test$p.value, digits=3, ptype=T),
-      ", g = ", mf(CohenD(x=x, y=y, correct=T), digits=2),
+      ", g = ", mf(hedgesg(x=x, y=y, paired=paired), digits=2),
       ", Mdiff = ", mf(mean(x) - mean(y), digits=2),
       "\n", sep="")
   return(invisible(test))
 }
 
 # Formatted Wilcoxon signed-rank test
+#' @rdname faststats
+#' @export
+#' 
 npr.zerodiff <- function(x){
   x <- na.omit(x)
   test <- coin::wilcoxsign_test(rep(0, length(x))~x, exact=T)
   cat("Z = ", mf(test@statistic@teststatistic, digits=2),
       ", p = ", mf(test@distribution@pvalue(test@statistic@teststatistic), digits=3, ptype=T),
+      ", % pos. = ", mf(mean(x>0),digits=2),
       ", Mdiff = ", mf(mean(x), digits=2),
       "\n", sep="")
   return(invisible(test))
 }
 
 # Formatted Wilcoxon-Mann-Whitney test
+#' @rdname faststats
+#' @export
+#' 
 npr.twodiff <- function(form, data){
   term <- as.character(form)[3]
   outcome <- as.character(form)[2]
@@ -214,6 +266,9 @@ npr.twodiff <- function(form, data){
 }
 
 # formatted correlation
+#' @rdname faststats
+#' @export
+#' 
 twocor <- function(x, y, method="pearson"){
   test <- cor.test(x, y, method=method)
   cat(method, " r (", test$parameter, ") = ",
