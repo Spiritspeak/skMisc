@@ -101,7 +101,23 @@ removeOLs <- function(.tbl, olvars=NULL, groups=NULL, s=3, make.na=FALSE){
   return(.tbl)
 }
 
-# Remove OLs in a vector
+
+#' Remove outlying observations from a vector
+#'
+#' @param x Vector to remove outliers from
+#' @param s If a value deviates more SDs from the mean than this value, it is marked as an outlier
+#' @param make.na If \code{FALSE}, excludes the outliers. 
+#' If \code{TRUE}, replaces them with \code{NA}.
+#'
+#' @return A vector with outliers removed or replaced with \code{NA}.
+#' @export
+#' @seealso [removeOLs()]
+#'
+#' @examples
+#' testvec <- c(1,3,5,7,9,11,13,15,17,19,100000)
+#' vec.removeOLs(testvec)
+#' vec.removeOLs(testvec,make.na=TRUE)
+#' 
 vec.removeOLs <- function(x, s=3, make.na=FALSE){
   excl <- which(abs(vec.scale(x)) > s)
   message("Excluded ", length(excl), " observations from vector")

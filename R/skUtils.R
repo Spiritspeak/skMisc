@@ -546,7 +546,7 @@ vec2columns <- function(x, sep=";"){
 #' @param x A vector of values to convert into a string representing 
 #' a grammatically correct English list
 #'
-#' @returna A string representing a grammatically correct English list
+#' @return a A string representing a grammatically correct English list
 #' @export
 #'
 #' @examples
@@ -560,7 +560,7 @@ vec2columns <- function(x, sep=";"){
 #' 
 vec2phrase <- function(x){
   lx <- length(x)
-  out <- switch(EXPR=paste(lx),
+  out <- switch(EXPR=as.character(lx),
                 `0`="",
                 `1`=as.character(x),
                 `2`=paste(x[1], "and", x[2]),
