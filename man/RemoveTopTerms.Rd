@@ -9,18 +9,21 @@ RemoveTopTerms(form, randeff = "")
 \arguments{
 \item{form}{A formula}
 
-\item{randeff}{The name of the group from which unmoderated terms should be removed. To remove from fixed effects, use \code{""} (the default).}
+\item{randeff}{The name of the group from which unmoderated terms should be removed. 
+To remove from fixed effects, use \code{""} (the default).}
 }
 \value{
-A list of formulas which have one unmoderated term removed each. The name of each list item is the term which was removed.
+A list of formulas which have one unmoderated term removed each. 
+The name of each list item is the term which was removed.
 }
 \description{
 Remove all possible models with one unmoderated term removed
 }
 \examples{
 RemoveTopTerms(a ~ b * c + d + (1|e))
-#$d
-#a ~ b + c + b:c + (1 | e)
-#$`b:c`
-#a ~ b + c + d + (1 | e)
+#> $d
+#> a ~ b + c + b:c + (1 | e)
+#> $`b:c`
+#> a ~ b + c + d + (1 | e)
+
 }

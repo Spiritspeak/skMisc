@@ -4,10 +4,10 @@
 \alias{df.init}
 \title{Initiate an empty data frame}
 \usage{
-df.init(namelist)
+df.init(x)
 }
 \arguments{
-\item{namelist}{A character vector of column names.}
+\item{x}{A character vector of column names.}
 }
 \value{
 A data.frame with 0 rows.

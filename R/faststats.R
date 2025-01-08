@@ -475,7 +475,7 @@ CorTable <- function(x, method=c("pearson","spearman"),
 #' @param alpha Correlations with a p-value below this value will be highlighted 
 #' with an asterisk.
 #' @param digits Digits to round the values by. p-values will be rounded by this value +1
-#' @param ... 
+#' @param ... Ignored
 #'
 #' @return The printed character matrix is silently returned.
 #' 
@@ -515,7 +515,7 @@ print.CorTable <- function(x, type=c("full", "r/p", "r/h"),
         "\n", sep="")
   }else{
     newprintx <- printx$r
-    cat("Lower triangle: ", method, " correlations\n", sep="")
+    cat("Lower triangle: ", x$parameters$method, " correlations\n", sep="")
     if(type=="r/p"){
       cat("Upper triangle: p-values\n")
       newprintx[upper.tri(newprintx)] <- printx$p[upper.tri(newprintx)]

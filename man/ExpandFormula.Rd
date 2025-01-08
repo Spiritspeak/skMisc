@@ -17,5 +17,8 @@ Parse a lme4 formula and return all main effects and interactions as separate te
 }
 \examples{
 ExpandFormula(rt ~ pull * target + (pull * target | subjectid))
-#rt ~ pull + target + pull:target + (pull + target + pull:target | subjectid)
+#> rt ~ pull + target + pull:target + (pull + target + pull:target | subjectid)
+
+ExpandFormula(rt ~ pull * target + (pull * target || subjectid))
+
 }

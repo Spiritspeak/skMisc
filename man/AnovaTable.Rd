@@ -9,7 +9,7 @@ AnovaTable(
   ...,
   fullmodel,
   models,
-  serial = F,
+  serial = FALSE,
   suppress = c("AIC", "deviance", "logLik")
 )
 
@@ -18,26 +18,35 @@ AnovaTable(
 \arguments{
 \item{...}{Model objects to be compared}
 
-\item{fullmodel}{A model to which all other models are to be compared; only use if \code{...} is not specified.}
+\item{fullmodel}{A model to which all other models are to be compared; 
+only use if \code{...} is not specified.}
 
 \item{models}{Models to compare to \code{fullmodel}. Only use if \code{...} is not specified.}
 
-\item{serial}{If TRUE, models are compared serially; if false, all models will be compared to the first.}
+\item{serial}{If TRUE, models are compared serially; 
+if false, all models will be compared to the first.}
 
 \item{suppress}{Character vector of column names to suppress in printed output.}
 }
 \value{
-A data.frame containing model fit metrics such as AIC, BIC, marginal R-squared (the effect size of fixed effects only),
-conditional R-squared (the effect size of all model terms), loglikelihood, deviance, and a likelihood ratio test.
+A data.frame containing model fit metrics such as AIC, BIC, 
+marginal R-squared (the effect size of fixed effects only),
+conditional R-squared (the effect size of all model terms), loglikelihood, 
+deviance, and a likelihood ratio test.
 }
 \description{
 Compare multilevel models
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{print}: Print generic for anova tables.
-}}
+\item \code{print(AnovaTable)}: Print generic for anova tables.
 
+}}
 \examples{
+library(lmerTest)
+data("sleepstudy", package="lme4")
+m1 <- lmer(Reaction ~ Days + (Days | Subject), sleepstudy)
+m2 <- lmer(Reaction ~ Days + (1 | Subject), sleepstudy)
+AnovaTable(m1,m2)
 
 }

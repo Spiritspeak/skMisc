@@ -22,4 +22,5 @@ Plot highlighted text
 plot(mtcars$mpg,mtcars$wt,col=mtcars$cyl)
 hilight(27,2.5,"Light and\nefficient")
 hilight(17,4.5,"Heavy and\ninefficient")
+
 }

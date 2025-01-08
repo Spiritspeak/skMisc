@@ -18,4 +18,5 @@ that need to be performed to turn the source string into the target string.
 }
 \examples{
 LevenshteinDistance("Yoghurt","Youtube")
+
 }

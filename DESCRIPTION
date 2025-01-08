@@ -3,10 +3,11 @@ Title: Sercan Kahveci's Miscellaneous Functions
 Version: 0.01
 Authors@R: person("Sercan", "Kahveci", email = "sercan+kahveci@sbg.ac.at", role = c("aut", "cre"))
 Description: Contains a wide range of functions. 
-Depends: R (>= 3.6.1), magrittr, dplyr, doParallel, lmerTest
-Imports: tidyr, knitr, quanteda
+Depends: R (>= 4.0), magrittr, dplyr
+Imports: lme4, lmerTest, ggplot2, coin, methods, doParallel, parallel, foreach, iterators, MASS
 License: GPL-3
 BugReports: https://github.com/Spiritspeak/skMisc/issues
 LazyData: true
 ByteCompile: true
-RoxygenNote: 7.1.1
+RoxygenNote: 7.3.2
+Encoding: UTF-8

@@ -20,7 +20,8 @@ cor.outlying<-function(x,y){
 #' move the correlation coefficient to zero, until it is 
 #' either no longer significant or has changed its sign
 #'
-#' @param x,y Numeric vectors of variables to correlate
+#' @param x,y Numeric vectors of variables to correlate. 
+#' In case of the print function, \code{x} is a \code{cor.holdout} object to print. 
 #' @param goal Objective of observation removal: 
 #' "nsig" (no longer significant) or "flip" (change of sign).
 #' @param method Correlation method, either "pearson" or "spearman"
@@ -80,7 +81,7 @@ cor.holdout<-function(x,y,
       return(p>alpha)
     }
   }else if(goal=="flip"){
-    checkGoal<-function(r,...){
+    checkGoal<-function(r,df,...){
       return(sign(r)!=origsign)
     }
   }
@@ -125,7 +126,6 @@ cor.holdout<-function(x,y,
 }
 
 #' @rdname cor.holdout
-#' @param x A cor.holdout object.
 #' @param ... Ignored.
 #' @export
 print.cor.holdout<-function(x,...){

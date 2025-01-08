@@ -1,2 +1,6 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^misc$
+^LICENSE\.md$
+^generate_manual\.R$
+^skmisc.*\.pdf$

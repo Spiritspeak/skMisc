@@ -10,7 +10,8 @@ FindTopTerms(form)
 \item{form}{a formula}
 }
 \value{
-A character vector containing all model terms that are not moderated by a higher-order interaction.
+A character vector containing all model terms that are not moderated 
+by a higher-order interaction.
 }
 \description{
 Find all model terms that are not moderated by a higher-order interaction
@@ -18,4 +19,5 @@ Find all model terms that are not moderated by a higher-order interaction
 \examples{
 FindTopTerms(speed ~ skill + weight * friction)
 #[1] "skill"           "weight:friction"
+
 }

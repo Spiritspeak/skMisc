@@ -28,7 +28,5 @@ for(i in 1:lsize){
   colnames(testlist[[i]])[2]<-paste0("info",i)
 }
 multimerge(testlist,by="key",all=T)
-}
-\author{
-Sercan Kahveci
+
 }

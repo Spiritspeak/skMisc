@@ -10,14 +10,17 @@ ExtractRandomTerms(form)
 \item{form}{A formula}
 }
 \value{
-A named list containing character vectors with random terms; names are group variables.
+A named list containing character vectors with random terms; 
+names are group variables.
 }
 \description{
 Extract random terms from a lme4 formula
 }
 \examples{
-ExtractRandomTerms(grade ~ ChildIQ * TeacherSkill * SchoolType + 
-                              (ChildIQ * TeacherSkill | School))
-#$School
-#[1] "ChildIQ"              "TeacherSkill"         "ChildIQ:TeacherSkill"
+ ExtractRandomTerms(grade ~ ChildIQ * TeacherSkill * SchoolType +
+                               (ChildIQ * TeacherSkill | Class/School))
+
+ ExtractRandomTerms(grade ~ ChildIQ * TeacherSkill * SchoolType +
+                               (ChildIQ * TeacherSkill || Class/School))
+                               
 }

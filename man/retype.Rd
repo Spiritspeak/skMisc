@@ -16,32 +16,26 @@ retype_all(df, from, to)
 
 \code{age = numeric(), language = character()}}
 
-\item{from}{An empty vector of the class to convert from, or a string. Columns sharing the class of argument \code{from} will be converted to the class of argument \code{to}.}
+\item{from}{An empty vector of the class to convert from, or a string. 
+Columns sharing the class of argument \code{from} will be converted 
+to the class of argument \code{to}.}
 
-\item{to}{An empty vector of the class to convert to, or a string. Columns sharing the class of argument \code{from} will be converted to the class of argument \code{to}.}
+\item{to}{An empty vector of the class to convert to, or a string. 
+Columns sharing the class of argument \code{from} will be converted 
+to the class of argument \code{to}.}
 }
 \description{
-\code{retype()} changes the class of specific columns; \code{retype_all()} changes the class of all columns of a given class.
+\code{retype()} changes the class of specific columns; 
+\code{retype_all()} changes the class of all columns of a given class.
 }
 \examples{
 sapply(ToothGrowth,class)
-#      len      supp      dose 
-#"numeric"  "factor" "numeric" 
 NewToothGrowth <- retype(ToothGrowth, supp = character(), dose = factor())
 sapply(NewToothGrowth,class)
-#      len        supp        dose 
-#"numeric" "character"    "factor" 
+
 
 sapply(mtcars,class)
-#       mpg       cyl      disp        hp      drat        wt
-# "numeric" "numeric" "numeric" "numeric" "numeric" "numeric"
-#      qsec        vs        am      gear      carb 
-# "numeric" "numeric" "numeric" "numeric" "numeric" 
-
 newmtcars <- retype_all(mtcars,from="numeric",to="character")
 sapply(newmtcars,class)
-#         mpg         cyl        disp          hp        drat
-# "character" "character" "character" "character" "character"
-#          wt        qsec          vs          am        gear        carb 
-# "character" "character" "character" "character" "character" "character" 
+
 }

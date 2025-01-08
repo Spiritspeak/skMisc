@@ -24,4 +24,5 @@ Use it in pipes.
 \examples{
 setColNames(ToothGrowth,c("length","supplement","dosage"))
 setRowNames(BOD,BOD$Time)
+
 }

@@ -173,7 +173,6 @@ ComputeLowerModels <- function(form, data, group="", ...){
 }
 
 ComputeLowerModels2 <- function(model, data, group="", ...){
-  for(pack in c("magrittr","dplyr","tidyr","lme4","doParallel")){ require(pack, character.only=T) }
   form <- formula(model)
   data <- model.frame(model)
   #data <- model@call$data
@@ -216,6 +215,11 @@ ComputeLowerModels2 <- function(model, data, group="", ...){
 #' @export 
 #'
 #' @examples 
+#' library(lmerTest)
+#' data("sleepstudy", package="lme4")
+#' m1 <- lmer(Reaction ~ Days + (Days | Subject), sleepstudy)
+#' m2 <- lmer(Reaction ~ Days + (1 | Subject), sleepstudy)
+#' AnovaTable(m1,m2)
 #' 
 AnovaTable<-function(..., fullmodel, models, serial=FALSE, 
                      suppress=c("AIC", "deviance", "logLik")){
@@ -231,7 +235,7 @@ AnovaTable<-function(..., fullmodel, models, serial=FALSE,
                            BIC=BIC(fullmodel),
                            dBIC=0,
                            logLik=LL,
-                           deviance=deviance(fullmodel),
+                           deviance=deviance(fullmodel,REML=F),
                            R2m=mumin[1],
                            R2c=mumin[2],
                            dR2m=0,
@@ -251,7 +255,7 @@ AnovaTable<-function(..., fullmodel, models, serial=FALSE,
                  BIC=BIC(mod),
                  dBIC=BIC(mod) - ifelse(serial, anovatable[i-1,]$BIC, anovatable[1,]$BIC),
                  logLik=LL,
-                 deviance=deviance(mod),
+                 deviance=deviance(mod,REML=F),
                  R2m=mumin[1],
                  R2c=mumin[2],
                  dR2m=mumin[1] - ifelse(serial, anovatable[i-1,]$R2m, anovatable[1,]$R2m),
@@ -271,7 +275,7 @@ AnovaTable<-function(..., fullmodel, models, serial=FALSE,
   if(length(modnames) < length(models)){ 
     modnames <- args2strings(...)
   }
-  rownames(anovatable) <- modnames
+  #rownames(anovatable) <- modnames
   
   formulas <- c(fullmodel,models) %>% sapply(function(x){ x@call$formula })
   header <- paste0(modnames,": ", formulas, "\n", collapse="") %>% paste0("\n")

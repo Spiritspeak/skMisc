@@ -2,9 +2,12 @@
 % Please edit documentation in R/skUtils.R
 \name{clamp}
 \alias{clamp}
+\alias{clamp0}
 \title{clamp}
 \usage{
-clamp(val, minval, maxval)
+clamp(val, minval = -Inf, maxval = Inf)
+
+clamp0(val, minval = 0, maxval = 1)
 }
 \arguments{
 \item{val}{The vector/matrix to clamp}
@@ -21,4 +24,6 @@ clamp
 }
 \examples{
 clamp(0:10,2,8)
+clamp0(rnorm(10))
+
 }

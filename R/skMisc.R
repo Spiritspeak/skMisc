@@ -1,6 +1,6 @@
 #' skMisc: Miscellaneous convenience functions
 #'
-#' @section Functionality provided
+#' @description Functionality provided
 #' 
 #' Some of the functions in this package are statistical:
 #' * Common outlier exclusion methods and statistical analyses with concise print functions
@@ -12,13 +12,22 @@
 #' * Specific date and string manipulations unavailable in common packages
 #' * Other small convenience functions that make life easier
 #'
-#' @docType package
 #' @name skMisc
 #' @md 
-#' @import magrittr dplyr lme4 ggplot2
+#' @import magrittr dplyr lme4 lmerTest ggplot2 coin doParallel parallel foreach iterators
+#' @importFrom utils install.packages
+#' @importFrom methods as
+#' @importFrom grDevices rgb
+#' @importFrom graphics abline lines par rect strheight strwidth text
+#' @importFrom stats AIC BIC as.formula ave coef cor cor.test deviance
+#' formula ks.test lm.influence logLik model.frame na.omit pchisq pt
+#' quantile reformulate sd setNames t.test terms update var
+#' @importFrom MASS fitdistr
 #' 
-NULL
+#' 
+"_PACKAGE"
 
 .onLoad <- function(libname, pkgname){
-  packageStartupMessage("Thank you for loading skMisc v0.02")
+  #packageStartupMessage("Thank you for loading skMisc v0.02")
+  utils::globalVariables(c("currform","x.rowid","y.rowid"))
 }

@@ -15,4 +15,5 @@ will fit to a normal distribution.
 }
 \examples{
 TransformPlots(mtcars$disp)
+
 }

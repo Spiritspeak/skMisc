@@ -105,19 +105,12 @@ which.first <- function(x, na.first=FALSE){
   return(newx)
 }
 
-# This should support sets of unequal length
-unique.set<-function(x){
-  x<-t(apply(x,1,sort))
-  x<-apply(x,1,paste,collapse="-")
-  duplicated(x)
-}
-
 
 #' Generate unique pairs or N-tuplets
 #'
 #' @param nval Number of values to arrange into unique tuplets
 #' @param ntuplet N-tuplets to arrange the values uniquely into
-#' @incl.self Determines whether a value can be paired with itself
+#' @param incl.self Determines whether a value can be paired with itself
 #'
 #' @return A matrix where each row is a unique N-tuplet
 #' @export
@@ -256,7 +249,7 @@ trypackages<-function(...){
   for(pack in packs){
     if(!require(pack,character.only=T)){
       install.packages(pack)
-      require(pack,character.only=T)
+      do.call("require",list(pack,character.only=T))
     }
   }
 }
@@ -441,44 +434,6 @@ strsplit.wrap <- function(x, width=2000, split=c("\n"," ",",","")){
     }
   }
   return(output)
-}
-
-#' Read and merge all .csv files in a folder
-#'
-#' @param folder path to a folder
-#' @param readfunc list of functions that will be used to read the files; 
-#' if the first function fails, the second function will be used, etc.
-#'
-#' @return A data.frame containing all merged .csv files 
-#' @export
-#' 
-#' @examples 
-#' 
-read.csv.folder<-function(folder="./", readfunc=list(read.csv,read.csv2,read.table)){
-  flist<-list.files(folder)
-  flist<-flist[grepl(".csv",flist)]
-  datlist<-list()
-  ct<-0
-  for(file in flist){
-    ct<-ct+1
-    datlist[[ct]]<-"fail"
-    for(i in seq_len(length(readfunc))){
-      #try(
-        datlist[[ct]]<-do.call(readfunc[[i]],list(file=paste0(folder,file),stringsAsFactors=F))
-      #,silent=T)
-      if(any(datlist[[ct]]!="fail")){ break; }
-    }
-    if(any(datlist[[ct]]=="fail")){
-      warning("Failed to read ",file)
-    }
-  }
-  combodat<-datlist[[1]]
-  if(length(datlist)>1){
-    for(i in 2:length(datlist)){
-      combodat<-rbind(combodat,datlist[[i]])
-    }
-  }
-  return(combodat)
 }
 
 #' Levenshtein distance

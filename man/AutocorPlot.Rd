@@ -2,22 +2,23 @@
 % Please edit documentation in R/skPlotting.R
 \name{AutocorPlot}
 \alias{AutocorPlot}
-\title{Per-subject Autocorrelation Plotting}
+\title{Multi-series Autocorrelation Plotting}
 \usage{
-AutocorPlot(ds, ppvar, rtvar, scope = 64)
+AutocorPlot(x, index, lag.max = 64, plot = TRUE)
 }
 \arguments{
-\item{ds}{a dataset}
+\item{x}{Variable to compute the autocorrelation of.}
 
-\item{ppvar}{name of the variable indicating participant ID}
+\item{index}{Grouping ID variable of the same length as \code{X}.}
 
-\item{rtvar}{name of the variable indicating reaction time}
+\item{lag.max}{The maximum lag at which to compute autocorrelation.}
 
-\item{scope}{numeric, the maximum lag at which to compute autocorrelation.}
+\item{plot}{Should a plot be made? Default is \code{TRUE}.}
 }
 \description{
-Per-subject Autocorrelation Plotting
+Multi-series Autocorrelation Plotting
 }
 \examples{
-AutocorPlot(ds=ToothGrowth,ppvar="supp",rtvar="len",scope=10)
+mycors<-AutocorPlot(x=ToothGrowth$len,index=ToothGrowth$supp,lag.max=10)
+
 }

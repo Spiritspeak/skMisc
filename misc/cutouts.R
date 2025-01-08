@@ -150,3 +150,51 @@ cor.influence<-function(x,y){
   x*y-(x^2+y^2)/2*cor(x,y)
 }
 
+
+
+# This should support sets of unequal length
+unique.set<-function(x){
+  x<-t(apply(x,1,sort))
+  x<-apply(x,1,paste,collapse="-")
+  duplicated(x)
+}
+
+
+#' Read and merge all .csv files in a folder
+#'
+#' @param folder path to a folder
+#' @param readfunc list of functions that will be used to read the files; 
+#' if the first function fails, the second function will be used, etc.
+#'
+#' @return A data.frame containing all merged .csv files 
+#' @export
+#' 
+#' @examples 
+#' 
+read.csv.folder <- function(folder="./", readfunc=list(read.csv,read.csv2,read.table)){
+  flist<-list.files(folder)
+  flist<-flist[grepl(".csv",flist)]
+  datlist<-list()
+  ct<-0
+  for(file in flist){
+    ct<-ct+1
+    datlist[[ct]]<-"fail"
+    for(i in seq_len(length(readfunc))){
+      #try(
+      datlist[[ct]]<-do.call(readfunc[[i]],list(file=paste0(folder,file),stringsAsFactors=F))
+      #,silent=T)
+      if(any(datlist[[ct]]!="fail")){ break; }
+    }
+    if(any(datlist[[ct]]=="fail")){
+      warning("Failed to read ",file)
+    }
+  }
+  combodat<-datlist[[1]]
+  if(length(datlist)>1){
+    for(i in 2:length(datlist)){
+      combodat<-rbind(combodat,datlist[[i]])
+    }
+  }
+  return(combodat)
+}
+

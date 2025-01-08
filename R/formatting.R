@@ -1,4 +1,7 @@
-#' @rdname ggplot.themes
+#' @name ggplot.themes
+#' @title extra \code{ggplot2} themes
+#' @description A number of ready-to-use ggplot2 themes for scientific manuscripts
+#' 
 NULL
 
 #' @describeIn ggplot.themes Based on the plot design style of prof. Diane Pecher.
