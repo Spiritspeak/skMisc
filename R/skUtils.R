@@ -530,14 +530,41 @@ LevenshteinDistance<-function(source,target){
 #' @examples
 #' unsplit<-c("flour;salt;baking soda;steak;sugar;water;sauce;vinegar",
 #' "flour;sauce;mustard;salt;pepper;vinegar;baking soda;water;tomatoes;onion;steak")
-#' vector2columns(unsplit)
+#' vec2columns(unsplit)
 #' 
-vector2columns <- function(x, sep=";"){
+vec2columns <- function(x, sep=";"){
   vals <- strsplit(x, sep)
   uniques <- unique(unlist(vals))
   idx <- t(sapply(vals, function(y){ uniques %in% y }))
   colnames(idx) <- ifelse(is.na(uniques), "NA", uniques)
   out <- as.data.frame(idx)
+  return(out)
+}
+
+#' Convert a vector to an English list
+#'
+#' @param x A vector of values to convert into a string representing 
+#' a grammatically correct English list
+#'
+#' @returna A string representing a grammatically correct English list
+#' @export
+#'
+#' @examples
+#' vec2phrase(c("apples","oranges"))
+#' 
+#' vec2phrase(c("eggs"))
+#' 
+#' vec2phrase(c())
+#' 
+#' vec2phrase(c("cheese","milk","yoghurt","kefir"))
+#' 
+vec2phrase <- function(x){
+  lx <- length(x)
+  out <- switch(EXPR=paste(lx),
+                `0`="",
+                `1`=as.character(x),
+                `2`=paste(x[1], "and", x[2]),
+                paste0(paste0(x[-lx], collapse=", "), ", and ", x[lx]))
   return(out)
 }
 

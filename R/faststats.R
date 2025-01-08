@@ -1,7 +1,7 @@
 # Add paired/unpaired nonparametric two-var comparison test
 
 
-#' Remove rows with outliers from data.frame or matrix
+#' Remove outlying observations from a data.frame or matrix
 #' 
 #' Outliers are defined as values deviating more than Xstandard deviations (SDs) from the mean.
 #' 
