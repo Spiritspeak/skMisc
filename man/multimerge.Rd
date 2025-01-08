@@ -24,9 +24,9 @@ testlist<-list()
 lsize<-50
 for(i in 1:lsize){
   testlist[[i]]<-data.frame(key=sample(1:500,100),
-                            junk=letters[sample(1:26,100,replace=T)])
+                            junk=letters[sample(1:26,100,replace=TRUE)])
   colnames(testlist[[i]])[2]<-paste0("info",i)
 }
-multimerge(testlist,by="key",all=T)
+multimerge(testlist,by="key",all=TRUE)
 
 }

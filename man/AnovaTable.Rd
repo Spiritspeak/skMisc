@@ -27,6 +27,8 @@ only use if \code{...} is not specified.}
 if false, all models will be compared to the first.}
 
 \item{suppress}{Character vector of column names to suppress in printed output.}
+
+\item{x}{an \code{AnovaTable} object}
 }
 \value{
 A data.frame containing model fit metrics such as AIC, BIC, 

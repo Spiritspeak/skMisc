@@ -14,7 +14,7 @@
 #'
 #' @name skMisc
 #' @md 
-#' @import magrittr dplyr lme4 lmerTest ggplot2 coin doParallel parallel foreach iterators
+#' @import magrittr dplyr lmerTest ggplot2 coin doParallel parallel foreach iterators MuMIn
 #' @importFrom utils install.packages
 #' @importFrom methods as
 #' @importFrom grDevices rgb
@@ -23,6 +23,8 @@
 #' formula ks.test lm.influence logLik model.frame na.omit pchisq pt
 #' quantile reformulate sd setNames t.test terms update var
 #' @importFrom MASS fitdistr
+#' @importFrom car qqp
+#' @importFrom lme4 nobars findbars
 #' 
 #' 
 "_PACKAGE"

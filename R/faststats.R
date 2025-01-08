@@ -3,7 +3,7 @@
 
 #' Remove outlying observations from a data.frame or matrix
 #' 
-#' Outliers are defined as values deviating more than Xstandard deviations (SDs) from the mean.
+#' Outliers are defined as values deviating more than X standard deviations (SDs) from the mean.
 #' 
 #' @param .tbl A \code{data.frame} or matrix to exclude outliers from
 #' @param olvars Names or numeric index of the variables to detect outliers in. 
@@ -31,7 +31,7 @@
 #' testdata <- mtcars
 #' testdata$mpg[1] <- 40
 #' testdata$hp[2] <- 500
-#' removeOLs(testdata, olvars=c("mpg", "disp", "hp"), groups="vs", make.na=T)
+#' removeOLs(testdata, olvars=c("mpg", "disp", "hp"), groups="vs", make.na=TRUE)
 #' 
 #' # Also works on matrices
 #' testmat <- matrix(rnorm(1000), ncol=5)
@@ -68,7 +68,7 @@ removeOLs <- function(.tbl, olvars=NULL, groups=NULL, s=3, make.na=FALSE){
                     }else{
                       rep_len(NA, length(x))
                     }
-                  }) |> which()
+                  }) |> as.logical() |> which()
     if(make.na){
       .tbl[key,olvar] <- NA
       message("Masked ", length(key), " outliers from ",coltype, olvar)

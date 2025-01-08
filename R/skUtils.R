@@ -1,6 +1,8 @@
 # Files that are "up to standard": holdout.R, formatting.R, skUtils.R, 
 # skPlotting.R, datawrangler.R
 
+# Add applyChunks -> break down a long vector into parts and 
+# run a function with the smaller parts as input
 
 #I don't want to import rlang, so it will be done this way instead.
 args2strings <- function(...) sapply(substitute({ ... })[-1], deparse)
@@ -247,7 +249,7 @@ unwrap.matrix<-function(x){
 trypackages<-function(...){
   packs<-args2strings(...)
   for(pack in packs){
-    if(!require(pack,character.only=T)){
+    if(!do.call("require",list(pack,character.only=T))){
       install.packages(pack)
       do.call("require",list(pack,character.only=T))
     }
@@ -540,10 +542,10 @@ vec2phrase <- function(x){
 #' lsize<-50
 #' for(i in 1:lsize){
 #'   testlist[[i]]<-data.frame(key=sample(1:500,100),
-#'                             junk=letters[sample(1:26,100,replace=T)])
+#'                             junk=letters[sample(1:26,100,replace=TRUE)])
 #'   colnames(testlist[[i]])[2]<-paste0("info",i)
 #' }
-#' multimerge(testlist,by="key",all=T)
+#' multimerge(testlist,by="key",all=TRUE)
 #' 
 multimerge <- function(x, ...){
   while(length(x) > 1){

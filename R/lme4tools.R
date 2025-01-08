@@ -18,7 +18,7 @@
 #'                                (ChildIQ * TeacherSkill || Class/School))
 #'                                
 ExtractRandomTerms <- function(form){
-  bars <- findbars(form)
+  bars <- lme4::findbars(form)
   
   modterms <- lapply(bars, FUN=function(x){
     x %<>% as.character()
@@ -81,8 +81,7 @@ FindTopTerms <- function(form){
 ExpandFormula <- function(form){
   labs <- form %>% terms() %>% attr("term.labels")
   norandos <- labs[!grepl("\\|",labs)]
-  #norandos<-form %>% nobars %>% terms %>% 
-  attr("term.labels")
+  #norandos<-form %>% nobars() %>% terms() %>% attr("term.labels")
   randos <- ExtractRandomTerms(form)
   randlist <- character()
   for(i in seq_len(length(randos))){
@@ -117,9 +116,9 @@ ExpandFormula <- function(form){
 #' 
 RemoveTopTerms<-function(form, randeff=""){
   if(randeff == ""){
-    remform<-form %>% nobars() %>% as.character() %>% extract(3) %>% 
+    remform<-form %>% lme4::nobars() %>% as.character() %>% extract(3) %>% 
       reformulate %>% terms() %>% attr("term.labels")
-    remcomps<-form %>% nobars %>% FindTopTerms()
+    remcomps<-form %>% lme4::nobars() %>% FindTopTerms()
     
     redform <- paste(as.character(form)[2],
                      as.character(form)[1],
@@ -144,7 +143,7 @@ RemoveTopTerms<-function(form, randeff=""){
                              " | ",names(nonremform[i]),")")
     }
     
-    redform <- paste((form %>% nobars() %>% as.character() %>% extract(3)),
+    redform <- paste((form %>% lme4::nobars() %>% as.character() %>% extract(3)),
                      revcomp, 
                      paste(miscforms,collapse=" + "),
                      sep=" + ")
@@ -289,6 +288,7 @@ AnovaTable<-function(..., fullmodel, models, serial=FALSE,
 
 #' 
 #' @export
+#' @param x an \code{AnovaTable} object
 #' @describeIn AnovaTable Print generic for anova tables.
 #' 
 print.AnovaTable<-function(x, ...){

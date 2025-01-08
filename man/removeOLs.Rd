@@ -26,7 +26,7 @@ and does not exclude any rows.}
 The input \code{data.frame} or matrix with outliers excluded.
 }
 \description{
-Outliers are defined as values deviating more than Xstandard deviations (SDs) from the mean.
+Outliers are defined as values deviating more than X standard deviations (SDs) from the mean.
 }
 \details{
 This does not detect any outliers in groups with less than 3 non-NA observations.
@@ -40,7 +40,7 @@ removeOLs(mtcars, olvars=c("mpg", "disp", "hp"), s=1)
 testdata <- mtcars
 testdata$mpg[1] <- 40
 testdata$hp[2] <- 500
-removeOLs(testdata, olvars=c("mpg", "disp", "hp"), groups="vs", make.na=T)
+removeOLs(testdata, olvars=c("mpg", "disp", "hp"), groups="vs", make.na=TRUE)
 
 # Also works on matrices
 testmat <- matrix(rnorm(1000), ncol=5)

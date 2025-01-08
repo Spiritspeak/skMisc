@@ -25,6 +25,7 @@ theme_pecher <- function(){
 }
 
 #' @describeIn ggplot.themes Theme appropriate for APA manuscripts
+#' @export
 #' @examples
 #' ggplot(mtcars,aes(x=mpg,y=wt)) + geom_point() + theme_apa()
 #' 
