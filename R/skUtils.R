@@ -50,8 +50,12 @@ clamp0 <- function(val,minval=0,maxval=1){
 }
 
 
-`%?>%` <- function(x,y){
+`%T?%` <- function(x,y){
   if(x){ x }else{ y }
+}
+
+`%F?%` <- function(x,y){
+  if(!x){ x }else{ y }
 }
 
 

@@ -6,7 +6,6 @@ chunkapply <- function(x,MARGIN,FUN,...,chunksize=1000){
 }
 
 
-
 #' Iterate over chunks of a vector
 #' 
 #' This returns an iterator that counts from one, returning integer sequences 
