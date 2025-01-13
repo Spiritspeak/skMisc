@@ -49,6 +49,12 @@ clamp0 <- function(val,minval=0,maxval=1){
   !(x %in% table)
 }
 
+
+`%?>%` <- function(x,y){
+  if(x){ x }else{ y }
+}
+
+
 #' Count duplicate values in a vector
 #' 
 #' which.duplidate() determines for each element of a vector 
