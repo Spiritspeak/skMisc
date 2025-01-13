@@ -50,10 +50,39 @@ clamp0 <- function(val,minval=0,maxval=1){
 }
 
 
+#' @name lazylogic
+#' @title Sequential logical operators using lazy evaluation
+#' @description
+#' These inline functions evaluate the value on the left first and return it, 
+#' if it's the right value 
+#' (\code{TRUE} for\code{%T?%}, or \code{FALSE} for \code{%F?%}).
+#' In this case, the argument on the right is not evaluated at all.
+#' Otherwise, the value on the right is evaluated and returned.
+#' 
+#' This enables the use of logical chains in which you can check on the left side
+#' whether logical statements on the right side can be evaluated or 
+#' would cause errors.
+#'
+#' @param x,y Expressions evaluating to single logical values. 
+#' They must be enclosed in brackets to prevent problematic behavior.
+#'
+#' @return 
+#' @export
+#'
+#' @examples
+#' # Dealing with problematic NULL, NA, and multi-value inputs
+#'myvecs <- list(a=NULL,b=NA,c=c(1,5,2),d=10)
+#' outcomes <- logical(length(myvecs))
+#' for(i in seq_along(myvecs)){
+#'   outcomes[i] <- (!(is.null(myvecs[[i]]) %T?% (length(myvecs[[i]]) != 1) %T?%
+#'                       is.na(myvecs[[i]]))) %F?% (myvecs[[i]] == 10)
+#' }
+#' 
 `%T?%` <- function(x,y){
   if(x){ x }else{ y }
 }
 
+#' @rdname lazylogic
 `%F?%` <- function(x,y){
   if(!x){ x }else{ y }
 }
@@ -61,7 +90,7 @@ clamp0 <- function(val,minval=0,maxval=1){
 
 #' Count duplicate values in a vector
 #' 
-#' which.duplidate() determines for each element of a vector 
+#' which.duplicate() determines for each element of a vector 
 #' how many times it has occurred so far.
 #' It works similarly to [base::duplicated()] which only determines 
 #' whether a value has occurred before and not how many times.
