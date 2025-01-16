@@ -51,42 +51,77 @@ clamp0 <- function(val,minval=0,maxval=1){
 
 
 #' @name lazylogic
-#' @title Sequential logical operators using lazy evaluation
+#' @title Logical operators using lazy evaluation
 #' @description
-#' These inline functions evaluate the value on the left first and return it, 
-#' if it's the right value 
-#' (\code{TRUE} for\code{%T?%}, or \code{FALSE} for \code{%F?%}).
-#' In this case, the argument on the right is not evaluated at all.
-#' Otherwise, the value on the right is evaluated and returned.
+#' These functions sequentially evaluate their arguments and return
+#' a logical value when sufficient information has been acquired to do so. 
+#' Hence, \code{lazy_any()} will not evaluate any arguments 
+#' beyond the first \code{TRUE}, since there is already
+#' at least one \code{TRUE} value, so \code{TRUE} can be returned.
+#' Likewise, \code{lazy_all()} will not evaluate beyond the first \code{FALSE} 
+#' it is already clear not all arguments are \code{TRUE}, 
+#' so \code{FALSE} is returned. 
 #' 
-#' This enables the use of logical chains in which you can check on the left side
-#' whether logical statements on the right side can be evaluated or 
-#' would cause errors.
+#' This enables logical chains in which you can use logical statements 
+#' earlier in the chain to check whether logical statements 
+#' further down the chain can be evaluated or would cause errors. 
+#' If a checking statement evaluates to the terminating condition 
+#' of the used function, 
+#' further arguments are not evaluated and hence no error is triggered.
 #'
-#' @param x,y Expressions evaluating to single logical values. 
-#' They must be enclosed in brackets to prevent problematic behavior.
+#' @param ... Expressions evaluating to single logical values. 
 #'
-#' @return 
+#' @return A logical value.
 #' @export
 #'
 #' @examples
+#' # The final argument is not evaluated because 
+#' # the function reaches its termination condition 
+#' # (TRUE) before that.
+#' lazy_any(FALSE, TRUE, stop())
+#' 
 #' # Dealing with problematic NULL, NA, and multi-value inputs
-#'myvecs <- list(a=NULL,b=NA,c=c(1,5,2),d=10)
+#' myvecs <- list(a=NULL,b=NA,c=c(1,5,2),d=10)
 #' outcomes <- logical(length(myvecs))
 #' for(i in seq_along(myvecs)){
-#'   outcomes[i] <- (!(is.null(myvecs[[i]]) %T?% (length(myvecs[[i]]) != 1) %T?%
-#'                       is.na(myvecs[[i]]))) %F?% (myvecs[[i]] == 10)
+#'   outcomes[i] <- lazy_all(!is.null(myvecs[[i]]),
+#'                           !length(myvecs[[i]]) != 1,
+#'                           !is.na(myvecs[[i]]),
+#'                           myvecs[[i]] == 10)
 #' }
 #' 
-`%T?%` <- function(x,y){
-  if(x){ x }else{ y }
+lazy_any <- function(...){
+  had_na <- F
+  for(i in seq_len(...length())){
+    currarg <- ...elt(i)
+    if(is.na(currarg)){ 
+      had_na <- T
+    }else
+    if(currarg){ return(TRUE) }
+  }
+  if(had_na){
+    return(NA)
+  }else{
+    return(F)
+  }
 }
 
 #' @rdname lazylogic
-`%F?%` <- function(x,y){
-  if(!x){ x }else{ y }
+lazy_all <- function(...){
+  had_na <- F
+  for(i in seq_len(...length())){
+    currarg <- ...elt(i)
+    if(is.na(currarg)){ 
+      had_na <- T
+    }else
+      if(!currarg){ return(FALSE) }
+  }
+  if(had_na){
+    return(NA)
+  }else{
+    return(TRUE)
+  }
 }
-
 
 #' Count duplicate values in a vector
 #' 
