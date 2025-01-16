@@ -20,17 +20,17 @@ args2strings <- function(...) sapply(substitute({ ... })[-1], deparse)
 #' clamp(0:10,2,8)
 #' clamp0(rnorm(10))
 #' 
-clamp <- function(val,minval=-Inf,maxval=Inf){
-  val[val<minval]<-minval
-  val[val>maxval]<-maxval
+clamp <- function(val, minval=-Inf, maxval=Inf){
+  val[val < minval] <- minval
+  val[val > maxval] <- maxval
   val
 }
 
 #' @rdname clamp
 #' @export
-clamp0 <- function(val,minval=0,maxval=1){
-  val[val<minval]<-minval
-  val[val>maxval]<-maxval
+clamp0 <- function(val, minval=0, maxval=1){
+  val[val < minval] <- minval
+  val[val > maxval] <- maxval
   val
 }
 
@@ -96,8 +96,9 @@ lazy_any <- function(...){
     currarg <- ...elt(i)
     if(is.na(currarg)){ 
       had_na <- T
-    }else
-    if(currarg){ return(TRUE) }
+    }else if(currarg){ 
+      return(TRUE)
+    }
   }
   if(had_na){
     return(NA)
@@ -113,8 +114,9 @@ lazy_all <- function(...){
     currarg <- ...elt(i)
     if(is.na(currarg)){ 
       had_na <- T
-    }else
-      if(!currarg){ return(FALSE) }
+    }else if(!currarg){ 
+      return(FALSE)
+    }
   }
   if(had_na){
     return(NA)
@@ -139,11 +141,11 @@ lazy_all <- function(...){
 #' @examples
 #' which.duplicate(c(1,6,5,2,1,1,8,6,5))
 #' 
-which.duplicate<-function(x){
-  vals<-unique(x)
-  repvec<-numeric(length(vals))
+which.duplicate <- function(x){
+  vals <- unique(x)
+  repvec <- numeric(length(vals))
   for(v in vals){
-    repvec[x==v]<-seq_len(sum(x==v))
+    repvec[x == v] <- seq_len(sum(x == v))
   }
   return(repvec)
 }
@@ -169,13 +171,13 @@ which.first <- function(x, na.first=FALSE){
   newx<-rep(NA,length(x))
   if(na.first){
     for(u in ux){
-      idvec<-which(x==u)
-      newx[idvec[-1]]<-idvec[1]
+      idvec <- which(x == u)
+      newx[idvec[-1]] <- idvec[1]
     }
   }else{
     for(u in ux){
-      idvec<-which(x==u)
-      newx[idvec]<-idvec[1]
+      idvec <- which(x == u)
+      newx[idvec] <- idvec[1]
     }
   }
   return(newx)
@@ -194,19 +196,19 @@ which.first <- function(x, na.first=FALSE){
 #' @examples
 #' allpairs(nval=20,ntuplet=3)
 #' 
-allpairs<-function(nval,ntuplet=2,incl.self=FALSE){
-  currmat<-matrix(seq_len(nval),ncol=1)
-  offset<-ifelse(incl.self,0,1)
+allpairs<-function(nval, ntuplet=2, incl.self=FALSE){
+  currmat <- matrix(seq_len(nval), ncol=1)
+  offset <- ifelse(incl.self, 0, 1)
   for(tuple in seq_len(ntuplet)[-1]){
-    newmats<-list()
+    newmats <- list()
     for(i in seq_len(nrow(currmat))){
-      startval<-currmat[i,tuple-1]+offset
-      if(startval<=nval){
-        itervec<-startval:nval
-        newmats[[i]]<-do.call(cbind,c(as.list(currmat[i,]),list(itervec)))
+      startval <- currmat[i,tuple-1] + offset
+      if(startval <= nval){
+        itervec <- startval:nval
+        newmats[[i]] <- do.call(cbind, c(as.list(currmat[i,]), list(itervec)))
       }
     }
-    currmat<-do.call(rbind,newmats)
+    currmat <- do.call(rbind, newmats)
   }
   return(currmat)
 }
@@ -222,7 +224,7 @@ allpairs<-function(nval,ntuplet=2,incl.self=FALSE){
 #' @examples
 #' nthWeekdayOfMonth("2000-04-08")
 #' 
-nthWeekdayOfMonth<-function(x){
+nthWeekdayOfMonth <- function(x){
   x <- as.Date(x)
   out <- numeric(length(x))
   for(i in seq_along(x)){
