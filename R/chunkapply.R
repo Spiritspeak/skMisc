@@ -40,22 +40,38 @@ ichunk <- function(chunksize,count=NULL){
   nextEl
 }
 
+arrsubset <- function(x,dim,idx,drop=FALSE){
+  newx <- Quote(x[ ,drop=drop])
+  newx <- newx[c(1,2,rep(3,length(dim(x))),4)]
+  newx[2+dim] <- list(idx)
+  return(eval(newx))
+}
 
-chunkapply.vector <- function(x, FUN, ..., chunksize=1000){
+chunkapply <- function(x, FUN, ..., chunksize=1000, MARGIN=1){
   stopifnot(is.vector(x), is.function(FUN), is.numeric(chunksize))
   out <- vector(length=length(x))
   counter <- ichunk(chunksize=chunksize, count=length(x))
-  warnlength <- FALSE
-  while(T){
-    currchunk <- counter()
-    if(length(currchunk) == 0){ break; }
-    currout <- forceAndCall(1, FUN, currx, ...)
-    if(length(currout) != length()){ warnlength <- TRUE }
-    out[currchunk] <- currout
+  grabber <- NULL
+  if(is.null(dim(x))){
+    grabber <- function(idx){ x[idx] }
+  }else{
+    stopifnot(length(MARGIN)==1,any(dim(x)==MARGIN))
+    grabber <- function(idx){ arrsubset(x=x,dim=MARGIN,idx=idx) }
   }
-  if(warnlength){ warning("Output length did not match input length on at least one function call") }
+  while(T){
+    curridx <- counter()
+    if(length(curridx) == 0){ break; }
+    currx <- grabber(curridx)
+    currout <- forceAndCall(1, FUN, currx, ...)
+    if(length(currout) != length(curridx)){ 
+      stop("Function output length (",length(currout),
+           ") was not the same as input length (",length(currx),")")
+    }else if(!is.vector(currout)){
+      stop("Function output not in form of a vector")
+    }
+    out[curridx] <- currout
+  }
   return(out)
 }
-
-
+#chunkapply.vector(x=1:1000,FUN=as.character,chunksize=5)
 
