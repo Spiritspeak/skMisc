@@ -1,10 +1,4 @@
 
-# Use package abind: asub for subsetting, abind for binding
-chunkapply <- function(x,MARGIN,FUN,...,chunksize=1000){
-  chunks <- subdivide(seq_len(dim(x)[MARGIN]), divlen=chunksize)
-  
-}
-
 
 #' Iterate over chunks of a vector
 #' 
@@ -45,5 +39,23 @@ ichunk <- function(chunksize,count=NULL){
   }
   nextEl
 }
+
+
+chunkapply.vector <- function(x, FUN, ..., chunksize=1000){
+  stopifnot(is.vector(x), is.function(FUN), is.numeric(chunksize))
+  out <- vector(length=length(x))
+  counter <- ichunk(chunksize=chunksize, count=length(x))
+  warnlength <- FALSE
+  while(T){
+    currchunk <- counter()
+    if(length(currchunk) == 0){ break; }
+    currout <- forceAndCall(1, FUN, currx, ...)
+    if(length(currout) != length()){ warnlength <- TRUE }
+    out[currchunk] <- currout
+  }
+  if(warnlength){ warning("Output length did not match input length on at least one function call") }
+  return(out)
+}
+
 
 
