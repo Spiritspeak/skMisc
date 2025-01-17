@@ -1,9 +1,6 @@
 # Files that are "up to standard": holdout.R, formatting.R, skUtils.R, 
 # skPlotting.R, datawrangler.R
 
-# Add applyChunks -> break down a long vector into parts and 
-# run a function with the smaller parts as input
-
 #I don't want to import rlang, so it will be done this way instead.
 args2strings <- function(...) sapply(substitute({ ... })[-1], deparse)
 
@@ -128,7 +125,8 @@ lazy_all <- function(...){
 #' Count duplicate values in a vector
 #' 
 #' which.duplicate() determines for each element of a vector 
-#' how many times it has occurred so far.
+#' how many times its value has occurred so far.
+#' 
 #' It works similarly to [base::duplicated()] which only determines 
 #' whether a value has occurred before and not how many times.
 #' 
@@ -196,7 +194,7 @@ which.first <- function(x, na.first=FALSE){
 #' @examples
 #' allpairs(nval=20,ntuplet=3)
 #' 
-allpairs<-function(nval, ntuplet=2, incl.self=FALSE){
+allpairs <- function(nval, ntuplet=2, incl.self=FALSE){
   currmat <- matrix(seq_len(nval), ncol=1)
   offset <- ifelse(incl.self, 0, 1)
   for(tuple in seq_len(ntuplet)[-1]){
@@ -252,6 +250,34 @@ quantize <- function(x, n){
   quants <- quantile(x, seq_len(n-1)/n, na.rm=T)
   quants <- c(-Inf, quants, Inf)
   cut(x, breaks=quants, labels=seq_len(n))
+}
+
+
+#' Replicate each element of a vector or list N times
+#' 
+#' Like [base::rep()] except you can provide multiple values 
+#' to the \code{each} argument.
+#' This replicates each element of \code{x} by each integer given by \code{each}.
+#'
+#' @param x A vector
+#' @param each How often should each element in \code{x} be repeated? 
+#' This should be a non-negative integer vector of either length 1 or 
+#' the same length as \code{x}.
+#'
+#' @return An object of the same type as \code{x}.
+#' @seealso [base::rle()]
+#' @export
+#'
+#' @examples
+#' rep.each(1:5,each=5:1)
+#' #> [1] 1 1 1 1 1 2 2 2 2 3 3 3 4 4 5
+#' 
+rep.each <- function(x, each){
+  if(length(each) == 1){
+    rep(x, each=each)
+  }else if(length(x) == length(each)){
+    unlist(mapply(rep, x=x, each=each, SIMPLIFY=F))
+  }
 }
 
 
