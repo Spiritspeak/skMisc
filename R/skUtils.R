@@ -5,6 +5,8 @@
 args2strings <- function(...) sapply(substitute({ ... })[-1], deparse)
 
 #' clamp
+#' 
+#' Clamp a numeric vector between a minimum and maximum value.
 #'
 #' @param val The vector/matrix to clamp
 #' @param minval Minimum value; all lower values are clamped to this value
@@ -31,8 +33,10 @@ clamp0 <- function(val, minval=0, maxval=1){
   val
 }
 
-#' Negative %in%
+#' Negative \%in\%
+#' 
 #' Returns which values in the left vector are not in the right vector.
+#' 
 #' @param x Values whose presence will be checked for in \code{table}
 #' @param table Values that will yield a \code{FALSE} if they exist in \code{x}
 #'
@@ -46,6 +50,52 @@ clamp0 <- function(val, minval=0, maxval=1){
   !(x %in% table)
 }
 
+#' @name Case-insensitive-operators
+#' @title Case-insensitive inline operators
+#' @description 
+#' These operators convert both left- and right-hand side to lowercase 
+#' before comparing.
+#' @param x,y Values to be compared
+#' @return A logical vector
+#' @seealso [base::`%in%`], [`%nin%`], [base::tolower()]
+#' 
+NULL
+
+#' @describeIn Case-insensitive-operators Case-insensitive %in%
+#' @export
+#' @examples
+#' c("apple","pear","coal") %cin% c("Banana","Apple","Pear","Cherry")
+#' 
+`%cin%` <- function(x, y){
+  tolower(x) %in% tolower(y)
+}
+
+#' @describeIn Case-insensitive-operators Case-insensitive %nin%
+#' @export
+#' @examples
+#' c("apple","pear","coal") %ncin% c("Banana","Apple","Pear","Cherry")
+#' 
+`%ncin%` <- function(x, y){
+  !(tolower(x) %in% tolower(y))
+}
+
+#' @describeIn Case-insensitive-operators Case-insensitive ==
+#' @export
+#' @examples
+#' c("APPLE","COAL") %cis% c("Apple","Pear")
+#' 
+`%cis%` <- function(x, y){
+  tolower(x) == tolower(y)
+}
+
+#' @describeIn Case-insensitive-operators Case-insensitive !=
+#' @export
+#' @examples
+#' c("APPLE","COAL") %ncis% c("Apple","Pear")
+#' 
+`%ncis%` <- function(x, y){
+  tolower(x) != tolower(y)
+}
 
 #' @name lazylogic
 #' @title Logical operators using lazy evaluation
@@ -105,6 +155,8 @@ lazy_any <- function(...){
 }
 
 #' @rdname lazylogic
+#' @export
+#' 
 lazy_all <- function(...){
   had_na <- F
   for(i in seq_len(...length())){
@@ -150,6 +202,7 @@ which.duplicate <- function(x){
 
 
 #' Find the index of the first occurrence of each value
+#' 
 #' This replaces all values with the index of their first occurrence
 #' 
 #' @param x A vector
@@ -212,8 +265,10 @@ allpairs <- function(nval, ntuplet=2, incl.self=FALSE){
 }
 
 #' Convert dates to Nth weekday of the month values
+#' 
 #' Computes which weekday of the month each date represents. 
 #' E.g., for each "second monday of the month", it gives 2.
+#' 
 #' @param x Date(s) to convert
 #'
 #' @return A vector of Nth weekday of the month values
@@ -234,6 +289,7 @@ nthWeekdayOfMonth <- function(x){
 }
 
 #' Quantize vector
+#' 
 #' Will replace vector values with their quantile.
 #' 
 #' @param x A numeric vector to quantize
@@ -316,6 +372,7 @@ unwrap.matrix <- function(x){
 }
 
 #' Install packages if neccesary, then load them.
+#' 
 #' @param ... Unquoted names of packages to try loading, 
 #' and if unable, install and load.
 #'
@@ -338,11 +395,15 @@ trypackages <- function(...){
 #'
 #' @return A data.frame with 0 rows.
 #' @export
+#' @examples
+#' test <- df.init(c("A","B","C"))
+#' 
 df.init <- function(x){
   setNames(data.frame(matrix(ncol = length(x), nrow = 0)), x)
 }
 
 #' Set column and row names of an object
+#' 
 #' These are convenience functions that return an object with its column or row names changed.
 #' Use it in pipes.
 #' 
@@ -379,6 +440,7 @@ vec.scale <- function(x){
 
 
 #' Change classes of columns in a data.frame
+#' 
 #' @description \code{retype()} changes the class of specific columns; 
 #' \code{retype_all()} changes the class of all columns of a given class.
 #'
@@ -558,6 +620,7 @@ multimerge <- function(x, ...){
 }
 
 #' Retry running a function until it succeeds
+#' 
 #' An expression is executed using [base::try()] and re-run until
 #' it raises no more errors or until a maximum number of evaluations is reached.
 #' In the latter case, it raises an error of its own.

@@ -16,7 +16,7 @@
 #' @md 
 #' @import magrittr dplyr lmerTest ggplot2 coin doParallel parallel foreach iterators MuMIn
 #' @importFrom utils install.packages
-#' @importFrom methods as
+#' @importFrom methods as Quote
 #' @importFrom grDevices rgb
 #' @importFrom graphics abline lines par rect strheight strwidth text
 #' @importFrom stats AIC BIC as.formula ave coef cor cor.test deviance

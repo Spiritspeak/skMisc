@@ -14,8 +14,10 @@ A vector of the same length as \code{x}, where each element represents
 the number of times its value in \code{x} has been repeated so far.
 }
 \description{
-which.duplidate() determines for each element of a vector 
-how many times it has occurred so far.
+which.duplicate() determines for each element of a vector 
+how many times its value has occurred so far.
+}
+\details{
 It works similarly to [base::duplicated()] which only determines 
 whether a value has occurred before and not how many times.
 }

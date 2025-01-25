@@ -20,7 +20,7 @@ Divide a vector or list into parts of (preferably) equal length.
 Either the length or the number of the parts can be set.
 }
 \examples{
-subdivide(letters,divs=5)
-subdivide(1:10,divlen=3)
+subdivide(letters, divs=5)
+subdivide(1:10, divlen=3)
 
 }

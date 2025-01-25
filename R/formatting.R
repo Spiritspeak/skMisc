@@ -166,6 +166,7 @@ vec2phrase <- function(x){
 #' 
 #' alphabet <- paste0(letters,collapse="")
 #' strsplit.wrap(alphabet,width=3)
+
 strsplit.wrap <- function(x, width=2000, split=c("\n"," ",",","")){
   output <- character()
   if(!any(split=="")){ split <- c(split,"") }

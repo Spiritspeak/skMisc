@@ -2,8 +2,7 @@
 % Please edit documentation in R/skUtils.R
 \name{quantize}
 \alias{quantize}
-\title{Quantize vector
-Will replace vector values with their quantile.}
+\title{Quantize vector}
 \usage{
 quantize(x, n)
 }
@@ -16,7 +15,6 @@ quantize(x, n)
 A vector with values replaced by their quantile membership
 }
 \description{
-Quantize vector
 Will replace vector values with their quantile.
 }
 \examples{

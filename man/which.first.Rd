@@ -2,8 +2,7 @@
 % Please edit documentation in R/skUtils.R
 \name{which.first}
 \alias{which.first}
-\title{Find the index of the first occurrence of each value
-This replaces all values with the index of their first occurrence}
+\title{Find the index of the first occurrence of each value}
 \usage{
 which.first(x, na.first = FALSE)
 }
@@ -19,7 +18,6 @@ A vector of the length of \code{x} with each value representing either
 the index of the first instance of each value in \code{x} if it is a duplicated value
 }
 \description{
-Find the index of the first occurrence of each value
 This replaces all values with the index of their first occurrence
 }
 \examples{

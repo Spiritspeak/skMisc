@@ -2,9 +2,7 @@
 % Please edit documentation in R/skUtils.R
 \name{nthWeekdayOfMonth}
 \alias{nthWeekdayOfMonth}
-\title{Convert dates to Nth weekday of the month values
-Computes which weekday of the month each date represents. 
-E.g., for each "second monday of the month", it gives 2.}
+\title{Convert dates to Nth weekday of the month values}
 \usage{
 nthWeekdayOfMonth(x)
 }
@@ -15,7 +13,6 @@ nthWeekdayOfMonth(x)
 A vector of Nth weekday of the month values
 }
 \description{
-Convert dates to Nth weekday of the month values
 Computes which weekday of the month each date represents. 
 E.g., for each "second monday of the month", it gives 2.
 }

@@ -2,8 +2,7 @@
 % Please edit documentation in R/skUtils.R
 \name{\%nin\%}
 \alias{\%nin\%}
-\title{Negative %in%
-Returns which values in the left vector are not in the right vector.}
+\title{Negative \%in\%}
 \usage{
 x \%nin\% table
 }
@@ -16,7 +15,6 @@ x \%nin\% table
 A logical vector indicating whether each value of \code{x} lacks a match in \code{table}
 }
 \description{
-Negative %in%
 Returns which values in the left vector are not in the right vector.
 }
 \examples{

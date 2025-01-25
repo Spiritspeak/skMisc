@@ -3,9 +3,7 @@
 \name{setColNames}
 \alias{setColNames}
 \alias{setRowNames}
-\title{Set column and row names of an object
-These are convenience functions that return an object with its column or row names changed.
-Use it in pipes.}
+\title{Set column and row names of an object}
 \usage{
 setColNames(x, names)
 
@@ -17,7 +15,6 @@ setRowNames(x, names)
 \item{names}{column or row names to be assigned to the object}
 }
 \description{
-Set column and row names of an object
 These are convenience functions that return an object with its column or row names changed.
 Use it in pipes.
 }

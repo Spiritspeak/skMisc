@@ -7,7 +7,8 @@
 trypackages(...)
 }
 \arguments{
-\item{...}{Unquoted names of packages to try loading, and if unable, install and load.}
+\item{...}{Unquoted names of packages to try loading, 
+and if unable, install and load.}
 }
 \description{
 Install packages if neccesary, then load them.

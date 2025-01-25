@@ -20,7 +20,7 @@ clamp0(val, minval = 0, maxval = 1)
 Clamped vector.
 }
 \description{
-clamp
+Clamp a numeric vector between a minimum and maximum value.
 }
 \examples{
 clamp(0:10,2,8)

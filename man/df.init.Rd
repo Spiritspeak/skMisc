@@ -15,3 +15,7 @@ A data.frame with 0 rows.
 \description{
 Initiate an empty data frame
 }
+\examples{
+test <- df.init(c("A","B","C"))
+
+}
