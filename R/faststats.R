@@ -133,15 +133,6 @@ vec.removeOLs <- function(x, s=3, make.na=FALSE){
   }
 }
 
-# Statistic-printing helper functions
-mf <- function(x, digits=2, ptype=FALSE){
-  printx <- dropLeadingZero(format(round(x, digits=digits), scientific=F))
-  if(printx == 0 & ptype){
-    printx <- "<.001"
-  }
-  return(printx)
-}
-
 hedgesg <- function(x,y=NULL,paired=FALSE){
   if(is.null(y) | (paired & !is.null(y))){
     if(paired){
@@ -185,10 +176,10 @@ NULL
 zerodiff <- function(x){
   x <- na.omit(x)
   test <- t.test(x)
-  cat("t (", test$parameter, ") = ", mf(test$statistic, digits=2),
-      ", p = ", mf(test$p.value, digits=3, ptype=T),
-      ", g = ", mf(hedgesg(x), digits=2),
-      ", M = ", mf(mean(x), digits=2),
+  cat("t (", test$parameter, ") = ", format_stat(test$statistic, digits=2),
+      ", p = ", format_stat(test$p.value, digits=3, type="p"),
+      ", g = ", format_stat(hedgesg(x), digits=2),
+      ", M = ", format_stat(mean(x), digits=2),
       "\n", sep="")
   return(invisible(test))
 }
@@ -206,10 +197,10 @@ twodiff <- function(form, data, paired=FALSE){
   test <- t.test(form, data, paired=paired)
   x <- data[[outcome]][ data[[term]] == unique(data[[term]])[1] ]
   y <- data[[outcome]][ data[[term]] == unique(data[[term]])[2] ]
-  cat("t (", test$parameter, ") = ", mf(test$statistic, digits=2),
-      ", p = ", mf(test$p.value, digits=3, ptype=T),
-      ", g = ", mf(hedgesg(x=x, y=y, paired=paired), digits=2),
-      ", Mdiff = ", mf(mean(x) - mean(y), digits=2),
+  cat("t (", test$parameter, ") = ", format_stat(test$statistic, digits=2),
+      ", p = ", format_stat(test$p.value, digits=3, type="p"),
+      ", g = ", format_stat(hedgesg(x=x, y=y, paired=paired), digits=2),
+      ", Mdiff = ", format_stat(mean(x) - mean(y), digits=2),
       "\n", sep="")
   return(invisible(test))
 }
@@ -220,10 +211,10 @@ twodiff <- function(form, data, paired=FALSE){
 #' 
 twodiff2 <- function(x, y, paired=FALSE){
   test <- t.test(x=x, y=y, paired=paired)
-  cat("t (", test$parameter, ") = ", mf(test$statistic, digits=2),
-      ", p = ", mf(test$p.value, digits=3, ptype=T),
-      ", g = ", mf(hedgesg(x=x, y=y, paired=paired), digits=2),
-      ", Mdiff = ", mf(mean(x) - mean(y), digits=2),
+  cat("t (", test$parameter, ") = ", format_stat(test$statistic, digits=2),
+      ", p = ", format_stat(test$p.value, digits=3, type="p"),
+      ", g = ", format_stat(hedgesg(x=x, y=y, paired=paired), digits=2),
+      ", Mdiff = ", format_stat(mean(x) - mean(y), digits=2),
       "\n", sep="")
   return(invisible(test))
 }
@@ -235,10 +226,10 @@ twodiff2 <- function(x, y, paired=FALSE){
 npr.zerodiff <- function(x){
   x <- na.omit(x)
   test <- coin::wilcoxsign_test(rep(0, length(x))~x, exact=T)
-  cat("Z = ", mf(test@statistic@teststatistic, digits=2),
-      ", p = ", mf(test@distribution@pvalue(test@statistic@teststatistic), digits=3, ptype=T),
-      ", % pos. = ", mf(mean(x>0),digits=2),
-      ", Mdiff = ", mf(mean(x), digits=2),
+  cat("Z = ", format_stat(test@statistic@teststatistic, digits=2),
+      ", p = ", format_stat(test@distribution@pvalue(test@statistic@teststatistic), digits=3, type="p"),
+      ", % pos. = ", format_stat(mean(x>0),digits=2),
+      ", Mdiff = ", format_stat(mean(x), digits=2),
       "\n", sep="")
   return(invisible(test))
 }
@@ -258,9 +249,9 @@ npr.twodiff <- function(form, data){
   x <- data[[outcome]][ data[[term]] == unique(data[[term]])[1] ]
   y <- data[[outcome]][ data[[term]] == unique(data[[term]])[2] ]
   
-  cat("Z = ", mf(test@statistic@teststatistic, digits=2),
-      ", p = ", mf(test@distribution@pvalue(test@statistic@teststatistic), digits=3, ptype=T),
-      ", Mdiff = ", mf(mean(x) - mean(y), digits=2),
+  cat("Z = ", format_stat(test@statistic@teststatistic, digits=2),
+      ", p = ", format_stat(test@distribution@pvalue(test@statistic@teststatistic), digits=3, type="p"),
+      ", Mdiff = ", format_stat(mean(x) - mean(y), digits=2),
       "\n", sep="")
   return(invisible(test))
 }
@@ -272,8 +263,8 @@ npr.twodiff <- function(form, data){
 twocor <- function(x, y, method="pearson"){
   test <- cor.test(x, y, method=method)
   cat(method, " r (", test$parameter, ") = ",
-      mf(test$estimate, digits=2),
-      ", p = ",mf(test$p.value, digits=3, ptype=T),
+      format_stat(test$estimate, digits=2),
+      ", p = ",format_stat(test$p.value, digits=3, type="p"),
       "\n", sep="")
   return(invisible(test))
 }
@@ -553,5 +544,3 @@ tpars <- function(x, df=30){
                  start=list(m=mean(x), s=sd(x), df=df),
                  lower=c(m=-Inf, s=0, df=1))
 }
-
-

@@ -266,26 +266,26 @@ quantize <- function(x, n){
 #' @export
 #'
 #' @examples
-#' subdivide(letters,divs=5)
-#' subdivide(1:10,divlen=3)
+#' subdivide(letters, divs=5)
+#' subdivide(1:10, divlen=3)
 #' 
-subdivide<-function(x,divs,divlen){
-  xl<-length(x)
+subdivide<-function(x, divs, divlen){
+  xl <- length(x)
   if(missing(divlen)){
-    divlen<-(xl+1)/divs
+    divlen <- (xl+1)/divs
     stopifnot(xl/divs>=1)
-    cs<-ceiling(cumsum(rep(divlen,divs-1)))
-    a<-c(0,cs)
-    b<-c(cs-1,xl)
+    cs <- ceiling(cumsum(rep(divlen, divs-1)))
+    a <- c(0, cs)
+    b <- c(cs-1, xl)
   }else if(missing(divs)){
-    divs<-ceiling(xl/divlen)
-    cs<-cumsum(c(1,rep(divlen,divs-1)))
-    a<-cs
-    b<-c(cs[-1],xl)
+    divs <- ceiling(xl/divlen)
+    cs <- cumsum(c(1,rep(divlen, divs-1)))
+    a <- cs
+    b <- c(cs[-1], xl)
   }
-  exli<-vector(mode="list",length=divs)
+  exli <- vector(mode="list",length=divs)
   for(i in seq_len(divs)){
-    exli[[i]]<-x[a[i]:b[i]]
+    exli[[i]] <- x[a[i]:b[i]]
   }
   return(exli)
 }
@@ -306,26 +306,28 @@ subdivide<-function(x,divs,divlen){
 #' carmatrix<-as.matrix(mtcars)
 #' unwrap.matrix(carmatrix)
 #' 
-unwrap.matrix<-function(x){
-  dn<-dimnames(x)
-  unwrap<-expand.grid(row=if(is.null(dn[[1]])){ seq_len(nrow(x)) }else{ dn[[1]] },
-                      col=if(is.null(dn[[2]])){ seq_len(ncol(x)) }else{ dn[[2]] },
-                      stringsAsFactors=F)
-  unwrap[["value"]]<-as.vector(x)
+unwrap.matrix <- function(x){
+  dn <- dimnames(x)
+  unwrap <- expand.grid(row=if(is.null(dn[[1]])){ seq_len(nrow(x)) }else{ dn[[1]] },
+                        col=if(is.null(dn[[2]])){ seq_len(ncol(x)) }else{ dn[[2]] },
+                        stringsAsFactors=F)
+  unwrap[["value"]] <- as.vector(x)
   return(unwrap)
 }
 
 #' Install packages if neccesary, then load them.
-#' @param ... Unquoted names of packages to try loading, and if unable, install and load.
+#' @param ... Unquoted names of packages to try loading, 
+#' and if unable, install and load.
 #'
 #' @examples trypackages(stats,utils,compiler)
 #' @export
-trypackages<-function(...){
-  packs<-args2strings(...)
+#' 
+trypackages <- function(...){
+  packs <- args2strings(...)
   for(pack in packs){
-    if(!do.call("require",list(pack,character.only=T))){
+    if(!do.call("require", list(pack, character.only=T))){
       install.packages(pack)
-      do.call("require",list(pack,character.only=T))
+      do.call("require", list(pack, character.only=T))
     }
   }
 }
@@ -336,7 +338,7 @@ trypackages<-function(...){
 #'
 #' @return A data.frame with 0 rows.
 #' @export
-df.init<-function(x){
+df.init <- function(x){
   setNames(data.frame(matrix(ncol = length(x), nrow = 0)), x)
 }
 
@@ -352,10 +354,10 @@ df.init<-function(x){
 #' setColNames(ToothGrowth,c("length","supplement","dosage"))
 #' setRowNames(BOD,BOD$Time)
 #' 
-setColNames<-function(x,names){ colnames(x)<-names; return(x) }
+setColNames <- function(x, names){ colnames(x) <- names; return(x) }
 #' @export
 #' @rdname setColNames
-setRowNames<-function(x,names){ rownames(x)<-names; return(x) }
+setRowNames <- function(x, names){ rownames(x) <- names; return(x) }
 
 #' Scale a vector
 #' 
@@ -393,15 +395,15 @@ vec.scale <- function(x){
 #' sapply(NewToothGrowth,class)
 #' 
 retype<-function(df, ...){
-  args<-list(...)
+  args <- list(...)
 
-  varnames<-names(args)
-  vartypes<-sapply(args, class)
+  varnames <- names(args)
+  vartypes <- sapply(args, class)
 
-  effcols<-names(df)[names(df) %in% varnames]
+  effcols <- names(df)[names(df) %in% varnames]
 
   for(effcol in effcols){
-    df[,effcol]<-as(df[,effcol], vartypes[which(varnames==effcol)])
+    df[,effcol] <- as(df[,effcol], vartypes[which(varnames==effcol)])
   }
   return(df)
 }
@@ -440,12 +442,12 @@ retype_all <- function(df, from, to){
 #' @examples
 #' try(verify_types(character="test",numeric=0000,character=12345))
 #' 
-verify_types<-function(...){
-  args<-list(...)
-  call<-as.list(match.call()[-1])
-  types<-unique(names(args))
+verify_types <- function(...){
+  args <- list(...)
+  call <- as.list(match.call()[-1])
+  types <- unique(names(args))
   for(type in types){
-    ids<-which(type == names(args))
+    ids <- which(type == names(args))
     for(id in ids){
       if(!do.call(paste0("is.",type),list(args[[id]]))){
         stop("Variable ",as.character(call[[id]])," is not of type ",type)
@@ -453,63 +455,6 @@ verify_types<-function(...){
     }
   }
   return(T)
-}
-
-#' Create substrings with a maximal length by splitting at specific characters
-#' 
-#' This function splits a string into substrings of length \code{width} or shorter.
-#' The splitting is done at the characters specified in \code{split}, in order of preference.
-#' 
-#' This combines the functionality of [base::strwrap()] and [base::strsplit()]; 
-#' instead of a string wrapped with newlines, the result is multiple substrings.
-#'
-#' @param x A character vector of length 1.
-#' @param width The maximum character length to break the vector at.
-#' @param split A vector of regular expressions to match a character to break the string at.
-#' The function will try to break the string at the first value specified in this argument;
-#' if that fails, it will move on to the second, then the third, etc.
-#'
-#' @return A character vector consisting of strings of length \code{width} or shorter, 
-#' and split at the characters specified in \code{split}.
-#' 
-#' @export
-#' @md
-#'
-#' @examples
-#' thanks <- paste(readLines(file.path(R.home("doc"), "THANKS")), collapse = "\n")
-#' strsplit.wrap(thanks,width=80)
-#' 
-#' alphabet <- paste0(letters,collapse="")
-#' strsplit.wrap(alphabet,width=3)
-strsplit.wrap <- function(x, width=2000, split=c("\n"," ",",","")){
-  output <- character()
-  if(!any(split=="")){ split <- c(split,"") }
-  while(nchar(x) > 0){
-    cstr <- substr(x,1,width)
-    if(nchar(cstr) < width){
-      output[length(output)+1] <- x
-      x <- ""
-    }else{
-      for(splitchar in split){
-        
-        if(nzchar(splitchar)){
-          nls <- gregexpr(splitchar,cstr)[[1]]
-          end <- nls[length(nls)]
-          if(end!=-1){
-            output[length(output)+1] <- 
-              trimws(substr(cstr,1,end),whitespace=splitchar)
-            x <- substr(x, end+1, nchar(x))
-            break
-          }
-        }else{
-          output[length(output)+1] <- substr(cstr,1,width)
-          x <- substr(x, width+1, nchar(x))
-        }
-        
-      }
-    }
-  }
-  return(output)
 }
 
 #' Levenshtein distance
@@ -572,33 +517,6 @@ vec2columns <- function(x, sep=";"){
   return(out)
 }
 
-#' Convert a vector to an English list
-#'
-#' @param x A vector of values to convert into a string representing 
-#' a grammatically correct English list
-#'
-#' @return a A string representing a grammatically correct English list
-#' @export
-#'
-#' @examples
-#' vec2phrase(c("apples","oranges"))
-#' 
-#' vec2phrase(c("eggs"))
-#' 
-#' vec2phrase(c())
-#' 
-#' vec2phrase(c("cheese","milk","yoghurt","kefir"))
-#' 
-vec2phrase <- function(x){
-  lx <- length(x)
-  out <- switch(EXPR=as.character(lx),
-                `0`="",
-                `1`=as.character(x),
-                `2`=paste(x[1], "and", x[2]),
-                paste0(paste0(x[-lx], collapse=", "), ", and ", x[lx]))
-  return(out)
-}
-
 #' Merge Multiple Data Frames
 #' 
 #' This function makes calls to \code{merge()} to merge every other dataset 
@@ -639,4 +557,38 @@ multimerge <- function(x, ...){
   return(x)
 }
 
-
+#' Retry running a function until it succeeds
+#' An expression is executed using [base::try()] and re-run until
+#' it raises no more errors or until a maximum number of evaluations is reached.
+#' In the latter case, it raises an error of its own.
+#'
+#' @param expr An expression to try to execute.
+#' @param n Maximum number of times to try to run the expression.
+#'
+#' @return The output of the expression.
+#' @details 
+#' This was primarily developed to robustly query websites. Sometimes
+#' a query fails or produces output which raises an error; 
+#' this function issues a retry in such a case.
+#' 
+#' @export
+#'
+#' @examples
+#' k <- 0
+#' retry({k <<- k+1; if(k<4){ stop()}})
+#' 
+#' 
+retry <- function(expr, n=5){
+  expr <- substitute(expr)
+  outcome <- NULL
+  for(k in seq_len(n)){
+    if(k > 1){ message("Attempt: ",k) }
+    outcome <- try(eval(expr))
+    if(!any("try-error" == attributes(outcome)$class)){ break }
+  }
+  if(!any("try-error" == attributes(outcome)$class)){
+    outcome
+  }else{
+    stop("Expression failed maximum number of attempts")
+  }
+}

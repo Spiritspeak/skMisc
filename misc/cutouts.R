@@ -225,3 +225,46 @@ rep.each <- function(x, each){
     unlist(mapply(rep, x=x, each=each, SIMPLIFY=F))
   }
 }
+
+
+
+#' Check convergence of a \code{brmsfit} object
+#'
+#' @param x A \code{brmsfit} object
+#' @param min.ess The minimum effective sample size for any parameter. 
+#' Values below will trigger a warning.
+#' @param max.rhat The maximum R-hat value for any parameter. 
+#' Values above will trigger a warning.
+#'
+#' @return Silently returns a \code{data.frame} with parameter names, 
+#' ESS, and rhat values.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' fit <- brm(time ~ age * sex, data = kidney)
+#' brms.check(fit)
+#' }
+#' 
+brms.check <- function(x,min.ess=400,max.rhat=1.05){
+  info <- data.frame(par=dimnames(x$fit)$parameters,
+                     ess=posterior::ess_basic(x),
+                     rhat=posterior::rhat(x))
+  
+  toolow.ess <- info$ess < min.ess
+  if(any(toolow.ess)){
+    warning("The following variable(s) have an excessively low ",
+            "effective sample size, consider raising the iteration count: ",
+            paste0(info$par[toolow.ess],collapse=", "))
+  }
+  
+  toohigh.rhat <- info$rhat > max.rhat
+  if(any(toohigh.rhat)){
+    warning("The following variable(s) have an excessively high ",
+            "Rhat, consider changing the model or adding more warmup samples: ",
+            paste0(info$par[toohigh.rhat],collapse=", "))
+  }
+  
+  return(invisible(info))
+}
+
