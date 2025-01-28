@@ -208,16 +208,92 @@ subdivide<-function(x, divs, divlen){
 # assign consecutive numeric values in x to groups such that they sum up to the 
 # highest possible value below maxval
 # Not ready yet: cannot handle values in x higher than maxval
-chop_up <- function(x,maxval){
-  n <- 0
+# testvec <- sample(c(NA,1:15))
+# chop_up(testvec,maxval=9,group.high="own")
+# chop_up2(testvec,maxval=9,group.high="own")
+chop_up <- function(x, maxval, 
+                    group.high=c("own","na","error")){
+  group.high <- match.arg(group.high)
+  cs <- 0
+  grp <- 1
   out <- numeric(length(x))
-  cs <- cumsum(x)
-  while(sum(out == 0) != 0){
-    n <- n + 1
-    currval <- which(cs < maxval & out == 0)
-    out[currval] <- n
-    cs <- cs - sum(x[currval])
+  
+  excess <- x > maxval
+  addna <- 0
+  grpbump <- 2
+  if(any(excess) & group.high=="error"){
+    stop("Value exceeds maximum")
+  }else if(group.high=="na"){
+    addna <- NA
+    grpbump <- 1
   }
+  
+  for(i in seq_along(x)){
+    if(excess[i]){
+      grp <- grp + grpbump
+      cs <- 0
+      out[i] <- grp -1 + addna
+    }else{
+      cs <- cs+x[i]
+      if(cs > maxval){
+        cs <- x[i]
+        grp <- grp + 1
+      }
+      out[i] <- grp
+    }
+  }
+  nonna <- which(!is.na(out))
+  if(out[nonna[1]] != 1){ out <- out - out[nonna[1]] +1 }
+  out
+}
+
+
+chop_up2 <- function(x, maxval, 
+                    group.high=c("own","na","error"),
+                    group.na=c("own","na","error")){
+  group.high <- match.arg(group.high)
+  group.na <- match.arg(group.na)
+  cs <- 0
+  grp <- 1
+  out <- numeric(length(x))
+  
+  excess <- x > maxval
+  addna <- 0
+  grpbump <- 2
+  if(any(excess) & group.high=="error"){
+    stop("Value exceeds maximum")
+  }else if(group.high=="na"){
+    addna <- NA
+    grpbump <- 1
+  }
+  
+  naval <- is.na(x)
+  if(any(naval) & group.na=="error"){
+    stop("NA values not permitted")
+  }else if(group.na=="na"){
+    na.addna <- NA
+    na.grpbump <- 1
+  }
+  
+  for(i in seq_along(x)){
+    if(naval[i]){
+      grp <- grp + na.grpbump
+      out[i] <- grp + na.addna
+    }else if(excess[i]){
+      grp <- grp + grpbump
+      cs <- 0
+      out[i] <- grp -1 + addna
+    }else{
+      cs <- cs+x[i]
+      if(cs > maxval){
+        cs <- x[i]
+        grp <- grp + 1
+      }
+      out[i] <- grp
+    }
+  }
+  nonna <- which(!is.na(out))
+  if(out[nonna[1]] != 1){ out <- out - out[nonna[1]] +1 }
   out
 }
 
