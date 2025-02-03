@@ -441,6 +441,10 @@ vec.scale <- function(x){
   (x-m) / sqrt( sum((xt-m)^2)/(length(xt)-1) )
 }
 
+# TODO: document this
+serr <- function(x, na.rm=F){
+  sd(x, na.rm=na.rm) / sqrt(if(na.rm) sum(!is.na(x)) else length(x))
+}
 
 #' Change classes of columns in a data.frame
 #' 
