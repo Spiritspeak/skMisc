@@ -1,4 +1,10 @@
 
+
+
+colorblind1 <- c("#050D03", "#D5AF00", "#4714D9", "#00EF41", "#00A2BF", "#D45E00", "#FF29F7")
+
+
+
 #' @name ggplot.themes
 #' @title extra \code{ggplot2} themes
 #' @description A number of ready-to-use ggplot2 themes for scientific manuscripts
@@ -61,11 +67,11 @@ theme_apa <- function(){
 #' hilight(27,2.5,"Light and\nefficient")
 #' hilight(17,4.5,"Heavy and\ninefficient")
 #' 
-hilight<-function(x,y,s, bg="yellow") {
+hilight <- function(x, y, s, bg="yellow") {
   text.width <- strwidth(s)
   text.height <- strheight(s)
-  rect(x,y,x+text.width,y+text.height,col=bg,border=NA)
-  text(x,y,s,adj=c(0,0))
+  rect(x ,y, x + text.width, y + text.height, col=bg, border=NA)
+  text(x, y, s, adj=c(0, 0))
 }
 
 
