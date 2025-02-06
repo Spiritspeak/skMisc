@@ -3,7 +3,20 @@
 
 colorblind1 <- c("#050D03", "#D5AF00", "#4714D9", "#00EF41", "#00A2BF", "#D45E00", "#FF29F7")
 
-
+# Add option to define positive, negative, and zero color; add support for simple vector input
+# Also add heatmap ggplot function-
+colorEdges<-function(x,maxedge=NULL){
+  edgevec<-as.vector(x)
+  if(is.null(maxedge)){ 
+    edgevec <- edgevec/max(abs(edgevec)) 
+  }else{
+    edgevec <- edgevec/abs(maxedge)
+  }
+  cols<-hsv(h=ifelse(sign(edgevec)==1,2/3,0),
+            s=abs(edgevec)*.9+ifelse(edgevec==0,0,.1),
+            v=1)
+  matrix(cols,ncol=ncol(x),nrow=nrow(x))
+}
 
 #' @name ggplot.themes
 #' @title extra \code{ggplot2} themes
