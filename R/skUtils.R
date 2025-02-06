@@ -94,6 +94,32 @@ which.first <- function(x, na.first=FALSE){
 }
 
 
+#' Produce consecutive ranks
+#' 
+#' Ranks a vector such that ranks are always 1 apart if they succeed each other
+#' or 0 apart if they are tied. 
+#'
+#' @param x A numeric vector
+#'
+#' @return An integer vector of the same length as \code{x}
+#' @export
+#'
+#' @examples
+#' 
+#' testvec <- c(0,2,3,3,7,9,9,0)
+#' cons.rank(testvec)
+#' 
+cons.rank <- function(x){
+  ux <- unique(x)
+  ur <- as.integer(rank(ux))
+  out <- integer(length(x))
+  names(out) <- names(x)
+  for(i in seq_along(ux)){
+    out[x == ux[i]] <- ur[i]
+  }
+  return(out)
+}
+
 #' Generate unique pairs or N-tuplets
 #'
 #' @param nval Number of values to arrange into unique tuplets
