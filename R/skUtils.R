@@ -210,11 +210,11 @@ quantize <- function(x, n){
 #' subdivide(letters, divs=5)
 #' subdivide(1:10, divlen=3)
 #' 
-subdivide<-function(x, divs, divlen){
+subdivide <- function(x, divs, divlen){
   xl <- length(x)
   if(missing(divlen)){
     divlen <- (xl+1)/divs
-    stopifnot(xl/divs>=1)
+    stopifnot(xl/divs >= 1)
     cs <- ceiling(cumsum(rep(divlen, divs-1)))
     a <- c(0, cs)
     b <- c(cs-1, xl)
@@ -231,8 +231,8 @@ subdivide<-function(x, divs, divlen){
   return(exli)
 }
 
-# assign consecutive numeric values in x to groups such that they sum up to the 
-# highest possible value below maxval
+# assign consecutive numeric values in x to groups 
+# such that each group sums up to the highest possible value below maxval
 # Not ready yet: cannot handle values in x higher than maxval
 # testvec <- sample(c(NA,1:15))
 # chop_up(testvec,maxval=9,group.high="own")
@@ -421,14 +421,15 @@ trypackages <- function(...){
 #' Initiate an empty data frame
 #'
 #' @param x A character vector of column names.
+#' @param nrow Number of rows (defaults to 0).
 #'
 #' @return A data.frame with 0 rows.
 #' @export
 #' @examples
 #' test <- df.init(c("A","B","C"))
 #' 
-df.init <- function(x){
-  setNames(data.frame(matrix(ncol = length(x), nrow = 0)), x)
+df.init <- function(x,nrow=0){
+  data.frame(matrix(ncol = length(x), nrow = nrow,dimnames=list(NULL,x)))
 }
 
 #' Set column and row names of an object
