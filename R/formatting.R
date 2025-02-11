@@ -2,7 +2,7 @@
 #' Drop leading zeros
 #' Remove leading zeroes and return as a character vector.
 #'
-#' @param x Numeric vector to remove leading zeros from
+#' @param x Numeric vector to remove leading zeros from.
 #'
 #' @return A character vector of numbers with leading zeros removed.
 #' @export
@@ -17,6 +17,7 @@ dropLeadingZero <- function(x){
 
 
 #' Format statistics appropriately
+#' 
 #' This formats numbers according to APA.
 #'
 #' @param x A numeric vector.
@@ -31,6 +32,7 @@ dropLeadingZero <- function(x){
 #' All leading zeros are also dropped. 
 #'
 #' @return A character vector of formatted numbers.
+#' @author Sercan Kahveci
 #' @export
 #'
 #' @examples
@@ -68,9 +70,10 @@ format_stat <- function(x, digits=2, type=c("default","p","quotient"),
 #' Convert a vector to an English list
 #'
 #' @param x A vector of values to convert into a string representing 
-#' a grammatically correct English list
+#' a grammatically correct English list.
 #'
-#' @return a A string representing a grammatically correct English list
+#' @return A string representing a grammatically correct English list.
+#' @author Sercan Kahveci
 #' @export
 #'
 #' @examples
@@ -110,6 +113,7 @@ vec2phrase <- function(x){
 #'
 #' @return A character vector consisting of strings of length \code{width} or shorter, 
 #' and split at the characters specified in \code{split}.
+#' @author Sercan Kahveci
 #' 
 #' @export
 #' @md

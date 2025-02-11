@@ -3,8 +3,8 @@
 #' 
 #' Returns which values in the left vector are not in the right vector.
 #' 
-#' @param x Values whose presence will be checked for in \code{table}
-#' @param table Values that will yield a \code{FALSE} if they exist in \code{x}
+#' @param x Values whose presence will be checked for in \code{table}.
+#' @param table Values that will yield a \code{FALSE} if they exist in \code{x}.
 #'
 #' @return A logical vector indicating whether each value of \code{x} lacks a match in \code{table}
 #' @export
@@ -21,8 +21,9 @@
 #' @description 
 #' These operators convert both left- and right-hand side to lowercase 
 #' before comparing.
-#' @param x,y Values to be compared
-#' @return A logical vector
+#' @param x,y Values to be compared.
+#' @return A logical vector.
+#' @author Sercan Kahveci
 #' @seealso [base::`%in%`], [`%nin%`], [base::tolower()]
 #' 
 NULL
@@ -85,6 +86,7 @@ NULL
 #' @param ... Expressions evaluating to single logical values. 
 #'
 #' @return A logical value.
+#' @author Sercan Kahveci
 #' @export
 #'
 #' @examples
@@ -148,6 +150,7 @@ lazy_all <- function(...){
 #'
 #' @return \code{x} with \code{NA} values replaced with 
 #' \code{TRUE} or \code{FALSE}.
+#' @author Sercan Kahveci
 #' @export
 #'
 #' @examples
