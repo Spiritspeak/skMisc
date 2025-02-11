@@ -19,6 +19,7 @@
 #' @details This does not detect any outliers in groups with less than 3 non-NA observations.
 #'
 #' @return The input \code{data.frame} or matrix with outliers excluded.
+#' @author Sercan Kahveci
 #' @export
 #' @seealso [vec.removeOLs()] for the same outlier exclusion applied to a single vector.
 #'
@@ -110,6 +111,7 @@ removeOLs <- function(.tbl, olvars=NULL, groups=NULL, s=3, make.na=FALSE){
 #' If \code{TRUE}, replaces them with \code{NA}.
 #'
 #' @return A vector with outliers removed or replaced with \code{NA}.
+#' @author Sercan Kahveci
 #' @export
 #' @seealso [removeOLs()]
 #'
@@ -160,6 +162,7 @@ hedgesg <- function(x,y=NULL,paired=FALSE){
 #' @param method The correlation type; can be pearson, spearman, or kendall
 #' 
 #' @md
+#' @author Sercan Kahveci
 #' 
 #' @examples 
 #' baseline <- rnorm(50)
@@ -278,6 +281,7 @@ twocor <- function(x, y, method="pearson"){
 #' @param y The predicted class memberships
 #'
 #' @md
+#' @author Sercan Kahveci
 #' @return A vector with the following accuracy metrics:
 #' * Accuracy: \code{acc}
 #' * Chance accuracy: \code{chance_acc}
@@ -366,6 +370,7 @@ multiple.cor <- function(x, ymat, use="everything"){
 #'
 #' @return A vector indicating whether values in \code{x} were significant
 #' according to the Bonferroni-Holm method.
+#' @author Sercan Kahveci
 #' @export
 #'
 #' @examples
@@ -410,6 +415,7 @@ bonferroniHolm <- function(x, alpha=.05){
 #' due to insufficient variance or an inability to achieve the holdout goal
 #' without depleting the sample size.
 #' 
+#' @author Sercan Kahveci
 #' @export
 #'
 #' @examples
@@ -469,6 +475,7 @@ CorTable <- function(x, method=c("pearson","spearman"),
 #' @param ... Ignored
 #'
 #' @return The printed character matrix is silently returned.
+#' @author Sercan Kahveci
 #' 
 #' @md
 #' @export

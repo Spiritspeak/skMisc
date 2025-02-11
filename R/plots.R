@@ -72,7 +72,7 @@ theme_apa <- function(){
 #'
 #' @param x A matrix.
 #' @param text Whether to print the values of the matrix as text (defaults to FALSE).
-#' @param DoNotPlot Whether to avoid plotting (defaults to FALSE).
+#' @param plot Whether to plot the resulting ggplot object (defaults to TRUE).
 #' @param ... Ignored.
 #'
 #' @return Invisibly returns the ggplot object for further modification.
@@ -80,14 +80,15 @@ theme_apa <- function(){
 #' @export
 #'
 #' @examples
-#' mymat<-matrix(rnorm(100),nrow=10)
-#' mymat<-mymat+t(mymat)
-#' mymat[cbind(sample(c(1:10)),sample(c(1:10)))]<-NA
-#' colnames(mymat)<-rownames(mymat)<-sample(letters[1:10])
+#' # Create a matrix to plot
+#' mymat <- matrix(rnorm(100), nrow=10)
+#' mymat <- mymat + t(mymat)
+#' mymat[cbind(sample(c(1:10)), sample(c(1:10)))] <- NA
+#' colnames(mymat) <- rownames(mymat) <- sample(letters[1:10])
 #' 
 #' plot.matrix(mymat)
 #' 
-plot.matrix <- function(x, labels=FALSE, DoNotPlot=FALSE, ...){
+plot.matrix <- function(x, text=FALSE, plot=TRUE, ...){
   out <- x |> unwrap.matrix() |> ggplot() + 
     aes(y=row,x=col,fill=value) + 
     geom_tile() + scale_fill_gradient2(na.value="grey25") + 
@@ -95,14 +96,14 @@ plot.matrix <- function(x, labels=FALSE, DoNotPlot=FALSE, ...){
     theme_bw() + 
     theme(axis.ticks=element_blank(),
           panel.grid=element_blank(),
-          panel.border = element_blank(),
-          axis.title = element_blank(),
+          panel.border=element_blank(),
+          axis.title=element_blank(),
           legend.title=element_blank())
-  if(labels){
-    out <- out + geom_text(aes(label=dropLeadingZero(round(value,digits=2))),
-                           size=min(2,2*10/nrow(x)))
+  if(text){
+    out <- out + geom_text(aes(label=dropLeadingZero(round(value, digits=2))),
+                           size=min(2, 2*10/nrow(x)))
   }
-  if(!DoNotPlot){
+  if(plot){
     plot(out)
   }
   return(invisible(out))
@@ -117,6 +118,7 @@ plot.matrix <- function(x, labels=FALSE, DoNotPlot=FALSE, ...){
 #' @param bg highlight color
 #'
 #' @export
+#' @author Sercan Kahveci
 #'
 #' @examples
 #' plot(mtcars$mpg,mtcars$wt,col=mtcars$cyl)
@@ -139,11 +141,12 @@ hilight <- function(x, y, s, bg="yellow") {
 #' @param plot Should a plot be made? Default is \code{TRUE}.
 #'
 #' @export
+#' @author Sercan Kahveci
 #'
 #' @examples
 #' mycors<-AutocorPlot(x=ToothGrowth$len,index=ToothGrowth$supp,lag.max=10)
 #' 
-AutocorPlot<-function(x,index,lag.max=64,plot=TRUE){
+AutocorPlot<-function(x, index, lag.max=64, plot=TRUE){
   mylag<-function(x,i){
     len<-length(x)
     if(i<=len){
@@ -188,6 +191,7 @@ AutocorPlot<-function(x,index,lag.max=64,plot=TRUE){
 #' @param x A numeric vector.
 #'
 #' @export
+#' @author Sercan Kahveci
 #' 
 #' @examples
 #' TransformPlots(mtcars$disp)

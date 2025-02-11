@@ -10,7 +10,7 @@ r2t<-function(r,df){
 }
 
 # Seeks most bivariate-outlying pair of values
-cor.outlying<-function(x,y){
+cor.outlying <- function(x, y){
   vec.scale(x) * vec.scale(y)
 }
 
@@ -38,6 +38,7 @@ cor.outlying<-function(x,y){
 #' at which iteration to obtain the result. A zero value indicates that 
 #' the observation was excluded beforehand due to presence of NAs.
 #' 
+#' @author Sercan Kahveci
 #' @export
 #'
 #' @examples
@@ -173,6 +174,7 @@ registerS3method("print","cor.holdout",print.cor.holdout)
 #' with the excluded datapoints colored differently. 
 #' 
 #' @md
+#' @author Sercan Kahveci
 #' @export
 #'
 #' @examples
@@ -266,6 +268,7 @@ lm.holdout<-function(model,goal=c("nsig","flip"),terms=NULL,alpha=.05,verbose=FA
 #' @param x A \code{lm.holdout} object.
 #' @param ... Additional plotting parameters for \code{[base::plot()]}; ignored for \code{print}.
 #' @export
+#' 
 print.lm.holdout<-function(x,...){
   cat("Holdout values for linear regression model\n")
   print(formula(x$model))
@@ -276,6 +279,7 @@ registerS3method("print","lm.holdout",print.lm.holdout)
 
 #' @rdname lm.holdout
 #' @export
+#' 
 plot.lm.holdout<-function(x,...){
   plotterms<-colnames(x$exclusion.matrix)
   modmat<-attr(terms(x$model),"factors")
