@@ -8,11 +8,12 @@ args2strings <- function(...) sapply(substitute({ ... })[-1], deparse)
 #' 
 #' Clamp a numeric vector between a minimum and maximum value.
 #'
-#' @param val The vector/matrix to clamp
-#' @param minval Minimum value; all lower values are clamped to this value
-#' @param maxval Maximum value; all higher values are clamped to this value
+#' @param val The vector/matrix to clamp.
+#' @param minval Minimum value; all lower values are clamped to this value.
+#' @param maxval Maximum value; all higher values are clamped to this value.
 #'
 #' @return Clamped vector.
+#' @author Sercan Kahveci
 #' @export 
 #'
 #' @examples 
@@ -41,10 +42,11 @@ clamp0 <- function(val, minval=0, maxval=1){
 #' It works similarly to [base::duplicated()] which only determines 
 #' whether a value has occurred before and not how many times.
 #' 
-#' @param x A vector
+#' @param x A vector.
 #'
 #' @return A vector of the same length as \code{x}, where each element represents
 #' the number of times its value in \code{x} has been repeated so far.
+#' @author Sercan Kahveci
 #' @export
 #'
 #' @examples
@@ -62,15 +64,16 @@ which.duplicate <- function(x){
 
 #' Find the index of the first occurrence of each value
 #' 
-#' This replaces all values with the index of their first occurrence
+#' This replaces all values with the index of their first occurrence.
 #' 
-#' @param x A vector
+#' @param x A vector.
 #' @param na.first Logical value indicating whether to replace the first
 #' occurrence of each value with its index (if \code{FALSE}) or with NA (if \code{TRUE}).
 #'
 #' @return A vector of the length of \code{x} with each value representing either 
 #' \code{NA} if it is the first occurrence of a unique value, or 
-#' the index of the first instance of each value in \code{x} if it is a duplicated value
+#' the index of the first instance of each value in \code{x} if it is a duplicated value.
+#' @author Sercan Kahveci
 #' @export
 #'
 #' @examples
@@ -99,9 +102,10 @@ which.first <- function(x, na.first=FALSE){
 #' Ranks a vector such that ranks are always 1 apart if they succeed each other
 #' or 0 apart if they are tied. 
 #'
-#' @param x A numeric vector
+#' @param x A numeric vector.
 #'
-#' @return An integer vector of the same length as \code{x}
+#' @return An integer vector of the same length as \code{x}.
+#' @author Sercan Kahveci
 #' @export
 #'
 #' @examples
@@ -122,11 +126,12 @@ cons.rank <- function(x){
 
 #' Generate unique pairs or N-tuplets
 #'
-#' @param nval Number of values to arrange into unique tuplets
-#' @param ntuplet N-tuplets to arrange the values uniquely into
-#' @param incl.self Determines whether a value can be paired with itself
+#' @param nval Number of values to arrange into unique tuplets.
+#' @param ntuplet N-tuplets to arrange the values uniquely into.
+#' @param incl.self Determines whether a value can be paired with itself.
 #'
-#' @return A matrix where each row is a unique N-tuplet
+#' @return A matrix where each row is a unique N-tuplet.
+#' @author Sercan Kahveci
 #' @export
 #'
 #' @examples
@@ -154,9 +159,10 @@ allpairs <- function(nval, ntuplet=2, incl.self=FALSE){
 #' Computes which weekday of the month each date represents. 
 #' E.g., for each "second monday of the month", it gives 2.
 #' 
-#' @param x Date(s) to convert
+#' @param x Date(s) to convert.
 #'
-#' @return A vector of Nth weekday of the month values
+#' @return A vector of Nth weekday of the month values.
+#' @author Sercan Kahveci
 #' @export
 #'
 #' @examples
@@ -177,10 +183,11 @@ nthWeekdayOfMonth <- function(x){
 #' 
 #' Will replace vector values with their quantile.
 #' 
-#' @param x A numeric vector to quantize
-#' @param n The number of quantiles to divide it into
+#' @param x A numeric vector to quantize.
+#' @param n The number of quantiles to divide it into.
 #'
-#' @return A vector with values replaced by their quantile membership
+#' @return A vector with values replaced by their quantile membership.
+#' @author Sercan Kahveci
 #' @export
 #'
 #' @examples
@@ -199,11 +206,12 @@ quantize <- function(x, n){
 #' Divide a vector or list into parts of (preferably) equal length.
 #' Either the length or the number of the parts can be set.
 #'
-#' @param x the to-be-divided object
+#' @param x the to-be-divided object.
 #' @param divs,divlen The number of divisions and the preferred length of divisions. 
 #' One and only one of \code{divs} and \code{divlen} must be given.
 #'
 #' @return A list consisting of \code{x}, divided in parts.
+#' @author Sercan Kahveci
 #' @export
 #'
 #' @examples
@@ -325,11 +333,12 @@ chop_up2 <- function(x, maxval,
 
 #' Turn a matrix into a long-format data.frame
 #'
-#' @param x A matrix
+#' @param x A matrix.
 #'
 #' @return a \code{data.frame} with three columns: \code{row} and \code{col} indicating the
 #' row and column names, and \code{value} indicating the respective value in the matrix. 
 #' If no row or column names are available, the row or column number is used instead.
+#' @author Sercan Kahveci
 #' @export
 #'
 #' @examples
@@ -352,11 +361,12 @@ unwrap.matrix <- function(x){
 #' This uses an iterative algorithm that swaps the rows and columns of a matrix 
 #' to ensure the highest values are either in the middle or the bottom-right.
 #'
-#' @param mat Square numeric matrix to be sorted
+#' @param mat Square numeric matrix to be sorted.
 #' @param sorttype Where the highest values should appear - 
 #' "diag", "center", or "bottomright".
 #'
-#' @return A sorted square matrix
+#' @return A sorted square matrix.
+#' @author Sercan Kahveci
 #' @export
 #'
 #' @examples
@@ -370,30 +380,30 @@ unwrap.matrix <- function(x){
 #' 
 #' newmat3<-sortmat(mat,"center")
 #' 
-sortmat<-function(mat,sorttype=c("diag","center","bottomright")){
-  dims<-dim(mat)
-  k<-dims[1]
+sortmat <- function(mat, sorttype=c("diag", "center", "bottomright")){
+  dims <- dim(mat)
+  k <- dims[1]
   
-  if(sorttype=="diag"){
-    wt <- (mean(dims)/2-abs(row(mat)-col(mat)))
-  }else if(sorttype=="center"){
-    wt <- prod(dims/2)-abs((row(mat)-(nrow(mat)+1)/2)*(col(mat)-(ncol(mat)+1)/2))
-  }else if(sorttype=="bottomright"){
-    wt <- row(mat)+col(mat)
+  if(sorttype == "diag"){
+    wt <- (mean(dims) / 2 - abs(row(mat) - col(mat)))
+  }else if(sorttype == "center"){
+    wt <- prod(dims / 2) - abs((row(mat) - (nrow(mat) + 1) / 2) * (col(mat) - (ncol(mat) + 1) / 2))
+  }else if(sorttype == "bottomright"){
+    wt <- row(mat) + col(mat)
   }
   
-  allswaps<-expand.grid(row=seq_len(k),col=seq_len(k))
-  tryswaps<-seq_len(nrow(allswaps)) |> sample()
-  oldscore<-sum(mat*wt)
+  allswaps <- expand.grid(row=seq_len(k), col=seq_len(k))
+  tryswaps <- seq_len(nrow(allswaps)) |> sample()
+  oldscore <- sum(mat * wt)
   for(i in 1:nrow(allswaps)){
-    key<-seq_len(k)
-    key[allswaps[tryswaps[i],1]]<-allswaps[tryswaps[i],2]
-    key[allswaps[tryswaps[i],2]]<-allswaps[tryswaps[i],1]
-    propmat<-mat[key,key]
-    newscore<-sum(propmat*wt)
-    if(newscore>oldscore){
-      oldscore<-newscore
-      mat<-propmat
+    key <- seq_len(k)
+    key[ allswaps[tryswaps[i], 1] ] <- allswaps[tryswaps[i], 2]
+    key[ allswaps[tryswaps[i], 2] ] <- allswaps[tryswaps[i], 1]
+    propmat <- mat[key,key]
+    newscore <- sum(propmat * wt)
+    if(newscore > oldscore){
+      oldscore <- newscore
+      mat <- propmat
     }
   }
   
@@ -407,6 +417,7 @@ sortmat<-function(mat,sorttype=c("diag","center","bottomright")){
 #'
 #' @examples trypackages(stats,utils,compiler)
 #' @export
+#' @author Sercan Kahveci
 #' 
 trypackages <- function(...){
   packs <- args2strings(...)
@@ -423,13 +434,14 @@ trypackages <- function(...){
 #' @param x A character vector of column names.
 #' @param nrow Number of rows (defaults to 0).
 #'
-#' @return A data.frame with 0 rows.
+#' @return A data.frame filled with \code{NA}.
+#' @author Sercan Kahveci
 #' @export
 #' @examples
 #' test <- df.init(c("A","B","C"))
 #' 
 df.init <- function(x,nrow=0){
-  data.frame(matrix(ncol = length(x), nrow = nrow,dimnames=list(NULL,x)))
+  data.frame(matrix(ncol = length(x), nrow = nrow,dimnames=list(NULL, x)))
 }
 
 #' Set column and row names of an object
@@ -437,10 +449,11 @@ df.init <- function(x,nrow=0){
 #' These are convenience functions that return an object with its column or row names changed.
 #' Use it in pipes.
 #' 
-#' @param x an object
-#' @param names column or row names to be assigned to the object
+#' @param x an object.
+#' @param names column or row names to be assigned to the object.
 #' 
 #' @export
+#' @author Sercan Kahveci
 #' @examples 
 #' setColNames(ToothGrowth,c("length","supplement","dosage"))
 #' setRowNames(BOD,BOD$Time)
@@ -452,11 +465,12 @@ setRowNames <- function(x, names){ rownames(x) <- names; return(x) }
 
 #' Scale a vector
 #' 
-#' Like scale() but returns a vector and is faster
+#' Like scale() but returns a vector and is faster.
 #' 
-#' @param x Numeric vector to standardize
+#' @param x Numeric vector to standardize.
 #'
-#' @return Scaled numeric vector with mean of 0 and sd of 1
+#' @return Scaled numeric vector with mean of 0 and standard deviation of 1.
+#' @author Sercan Kahveci
 #' @export
 #'
 #' @examples
@@ -473,13 +487,13 @@ vec.scale <- function(x){
 #' 
 #' Compute the standard error of the mean.
 #'
-#' @param x A numeric vector
+#' @param x A numeric vector.
 #' @param na.rm Logical. Should missing values be removed?
 #'
 #' @return The standard error of \code{x}. Returns \code{NA} for
 #' vectors with non-removed missing values, 
 #' as well as those with 1 or less non-\code{NA} values.
-#' 
+#' @author Sercan Kahveci#' 
 #' @export
 #'
 #' @examples
@@ -500,13 +514,14 @@ serr <- function(x, na.rm=FALSE){
 #' \code{age = numeric(), language = character()}
 #'
 #' @export
+#' @author Sercan Kahveci
 #'
 #' @examples 
 #' sapply(ToothGrowth,class)
 #' NewToothGrowth <- retype(ToothGrowth, supp = character(), dose = factor())
 #' sapply(NewToothGrowth,class)
 #' 
-retype<-function(df, ...){
+retype <- function(df, ...){
   args <- list(...)
 
   varnames <- names(args)
@@ -515,13 +530,13 @@ retype<-function(df, ...){
   effcols <- names(df)[names(df) %in% varnames]
 
   for(effcol in effcols){
-    df[,effcol] <- as(df[,effcol], vartypes[which(varnames==effcol)])
+    df[,effcol] <- as(df[,effcol], vartypes[which(varnames == effcol)])
   }
   return(df)
 }
 
 #' @rdname retype
-#' @param df A data.frame
+#' @param df A \code{data.frame}.
 #' @param from An empty vector of the class to convert from, or a string. 
 #' Columns sharing the class of argument \code{from} will be converted 
 #' to the class of argument \code{to}.
@@ -539,16 +554,18 @@ retype<-function(df, ...){
 #' 
 retype_all <- function(df, from, to){
   for(i in which(sapply(df, class) == from)){
-    df[[i]] <- as(df[[i]],to)
+    df[[i]] <- as(df[[i]], to)
   }
   df
 }
 
 #' Verify variable types in bulk
 #'
-#' @param ... Named arguments, where the argument is the object to be checked and the name of the argument is the mode (numeric, list, character, etc)
+#' @param ... Named arguments, where the argument is the object to be checked and 
+#' the name of the argument is the mode (numeric, list, character, etc).
 #'
 #' @return Returns true on success, causes error if not.
+#' @author Sercan Kahveci
 #' @export
 #'
 #' @examples
@@ -577,42 +594,43 @@ verify_types <- function(...){
 #' @param source,target Strings to be compared.
 #'
 #' @return The Levenshtein distance between the two strings.
+#' @author Sercan Kahveci
 #' @export
 #'
 #' @examples LevenshteinDistance("Yoghurt","Youtube")
 #' 
-LevenshteinDistance<-function(source,target){
-  source<-strsplit(source,"")[[1]]
-  target<-strsplit(target,"")[[1]]
-  sl<-length(source)
-  tl<-length(target)
-  d<- matrix(nrow=sl+1,ncol=tl+1)
+LevenshteinDistance <- function(source,target){
+  source <- strsplit(source,"")[[1]]
+  target <- strsplit(target,"")[[1]]
+  sl <- length(source)
+  tl <- length(target)
+  d <- matrix(nrow=sl + 1, ncol=tl + 1)
 
-  d[,1]<-seq_len(sl+1)-1
-  d[1,]<-seq_len(tl+1)-1
+  d[,1] <- seq_len(sl + 1) - 1
+  d[1,] <- seq_len(tl + 1) - 1
   
-  for(i in seq_len(sl+1)[-1]){
-    for(j in seq_len(tl+1)[-1]){
-      d[i, j]<- min(
+  for(i in seq_len(sl + 1)[-1]){
+    for(j in seq_len(tl + 1)[-1]){
+      d[i, j] <- min(
         d[i-1, j] + 1,
         d[i, j-1] + 1,
         d[i-1, j-1] + (source[i-1] == target[j-1])
       )
     }
   }
-  return(d[sl+1,tl+1])
+  return(d[sl + 1, tl + 1])
 }
 
 #' Split a character column into multiple values
 #'
-#' @param x a character vector to split into columns
-#' @param sep a character separating the different values
+#' @param x a character vector to split into columns.
+#' @param sep a character separating the different values.
 #'
 #' @return a \code{data.frame} of boolean values, with each row representing 
 #' a value of x and each column representing a unique value 
 #' in \code{x} following splitting. A column is marked TRUE in a specific row if
 #' the value representing that column was present in that row.
-#' 
+#' @author Sercan Kahveci 
 #' @export
 #'
 #' @examples
@@ -634,10 +652,11 @@ vec2columns <- function(x, sep=";"){
 #' This function makes calls to \code{merge()} to merge every other dataset 
 #' with the one next to it, repeating until only one dataset remains. 
 #'
-#' @param x a list of data frames
-#' @param ... all other arguments for \code{merge} can be provided here
+#' @param x a list of data frames.
+#' @param ... all other arguments for \code{merge} can be provided here.
 #'
-#' @return A single, merged \code{data.frame}
+#' @return A single, merged \code{data.frame}.
+#' @author Sercan Kahveci
 #' @export
 #'
 #' @examples
@@ -683,7 +702,7 @@ multimerge <- function(x, ...){
 #' This was primarily developed to robustly query websites. Sometimes
 #' a query fails or produces output which raises an error; 
 #' this function issues a retry in such a case.
-#' 
+#' @author Sercan Kahveci 
 #' @export
 #'
 #' @examples
