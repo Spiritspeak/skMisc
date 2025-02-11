@@ -10,7 +10,7 @@ retype(df, ...)
 retype_all(df, from, to)
 }
 \arguments{
-\item{df}{A data.frame}
+\item{df}{A \code{data.frame}.}
 
 \item{...}{Unquoted column names, paired with the desired class, e.g. 
 
@@ -38,4 +38,7 @@ sapply(mtcars,class)
 newmtcars <- retype_all(mtcars,from="numeric",to="character")
 sapply(newmtcars,class)
 
+}
+\author{
+Sercan Kahveci
 }

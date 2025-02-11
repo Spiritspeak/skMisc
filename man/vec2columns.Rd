@@ -7,9 +7,9 @@
 vec2columns(x, sep = ";")
 }
 \arguments{
-\item{x}{a character vector to split into columns}
+\item{x}{a character vector to split into columns.}
 
-\item{sep}{a character separating the different values}
+\item{sep}{a character separating the different values.}
 }
 \value{
 a \code{data.frame} of boolean values, with each row representing 
@@ -25,4 +25,7 @@ unsplit<-c("flour;salt;baking soda;steak;sugar;water;sauce;vinegar",
 "flour;sauce;mustard;salt;pepper;vinegar;baking soda;water;tomatoes;onion;steak")
 vec2columns(unsplit)
 
+}
+\author{
+Sercan Kahveci
 }

@@ -8,10 +8,10 @@ vec2phrase(x)
 }
 \arguments{
 \item{x}{A vector of values to convert into a string representing 
-a grammatically correct English list}
+a grammatically correct English list.}
 }
 \value{
-a A string representing a grammatically correct English list
+A string representing a grammatically correct English list.
 }
 \description{
 Convert a vector to an English list
@@ -25,4 +25,7 @@ vec2phrase(c())
 
 vec2phrase(c("cheese","milk","yoghurt","kefir"))
 
+}
+\author{
+Sercan Kahveci
 }

@@ -7,10 +7,10 @@
 nthWeekdayOfMonth(x)
 }
 \arguments{
-\item{x}{Date(s) to convert}
+\item{x}{Date(s) to convert.}
 }
 \value{
-A vector of Nth weekday of the month values
+A vector of Nth weekday of the month values.
 }
 \description{
 Computes which weekday of the month each date represents. 
@@ -19,4 +19,7 @@ E.g., for each "second monday of the month", it gives 2.
 \examples{
 nthWeekdayOfMonth("2000-04-08")
 
+}
+\author{
+Sercan Kahveci
 }

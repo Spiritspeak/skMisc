@@ -1,9 +1,11 @@
 
 
 
-colorblind1 <- c("#050D03", "#D5AF00", "#4714D9", "#00EF41", "#00A2BF", "#D45E00", "#FF29F7")
+colorblind1 <- c("#050D03", "#D5AF00", "#4714D9", "#00EF41", 
+                 "#00A2BF", "#D45E00", "#FF29F7")
 
-# Add option to define positive, negative, and zero color; add support for simple vector input
+# Add option to define positive, negative, and zero color; 
+# add support for simple vector input
 # Also add heatmap ggplot function-
 colorEdges<-function(x,maxedge=NULL){
   edgevec<-as.vector(x)
@@ -63,6 +65,47 @@ theme_apa <- function(){
           axis.text=element_text(color="black",size=unit(13,"pt")),
           axis.text.x=element_text(margin=unit(c(8,0,0,0),"pt")),
           axis.text.y=element_text(margin=unit(c(0,8,0,0),"pt")))
+}
+
+
+#' Plot matrix as heatmap
+#'
+#' @param x A matrix.
+#' @param text Whether to print the values of the matrix as text (defaults to FALSE).
+#' @param DoNotPlot Whether to avoid plotting (defaults to FALSE).
+#' @param ... Ignored.
+#'
+#' @return Invisibly returns the ggplot object for further modification.
+#' @author Sercan Kahveci
+#' @export
+#'
+#' @examples
+#' mymat<-matrix(rnorm(100),nrow=10)
+#' mymat<-mymat+t(mymat)
+#' mymat[cbind(sample(c(1:10)),sample(c(1:10)))]<-NA
+#' colnames(mymat)<-rownames(mymat)<-sample(letters[1:10])
+#' 
+#' plot.matrix(mymat)
+#' 
+plot.matrix <- function(x, labels=FALSE, DoNotPlot=FALSE, ...){
+  out <- x |> unwrap.matrix() |> ggplot() + 
+    aes(y=row,x=col,fill=value) + 
+    geom_tile() + scale_fill_gradient2(na.value="grey25") + 
+    coord_cartesian(expand=0) + 
+    theme_bw() + 
+    theme(axis.ticks=element_blank(),
+          panel.grid=element_blank(),
+          panel.border = element_blank(),
+          axis.title = element_blank(),
+          legend.title=element_blank())
+  if(labels){
+    out <- out + geom_text(aes(label=dropLeadingZero(round(value,digits=2))),
+                           size=min(2,2*10/nrow(x)))
+  }
+  if(!DoNotPlot){
+    plot(out)
+  }
+  return(invisible(out))
 }
 
 #stolen from stackoverflow

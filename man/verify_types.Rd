@@ -7,7 +7,8 @@
 verify_types(...)
 }
 \arguments{
-\item{...}{Named arguments, where the argument is the object to be checked and the name of the argument is the mode (numeric, list, character, etc)}
+\item{...}{Named arguments, where the argument is the object to be checked and 
+the name of the argument is the mode (numeric, list, character, etc).}
 }
 \value{
 Returns true on success, causes error if not.
@@ -18,4 +19,7 @@ Verify variable types in bulk
 \examples{
 try(verify_types(character="test",numeric=0000,character=12345))
 
+}
+\author{
+Sercan Kahveci
 }

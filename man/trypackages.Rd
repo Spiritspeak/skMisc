@@ -16,3 +16,6 @@ Install packages if neccesary, then load them.
 \examples{
 trypackages(stats,utils,compiler)
 }
+\author{
+Sercan Kahveci
+}

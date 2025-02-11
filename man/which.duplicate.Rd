@@ -7,7 +7,7 @@
 which.duplicate(x)
 }
 \arguments{
-\item{x}{A vector}
+\item{x}{A vector.}
 }
 \value{
 A vector of the same length as \code{x}, where each element represents
@@ -24,4 +24,7 @@ whether a value has occurred before and not how many times.
 \examples{
 which.duplicate(c(1,6,5,2,1,1,8,6,5))
 
+}
+\author{
+Sercan Kahveci
 }

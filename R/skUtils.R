@@ -1,5 +1,5 @@
 # Files that are "up to standard": holdout.R, formatting.R, skUtils.R, 
-# skPlotting.R, datawrangler.R
+# datawrangler.R
 
 #I don't want to import rlang, so it will be done this way instead.
 args2strings <- function(...) sapply(substitute({ ... })[-1], deparse)
@@ -351,8 +351,7 @@ chop_up2 <- function(x, maxval,
 unwrap.matrix <- function(x){
   dn <- dimnames(x)
   unwrap <- expand.grid(row=if(is.null(dn[[1]])){ seq_len(nrow(x)) }else{ dn[[1]] },
-                        col=if(is.null(dn[[2]])){ seq_len(ncol(x)) }else{ dn[[2]] },
-                        stringsAsFactors=F)
+                        col=if(is.null(dn[[2]])){ seq_len(ncol(x)) }else{ dn[[2]] })
   unwrap[["value"]] <- as.vector(x)
   return(unwrap)
 }

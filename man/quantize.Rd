@@ -7,12 +7,12 @@
 quantize(x, n)
 }
 \arguments{
-\item{x}{A numeric vector to quantize}
+\item{x}{A numeric vector to quantize.}
 
-\item{n}{The number of quantiles to divide it into}
+\item{n}{The number of quantiles to divide it into.}
 }
 \value{
-A vector with values replaced by their quantile membership
+A vector with values replaced by their quantile membership.
 }
 \description{
 Will replace vector values with their quantile.
@@ -21,4 +21,7 @@ Will replace vector values with their quantile.
 a<-rnorm(100)
 quantize(a,5)
 
+}
+\author{
+Sercan Kahveci
 }

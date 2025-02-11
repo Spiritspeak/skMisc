@@ -8,7 +8,7 @@ Remove leading zeroes and return as a character vector.}
 dropLeadingZero(x)
 }
 \arguments{
-\item{x}{Numeric vector to remove leading zeros from}
+\item{x}{Numeric vector to remove leading zeros from.}
 }
 \value{
 A character vector of numbers with leading zeros removed.

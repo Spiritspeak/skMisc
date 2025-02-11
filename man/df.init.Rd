@@ -4,13 +4,15 @@
 \alias{df.init}
 \title{Initiate an empty data frame}
 \usage{
-df.init(x)
+df.init(x, nrow = 0)
 }
 \arguments{
 \item{x}{A character vector of column names.}
+
+\item{nrow}{Number of rows (defaults to 0).}
 }
 \value{
-A data.frame with 0 rows.
+A data.frame filled with \code{NA}.
 }
 \description{
 Initiate an empty data frame
@@ -18,4 +20,7 @@ Initiate an empty data frame
 \examples{
 test <- df.init(c("A","B","C"))
 
+}
+\author{
+Sercan Kahveci
 }

@@ -7,14 +7,14 @@
 allpairs(nval, ntuplet = 2, incl.self = FALSE)
 }
 \arguments{
-\item{nval}{Number of values to arrange into unique tuplets}
+\item{nval}{Number of values to arrange into unique tuplets.}
 
-\item{ntuplet}{N-tuplets to arrange the values uniquely into}
+\item{ntuplet}{N-tuplets to arrange the values uniquely into.}
 
-\item{incl.self}{Determines whether a value can be paired with itself}
+\item{incl.self}{Determines whether a value can be paired with itself.}
 }
 \value{
-A matrix where each row is a unique N-tuplet
+A matrix where each row is a unique N-tuplet.
 }
 \description{
 Generate unique pairs or N-tuplets
@@ -22,4 +22,7 @@ Generate unique pairs or N-tuplets
 \examples{
 allpairs(nval=20,ntuplet=3)
 
+}
+\author{
+Sercan Kahveci
 }

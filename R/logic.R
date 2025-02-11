@@ -151,7 +151,6 @@ lazy_all <- function(...){
 #' @return \code{x} with \code{NA} values replaced with 
 #' \code{TRUE} or \code{FALSE}.
 #' @author Sercan Kahveci
-#' @export
 #'
 #' @examples
 #' fruits <- c("apples","pears",NA,"cherries")

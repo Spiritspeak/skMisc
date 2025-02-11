@@ -7,7 +7,7 @@
 subdivide(x, divs, divlen)
 }
 \arguments{
-\item{x}{the to-be-divided object}
+\item{x}{the to-be-divided object.}
 
 \item{divs, divlen}{The number of divisions and the preferred length of divisions. 
 One and only one of \code{divs} and \code{divlen} must be given.}
@@ -23,4 +23,7 @@ Either the length or the number of the parts can be set.
 subdivide(letters, divs=5)
 subdivide(1:10, divlen=3)
 
+}
+\author{
+Sercan Kahveci
 }

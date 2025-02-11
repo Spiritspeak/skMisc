@@ -2,8 +2,7 @@
 % Please edit documentation in R/formatting.R
 \name{format_stat}
 \alias{format_stat}
-\title{Format statistics appropriately
-This formats numbers according to APA.}
+\title{Format statistics appropriately}
 \usage{
 format_stat(
   x,
@@ -28,7 +27,6 @@ format_stat(
 A character vector of formatted numbers.
 }
 \description{
-Format statistics appropriately
 This formats numbers according to APA.
 }
 \details{
@@ -44,4 +42,7 @@ format_stat(0.0004,type="p")
 # should be considered equal to that between 1 and infinity
 format_stat(0.05,type="quotient")
 
+}
+\author{
+Sercan Kahveci
 }

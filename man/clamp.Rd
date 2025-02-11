@@ -10,11 +10,11 @@ clamp(val, minval = -Inf, maxval = Inf)
 clamp0(val, minval = 0, maxval = 1)
 }
 \arguments{
-\item{val}{The vector/matrix to clamp}
+\item{val}{The vector/matrix to clamp.}
 
-\item{minval}{Minimum value; all lower values are clamped to this value}
+\item{minval}{Minimum value; all lower values are clamped to this value.}
 
-\item{maxval}{Maximum value; all higher values are clamped to this value}
+\item{maxval}{Maximum value; all higher values are clamped to this value.}
 }
 \value{
 Clamped vector.
@@ -26,4 +26,7 @@ Clamp a numeric vector between a minimum and maximum value.
 clamp(0:10,2,8)
 clamp0(rnorm(10))
 
+}
+\author{
+Sercan Kahveci
 }

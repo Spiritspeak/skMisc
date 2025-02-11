@@ -34,3 +34,6 @@ strsplit.wrap(thanks,width=80)
 alphabet <- paste0(letters,collapse="")
 strsplit.wrap(alphabet,width=3)
 }
+\author{
+Sercan Kahveci
+}

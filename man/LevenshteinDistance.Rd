@@ -20,3 +20,6 @@ that need to be performed to turn the source string into the target string.
 LevenshteinDistance("Yoghurt","Youtube")
 
 }
+\author{
+Sercan Kahveci
+}

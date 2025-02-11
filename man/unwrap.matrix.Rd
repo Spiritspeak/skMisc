@@ -7,7 +7,7 @@
 unwrap.matrix(x)
 }
 \arguments{
-\item{x}{A matrix}
+\item{x}{A matrix.}
 }
 \value{
 a \code{data.frame} with three columns: \code{row} and \code{col} indicating the
@@ -24,4 +24,7 @@ unwrap.matrix(mymatrix)
 carmatrix<-as.matrix(mtcars)
 unwrap.matrix(carmatrix)
 
+}
+\author{
+Sercan Kahveci
 }

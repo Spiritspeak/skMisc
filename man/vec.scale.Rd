@@ -7,15 +7,18 @@
 vec.scale(x)
 }
 \arguments{
-\item{x}{Numeric vector to standardize}
+\item{x}{Numeric vector to standardize.}
 }
 \value{
-Scaled numeric vector with mean of 0 and sd of 1
+Scaled numeric vector with mean of 0 and standard deviation of 1.
 }
 \description{
-Like scale() but returns a vector and is faster
+Like scale() but returns a vector and is faster.
 }
 \examples{
 vec.scale(1:10)
 
+}
+\author{
+Sercan Kahveci
 }

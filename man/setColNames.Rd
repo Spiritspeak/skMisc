@@ -10,9 +10,9 @@ setColNames(x, names)
 setRowNames(x, names)
 }
 \arguments{
-\item{x}{an object}
+\item{x}{an object.}
 
-\item{names}{column or row names to be assigned to the object}
+\item{names}{column or row names to be assigned to the object.}
 }
 \description{
 These are convenience functions that return an object with its column or row names changed.
@@ -22,4 +22,7 @@ Use it in pipes.
 setColNames(ToothGrowth,c("length","supplement","dosage"))
 setRowNames(BOD,BOD$Time)
 
+}
+\author{
+Sercan Kahveci
 }

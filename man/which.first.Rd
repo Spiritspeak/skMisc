@@ -7,7 +7,7 @@
 which.first(x, na.first = FALSE)
 }
 \arguments{
-\item{x}{A vector}
+\item{x}{A vector.}
 
 \item{na.first}{Logical value indicating whether to replace the first
 occurrence of each value with its index (if \code{FALSE}) or with NA (if \code{TRUE}).}
@@ -15,12 +15,15 @@ occurrence of each value with its index (if \code{FALSE}) or with NA (if \code{T
 \value{
 A vector of the length of \code{x} with each value representing either 
 \code{NA} if it is the first occurrence of a unique value, or 
-the index of the first instance of each value in \code{x} if it is a duplicated value
+the index of the first instance of each value in \code{x} if it is a duplicated value.
 }
 \description{
-This replaces all values with the index of their first occurrence
+This replaces all values with the index of their first occurrence.
 }
 \examples{
 which.first(c("a","b","a","k"))
 
+}
+\author{
+Sercan Kahveci
 }

@@ -7,12 +7,12 @@
 multimerge(x, ...)
 }
 \arguments{
-\item{x}{a list of data frames}
+\item{x}{a list of data frames.}
 
-\item{...}{all other arguments for \code{merge} can be provided here}
+\item{...}{all other arguments for \code{merge} can be provided here.}
 }
 \value{
-A single, merged \code{data.frame}
+A single, merged \code{data.frame}.
 }
 \description{
 This function makes calls to \code{merge()} to merge every other dataset 
@@ -29,4 +29,7 @@ for(i in 1:lsize){
 }
 multimerge(testlist,by="key",all=TRUE)
 
+}
+\author{
+Sercan Kahveci
 }
