@@ -22,3 +22,6 @@ Multi-series Autocorrelation Plotting
 mycors<-AutocorPlot(x=ToothGrowth$len,index=ToothGrowth$supp,lag.max=10)
 
 }
+\author{
+Sercan Kahveci
+}

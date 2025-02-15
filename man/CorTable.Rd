@@ -48,3 +48,6 @@ test<-CorTable(mtcars,holdout.goal="nsig")
 print(test,type="r/h")
 
 }
+\author{
+Sercan Kahveci
+}

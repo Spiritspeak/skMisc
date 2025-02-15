@@ -45,3 +45,6 @@ deviation <- rnorm(50,m=1)
 zerodiff(deviation)
 
 }
+\author{
+Sercan Kahveci
+}

@@ -1,24 +1,6 @@
 
-
-
 colorblind1 <- c("#050D03", "#D5AF00", "#4714D9", "#00EF41", 
                  "#00A2BF", "#D45E00", "#FF29F7")
-
-# Add option to define positive, negative, and zero color; 
-# add support for simple vector input
-# Also add heatmap ggplot function-
-colorEdges<-function(x,maxedge=NULL){
-  edgevec<-as.vector(x)
-  if(is.null(maxedge)){ 
-    edgevec <- edgevec/max(abs(edgevec)) 
-  }else{
-    edgevec <- edgevec/abs(maxedge)
-  }
-  cols<-hsv(h=ifelse(sign(edgevec)==1,2/3,0),
-            s=abs(edgevec)*.9+ifelse(edgevec==0,0,.1),
-            v=1)
-  matrix(cols,ncol=ncol(x),nrow=nrow(x))
-}
 
 #' @name ggplot.themes
 #' @title extra \code{ggplot2} themes
@@ -86,12 +68,13 @@ theme_apa <- function(){
 #' mymat[cbind(sample(c(1:10)), sample(c(1:10)))] <- NA
 #' colnames(mymat) <- rownames(mymat) <- sample(letters[1:10])
 #' 
-#' plot.matrix(mymat)
+#' plotmat(mymat)
 #' 
-plot.matrix <- function(x, text=FALSE, plot=TRUE, ...){
+plotmat <- function(x, text=FALSE, plot=TRUE, ...){
   out <- x |> unwrap.matrix() |> ggplot() + 
-    aes(y=row,x=col,fill=value) + 
-    geom_tile() + scale_fill_gradient2(na.value="grey25") + 
+    aes(y=.data[["row"]],x=.data[["col"]],fill=.data[["value"]]) + 
+    geom_tile() + 
+    scale_fill_gradient2(na.value="grey25") + 
     coord_cartesian(expand=0) + 
     theme_bw() + 
     theme(axis.ticks=element_blank(),
@@ -100,8 +83,9 @@ plot.matrix <- function(x, text=FALSE, plot=TRUE, ...){
           axis.title=element_blank(),
           legend.title=element_blank())
   if(text){
-    out <- out + geom_text(aes(label=dropLeadingZero(round(value, digits=2))),
-                           size=min(2, 2*10/nrow(x)))
+    out <- out + 
+      geom_text(aes(label=dropLeadingZero(round(.data[["value"]], digits=2))),
+                size=min(2, 2*10/nrow(x)))
   }
   if(plot){
     plot(out)

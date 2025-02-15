@@ -24,3 +24,6 @@ hilight(27,2.5,"Light and\nefficient")
 hilight(17,4.5,"Heavy and\ninefficient")
 
 }
+\author{
+Sercan Kahveci
+}

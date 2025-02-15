@@ -1,10 +1,10 @@
 
 #' Drop leading zeros
-#' Remove leading zeroes and return as a character vector.
+#' Remove leading zeroes and return as a character object.
 #'
-#' @param x Numeric vector to remove leading zeros from.
+#' @param x Numeric vector, matrix, or list to remove leading zeros from.
 #'
-#' @return A character vector of numbers with leading zeros removed.
+#' @return A character vector, matrix, or list, with numbers with leading zeros removed.
 #' @export
 #' @md
 #'
@@ -12,7 +12,8 @@
 #' dropLeadingZero(c(-1,0,1,0.5,-0.5,1.5,-1.5))
 #' 
 dropLeadingZero <- function(x){
-  gsub("(?<![0-9])0+(?=\\.)", "", x, perl = TRUE)
+  x[]<-gsub("(?<![0-9])0+(?=\\.)", "", x, perl = TRUE)
+  return(x)
 }
 
 

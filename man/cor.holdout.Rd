@@ -61,3 +61,6 @@ cor.holdout(x=rnorm(100)+xval,y=rnorm(100)+xval,goal="nsig",method="spearman")
 cor.holdout(x=rnorm(100),y=rnorm(100),goal="nsig")
 
 }
+\author{
+Sercan Kahveci
+}

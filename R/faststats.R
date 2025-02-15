@@ -272,9 +272,6 @@ twocor <- function(x, y, method="pearson"){
   return(invisible(test))
 }
 
-
-
-
 #' Get classification accuracy metrics
 #'
 #' @param x The true class memberships

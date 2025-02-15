@@ -268,3 +268,18 @@ brms.check <- function(x,min.ess=400,max.rhat=1.05){
   return(invisible(info))
 }
 
+
+# Add option to define positive, negative, and zero color; 
+# add support for simple vector input
+colorEdges<-function(x,maxedge=NULL){
+  edgevec<-as.vector(x)
+  if(is.null(maxedge)){ 
+    edgevec <- edgevec/max(abs(edgevec)) 
+  }else{
+    edgevec <- edgevec/abs(maxedge)
+  }
+  cols<-hsv(h=ifelse(sign(edgevec)==1,2/3,0),
+            s=abs(edgevec)*.9+ifelse(edgevec==0,0,.1),
+            v=1)
+  matrix(cols,ncol=ncol(x),nrow=nrow(x))
+}

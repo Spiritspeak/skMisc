@@ -76,3 +76,6 @@ print(lmmod.h2)
 plot(lmmod.h)
 
 }
+\author{
+Sercan Kahveci
+}

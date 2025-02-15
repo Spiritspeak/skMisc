@@ -42,3 +42,6 @@ newpred <- as.numeric(predict(mymod,
 ClassMetrics(x=mtcars$am, y=newpred)
 
 }
+\author{
+Sercan Kahveci
+}

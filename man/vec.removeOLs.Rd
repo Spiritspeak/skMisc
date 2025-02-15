@@ -29,3 +29,6 @@ vec.removeOLs(testvec,make.na=TRUE)
 \seealso{
 [removeOLs()]
 }
+\author{
+Sercan Kahveci
+}

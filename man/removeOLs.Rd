@@ -51,3 +51,6 @@ removeOLs(testmat)
 \seealso{
 [vec.removeOLs()] for the same outlier exclusion applied to a single vector.
 }
+\author{
+Sercan Kahveci
+}

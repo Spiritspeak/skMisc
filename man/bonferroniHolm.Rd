@@ -26,3 +26,6 @@ the Bonferroni-Holm method
 bonferroniHolm(c(1,.05,.001,.002,.01))
 
 }
+\author{
+Sercan Kahveci
+}

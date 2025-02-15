@@ -17,3 +17,6 @@ will fit to a normal distribution.
 TransformPlots(mtcars$disp)
 
 }
+\author{
+Sercan Kahveci
+}
