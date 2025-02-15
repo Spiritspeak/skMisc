@@ -331,22 +331,33 @@ chop_up2 <- function(x, maxval,
   out
 }
 
-#' Turn a matrix into a long-format data.frame
+#' Convert between a matrix and a long-format data.frame
 #'
-#' @param x A matrix.
+#' @param x In case of \code{unwrap.matrix()}, a matrix to unwrap; 
+#' in case of \code{rewrap.matrix}, a data.frame with three columns,
+#' respectively representing the row name, column name, and value.
+#' @na.value Which value to use in the matrix for elements 
+#' not provided in \code{x}
 #'
-#' @return a \code{data.frame} with three columns: \code{row} and \code{col} indicating the
-#' row and column names, and \code{value} indicating the respective value in the matrix. 
-#' If no row or column names are available, the row or column number is used instead.
+#' @return \code{unwrap.matrix()} returns a \code{data.frame} with three columns: 
+#' \code{row} and \code{col} indicating the row and column names, and 
+#' \code{value} indicating the respective value in the matrix. 
+#' If no row or column names are available, 
+#' the row or column number is used instead.
+#' 
+#' \code{rewrap.matrix()} returns a matrix.
+#' 
 #' @author Sercan Kahveci
 #' @export
 #'
 #' @examples
-#' mymatrix<-matrix(1:80,ncol=8,nrow=10)
+#' mymatrix <- matrix(1:40,ncol=8,nrow=5)
 #' unwrap.matrix(mymatrix)
+#' rewrap.matrix(unwrap.matrix(mymatrix))
 #' 
-#' carmatrix<-as.matrix(mtcars)
+#' carmatrix <- as.matrix(mtcars)
 #' unwrap.matrix(carmatrix)
+#' rewrap.matrix(unwrap.matrix(carmatrix))
 #' 
 unwrap.matrix <- function(x){
   dn <- dimnames(x)
@@ -354,6 +365,21 @@ unwrap.matrix <- function(x){
                         col=if(is.null(dn[[2]])){ seq_len(ncol(x)) }else{ dn[[2]] })
   unwrap[["value"]] <- as.vector(x)
   return(unwrap)
+}
+
+#' @rdname unwrap.matrix
+#' @export
+#' 
+rewrap.matrix <- function(x, na.value=NA){
+  rn <- unique(x[,1,drop=T])
+  cn <- unique(x[,2,drop=T])
+  out <- matrix(NA,
+                nrow=length(rn),
+                ncol=length(cn),
+                dimnames=list(rn, cn))
+  out[as.matrix(x[,c(1,2)])] <- x[,3,drop=T]
+  out[is.na(out)] <- na.value
+  return(out)
 }
 
 #' Sort a square matrix
