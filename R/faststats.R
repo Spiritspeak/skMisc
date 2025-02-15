@@ -551,3 +551,26 @@ tpars <- function(x, df=30){
                  start=list(m=mean(x), s=sd(x), df=df),
                  lower=c(m=-Inf, s=0, df=1))
 }
+
+#' Tukey's Trimean
+#' 
+#' A robust mean estimator more efficient than the median, first proposed by Tukey.
+#'
+#' @param x A numeric vector
+#' @param na.rm Whether to remove missing values. 
+#' The function will error if \code{NA}s are present while \code{FALSE}.
+#'
+#' @return The trimean of \code{x}.
+#' @export
+#'
+#' @examples
+#' a <- rnorm(100)
+#' a[1] <- 1000
+#' trimean(a)
+#' mean(a)
+#' 
+trimean <- function(x, na.rm=FALSE){
+  if(na.rm){ x <- x[!is.na(x)] }
+  sum(c(1,2,1) * quantile(x,c(.25,.5,.75)), na.rm=na.rm)/4
+}
+
