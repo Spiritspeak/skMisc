@@ -42,7 +42,8 @@ alignLayouts <- function(matlist, alpha=.5, FillInNodes=FALSE){
   return(output)
 }
 
-
+# TODO: from graphlayouts add backbone 
+# TODO: from igraph go over all remaining options 
 altlayout <- function(x, type=c("stress", "kk", "fr", "drl", "dh", "focus"),
                       repulsion=1, negrepulsion=1, ...){
   
@@ -63,22 +64,22 @@ altlayout <- function(x, type=c("stress", "kk", "fr", "drl", "dh", "focus"),
   # Run layout functions
   if(type=="kk"){ 
     igraph::E(qgr)$weight <- newwts
-    out<-igraph::layout_with_kk(qgr) 
+    out<-igraph::layout_with_kk(qgr, ...) 
   }else if(type=="stress"){
     igraph::E(qgr)$weight <- newwts
-    out <- graphlayouts::layout_with_stress(qgr,weights=NULL) 
+    out <- graphlayouts::layout_with_stress(qgr,weights=NULL, ...) 
   }else if(type=="fr"){
     igraph::E(qgr)$weight <- 1/newwts
-    out <- igraph::layout_with_fr(qgr)
+    out <- igraph::layout_with_fr(qgr, ...)
   }else if(type=="drl"){
     igraph::E(qgr)$weight <- 1/newwts
-    out <- igraph::layout_with_drl(qgr)
+    out <- igraph::layout_with_drl(qgr, ...)
   }else if(type=="dh"){
     igraph::E(qgr)$weight <- 1/newwts
-    out <- igraph::layout_with_dh(qgr)
+    out <- igraph::layout_with_dh(qgr, ...)
   }else if(type=="focus"){
     qgr %<>% igraph::delete_edges(which(oldwts<0))
-    out <- graphlayouts::layout_with_focus(qgr, v=args$focus)$xy
+    out <- graphlayouts::layout_with_focus(qgr, v=args$focus, ...)$xy
   }
   
   # Return output
