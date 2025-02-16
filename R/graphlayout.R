@@ -25,7 +25,7 @@ alignLayouts <- function(matlist, alpha=.5, FillInNodes=FALSE){
   layouts <- filledmats |> 
     lapply(function(x){x[x!=0] <- exp(-x[x!=0]); x}) |>
     lapply(igraph::graph_from_adjacency_matrix) |> 
-    layout_as_dynamic(weights=NULL, alpha=alpha) |> 
+    graphlayouts::layout_as_dynamic(weights=NULL, alpha=alpha) |> 
     lapply(function(x){rownames(x) <- allnames; x})
   
   # Remove filled-in nodes if requested
@@ -65,7 +65,8 @@ altlayout <- function(x, type=c("stress", "kk", "fr", "drl", "dh", "focus"),
     igraph::E(qgr)$weight <- newwts
     out<-igraph::layout_with_kk(qgr) 
   }else if(type=="stress"){
-    out <- graphlayouts::layout_with_stress(qgr,newwts) 
+    igraph::E(qgr)$weight <- newwts
+    out <- graphlayouts::layout_with_stress(qgr,weights=NULL) 
   }else if(type=="fr"){
     igraph::E(qgr)$weight <- 1/newwts
     out <- igraph::layout_with_fr(qgr)

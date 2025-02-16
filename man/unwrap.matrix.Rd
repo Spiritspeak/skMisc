@@ -2,27 +2,41 @@
 % Please edit documentation in R/skUtils.R
 \name{unwrap.matrix}
 \alias{unwrap.matrix}
-\title{Turn a matrix into a long-format data.frame}
+\alias{rewrap.matrix}
+\title{Convert between a matrix and a long-format data.frame}
 \usage{
 unwrap.matrix(x)
+
+rewrap.matrix(x, na.value = NA)
 }
 \arguments{
-\item{x}{A matrix.}
+\item{x}{In case of \code{unwrap.matrix()}, a matrix to unwrap; 
+in case of \code{rewrap.matrix}, a data.frame with three columns,
+respectively representing the row name, column name, and value.}
+
+\item{na.value}{Which value to use in the matrix for elements 
+not provided in \code{x}}
 }
 \value{
-a \code{data.frame} with three columns: \code{row} and \code{col} indicating the
-row and column names, and \code{value} indicating the respective value in the matrix. 
-If no row or column names are available, the row or column number is used instead.
+\code{unwrap.matrix()} returns a \code{data.frame} with three columns: 
+\code{row} and \code{col} indicating the row and column names, and 
+\code{value} indicating the respective value in the matrix. 
+If no row or column names are available, 
+the row or column number is used instead.
+
+\code{rewrap.matrix()} returns a matrix.
 }
 \description{
-Turn a matrix into a long-format data.frame
+Convert between a matrix and a long-format data.frame
 }
 \examples{
-mymatrix<-matrix(1:80,ncol=8,nrow=10)
+mymatrix <- matrix(1:40,ncol=8,nrow=5)
 unwrap.matrix(mymatrix)
+rewrap.matrix(unwrap.matrix(mymatrix))
 
-carmatrix<-as.matrix(mtcars)
+carmatrix <- as.matrix(mtcars)
 unwrap.matrix(carmatrix)
+rewrap.matrix(unwrap.matrix(carmatrix))
 
 }
 \author{

@@ -15,6 +15,7 @@
 #' @name skMisc
 #' @md 
 #' @import magrittr dplyr lmerTest ggplot2 coin doParallel parallel foreach iterators MuMIn
+#' @import qgraph
 #' @importFrom utils install.packages
 #' @importFrom methods as Quote
 #' @importFrom grDevices rgb
@@ -25,6 +26,9 @@
 #' @importFrom MASS fitdistr
 #' @importFrom car qqp
 #' @importFrom lme4 nobars findbars
+#' @importFrom igraph graph_from_adjacency_matrix E V delete_edges
+#' layout_with_kk layout_with_fr layout_with_drl layout_with_dh
+#' @importFrom graphlayouts layout_as_dynamic layout_with_stress layout_with_focus
 #' 
 #' 
 "_PACKAGE"

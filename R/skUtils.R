@@ -336,7 +336,7 @@ chop_up2 <- function(x, maxval,
 #' @param x In case of \code{unwrap.matrix()}, a matrix to unwrap; 
 #' in case of \code{rewrap.matrix}, a data.frame with three columns,
 #' respectively representing the row name, column name, and value.
-#' @na.value Which value to use in the matrix for elements 
+#' @param na.value Which value to use in the matrix for elements 
 #' not provided in \code{x}
 #'
 #' @return \code{unwrap.matrix()} returns a \code{data.frame} with three columns: 
