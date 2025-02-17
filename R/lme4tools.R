@@ -1,6 +1,15 @@
 # lme4tools
 # TODO: annotate all lines of code so it is clear what's going on here
 
+# Taken from stackoverflow, credit properly
+lmer.beta <- function(mod) {
+  b <- fixef(mod)[-1]
+  sd.x <- apply(getME(mod,"X")[,-1],2,sd)
+  sd.y <- sd(getME(mod,"y"))
+  b*sd.x/sd.y
+}
+
+
 #' Extract random terms from a lme4 formula
 #'
 #' @param form A formula

@@ -92,7 +92,7 @@ altlayout <- function(x, type=c("stress", "kk", "fr", "drl", "dh", "focus"),
 #' It does so by moving nodes in the corners more towards the corner.
 #'
 #' @param x A network layout matrix with 2 columns representing node x and y axis positions.
-#' @param rate The extent by which to move nodes into the corners.
+#' @param rate The rate by which to move nodes into the corners, between 0 and 1.
 #'
 #' @returns A network layout matrix with 2 columns representing node x and y axis positions.
 #' @export
@@ -114,5 +114,6 @@ squarifyLayout <- function(x, rate=1){
   anmat2[bigger,] <- anmat2[bigger,]/abs(anmat[bigger,1])
   anmat2[!bigger,] <- anmat2[!bigger,]/abs(anmat[!bigger,2])
   distmod <- sqrt(rowSums(anmat2^2))
-  avl <- anmat*dist*(distmod^rate)
+  out <- anmat*dist*(distmod^rate)
+  return(out)
 }

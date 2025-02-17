@@ -1,18 +1,4 @@
 
-dropLeadingZero_old <- function(x){
-  xnew <- c()
-  for(i in x){
-    if(isTRUE(i==0)){
-      xnew <- c(xnew,"0")
-    } else if (isTRUE(i>=1) | isTRUE(i<=-1)){
-      xnew <- c(xnew, as.character(i))
-    } else
-      xnew <- c(xnew, gsub("(?<![0-9])0+(?=\\.)", "", i, perl = TRUE))
-  }
-  return(xnew)
-}
-
-
 #' Compound tokens without overflowing memory and crashing R
 #' @description A wrapper around \link[quanteda]{tokens_compound} that processes your tokens in chunks, 
 #' set by argument \code{stepsize}. See \link[quanteda]{tokens_compound} for more info.
@@ -197,36 +183,6 @@ read.csv.folder <- function(folder="./", readfunc=list(read.csv,read.csv2,read.t
   }
   return(combodat)
 }
-
-
-#' Replicate each element of a vector or list N times
-#' 
-#' Like [base::rep()] except you can provide multiple values 
-#' to the \code{each} argument.
-#' This replicates each element of \code{x} by each integer given by \code{each}.
-#'
-#' @param x A vector
-#' @param each How often should each element in \code{x} be repeated? 
-#' This should be a non-negative integer vector of either length 1 or 
-#' the same length as \code{x}.
-#'
-#' @return An object of the same type as \code{x}.
-#' @seealso [base::inverse.rle()]
-#' @export
-#'
-#' @examples
-#' rep.each(1:5,each=5:1)
-#' #> [1] 1 1 1 1 1 2 2 2 2 3 3 3 4 4 5
-#' 
-rep.each <- function(x, each){
-  if(length(each) == 1){
-    rep(x, each=each)
-  }else if(length(x) == length(each)){
-    unlist(mapply(rep, x=x, each=each, SIMPLIFY=F))
-  }
-}
-
-
 
 #' Check convergence of a \code{brmsfit} object
 #'
