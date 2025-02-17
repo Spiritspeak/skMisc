@@ -435,25 +435,6 @@ sortmat <- function(mat, sorttype=c("diag", "center", "bottomright")){
   return(mat)
 }
 
-#' Install packages if neccesary, then load them.
-#' 
-#' @param ... Unquoted names of packages to try loading, 
-#' and if unable, install and load.
-#'
-#' @examples trypackages(stats,utils,compiler)
-#' @export
-#' @author Sercan Kahveci
-#' 
-trypackages <- function(...){
-  packs <- args2strings(...)
-  for(pack in packs){
-    if(!do.call("require", list(pack, character.only=T))){
-      install.packages(pack)
-      do.call("require", list(pack, character.only=T))
-    }
-  }
-}
-
 #' Initiate an empty data frame
 #'
 #' @param x A character vector of column names.
@@ -505,6 +486,32 @@ vec.scale <- function(x){
   xt <- na.omit(x)
   m <- mean.default(xt)
   (x-m) / sqrt( sum((xt-m)^2)/(length(xt)-1) )
+}
+
+#' Split a character column into multiple values
+#'
+#' @param x a character vector to split into columns.
+#' @param sep a character separating the different values.
+#'
+#' @return a \code{data.frame} of boolean values, with each row representing 
+#' a value of x and each column representing a unique value 
+#' in \code{x} following splitting. A column is marked TRUE in a specific row if
+#' the value representing that column was present in that row.
+#' @author Sercan Kahveci 
+#' @export
+#'
+#' @examples
+#' unsplit<-c("flour;salt;baking soda;steak;sugar;water;sauce;vinegar",
+#' "flour;sauce;mustard;salt;pepper;vinegar;baking soda;water;tomatoes;onion;steak")
+#' vec2columns(unsplit)
+#' 
+vec2columns <- function(x, sep=";"){
+  vals <- strsplit(x, sep)
+  uniques <- unique(unlist(vals))
+  idx <- t(sapply(vals, function(y){ uniques %in% y }))
+  colnames(idx) <- ifelse(is.na(uniques), "NA", uniques)
+  out <- as.data.frame(idx)
+  return(out)
 }
 
 #' Change classes of columns in a data.frame
@@ -625,71 +632,27 @@ LevenshteinDistance <- function(source,target){
   return(d[sl + 1, tl + 1])
 }
 
-#' Split a character column into multiple values
-#'
-#' @param x a character vector to split into columns.
-#' @param sep a character separating the different values.
-#'
-#' @return a \code{data.frame} of boolean values, with each row representing 
-#' a value of x and each column representing a unique value 
-#' in \code{x} following splitting. A column is marked TRUE in a specific row if
-#' the value representing that column was present in that row.
-#' @author Sercan Kahveci 
-#' @export
-#'
-#' @examples
-#' unsplit<-c("flour;salt;baking soda;steak;sugar;water;sauce;vinegar",
-#' "flour;sauce;mustard;salt;pepper;vinegar;baking soda;water;tomatoes;onion;steak")
-#' vec2columns(unsplit)
-#' 
-vec2columns <- function(x, sep=";"){
-  vals <- strsplit(x, sep)
-  uniques <- unique(unlist(vals))
-  idx <- t(sapply(vals, function(y){ uniques %in% y }))
-  colnames(idx) <- ifelse(is.na(uniques), "NA", uniques)
-  out <- as.data.frame(idx)
-  return(out)
-}
+##########################################
+# Ops unrelated to objects or statistics #
+##########################################
 
-#' Merge Multiple Data Frames
+#' Install packages if neccesary, then load them.
 #' 
-#' This function makes calls to \code{merge()} to merge every other dataset 
-#' with the one next to it, repeating until only one dataset remains. 
+#' @param ... Unquoted names of packages to try loading, 
+#' and if unable, install and load.
 #'
-#' @param x a list of data frames.
-#' @param ... all other arguments for \code{merge} can be provided here.
-#'
-#' @return A single, merged \code{data.frame}.
-#' @author Sercan Kahveci
+#' @examples trypackages(stats,utils,compiler)
 #' @export
-#'
-#' @examples
-#' #generate test data
-#' testlist<-list()
-#' lsize<-50
-#' for(i in 1:lsize){
-#'   testlist[[i]]<-data.frame(key=sample(1:500,100),
-#'                             junk=letters[sample(1:26,100,replace=TRUE)])
-#'   colnames(testlist[[i]])[2]<-paste0("info",i)
-#' }
-#' multimerge(testlist,by="key",all=TRUE)
+#' @author Sercan Kahveci
 #' 
-multimerge <- function(x, ...){
-  while(length(x) > 1){
-    out <- list()
-    while(length(x) > 0){
-      if(length(x) >= 2){
-        out[[length(out) + 1]] <- merge(x[[1]], x[[2]], ...)
-        x[[1]] <- NULL
-        x[[1]] <- NULL
-      }else{
-        out[[length(out) + 1]] <- x[[1]]
-        x[[1]] <- NULL
-      }
+trypackages <- function(...){
+  packs <- args2strings(...)
+  for(pack in packs){
+    if(!do.call("require", list(pack, character.only=T))){
+      install.packages(pack)
+      do.call("require", list(pack, character.only=T))
     }
-    x <- out
   }
-  return(x)
 }
 
 #' Retry running a function until it succeeds

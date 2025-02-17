@@ -16,11 +16,12 @@ min2<-function(x){
 #' same participants; often participants accidentally run the same experiment twice, so
 #' this should help to distinguish which experiment datasets temporally fit together.
 #'
-#' @param x.ids,y.ids IDs to match
-#' @param x.dates,y.dates Dates to use in the matching of IDs
+#' @param x.ids,y.ids IDs to match.
+#' @param x.dates,y.dates Dates to use in the matching of IDs.
 #'
 #' @return A \code{data.frame} with two columns, one specifying the indices of x and 
 #' one specifying the matched indices of y.
+#' @author Sercan Kahveci
 #' @export
 #'
 #' @examples
@@ -81,6 +82,7 @@ match.pps <- function(x.ids, x.dates, y.ids, y.dates){
 #' date of the matched row from \code{y}.
 #' 
 #' @details This matches using [match.pps()] and merges using [dplyr::full_join()].
+#' @author Sercan Kahveci
 #' @export
 #'
 #' @examples
@@ -111,5 +113,47 @@ match.merge <- function(x, y, idvar, datevar,
   z <- do.call(full_join, args)
   z$.rowmatch <- NULL
   return(z)
+}
+
+
+#' Merge Multiple Data Frames
+#' 
+#' This function makes calls to \code{merge()} to merge every other dataset 
+#' with the one next to it, repeating until only one dataset remains. 
+#'
+#' @param x a list of data frames.
+#' @param ... all other arguments for \code{merge} can be provided here.
+#'
+#' @return A single, merged \code{data.frame}.
+#' @author Sercan Kahveci
+#' @export
+#'
+#' @examples
+#' #generate test data
+#' testlist<-list()
+#' lsize<-50
+#' for(i in 1:lsize){
+#'   testlist[[i]]<-data.frame(key=sample(1:500,100),
+#'                             junk=letters[sample(1:26,100,replace=TRUE)])
+#'   colnames(testlist[[i]])[2]<-paste0("info",i)
+#' }
+#' multimerge(testlist,by="key",all=TRUE)
+#' 
+multimerge <- function(x, ...){
+  while(length(x) > 1){
+    out <- list()
+    while(length(x) > 0){
+      if(length(x) >= 2){
+        out[[length(out) + 1]] <- merge(x[[1]], x[[2]], ...)
+        x[[1]] <- NULL
+        x[[1]] <- NULL
+      }else{
+        out[[length(out) + 1]] <- x[[1]]
+        x[[1]] <- NULL
+      }
+    }
+    x <- out
+  }
+  return(x)
 }
 
