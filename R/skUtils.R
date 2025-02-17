@@ -507,27 +507,6 @@ vec.scale <- function(x){
   (x-m) / sqrt( sum((xt-m)^2)/(length(xt)-1) )
 }
 
-
-#' Standard error
-#' 
-#' Compute the standard error of the mean.
-#'
-#' @param x A numeric vector.
-#' @param na.rm Logical. Should missing values be removed?
-#'
-#' @return The standard error of \code{x}. Returns \code{NA} for
-#' vectors with non-removed missing values, 
-#' as well as those with 1 or less non-\code{NA} values.
-#' @author Sercan Kahveci#' 
-#' @export
-#'
-#' @examples
-#' serr(rnorm(100))
-#' 
-serr <- function(x, na.rm=FALSE){
-  sd(x, na.rm=na.rm) / sqrt(if(na.rm) sum(!is.na(x)) else length(x))
-}
-
 #' Change classes of columns in a data.frame
 #' 
 #' @description \code{retype()} changes the class of specific columns; 

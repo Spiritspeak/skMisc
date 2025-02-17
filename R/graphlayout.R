@@ -86,3 +86,33 @@ altlayout <- function(x, type=c("stress", "kk", "fr", "drl", "dh", "focus"),
   return(out)
 }
 
+#' Make a network layout more square-shaped
+#' 
+#' This transforms a circle-shaped network layout more into a square-shaped network layout. 
+#' It does so by moving nodes in the corners more towards the corner.
+#'
+#' @param x A network layout matrix with 2 columns representing node x and y axis positions.
+#' @param rate The extent by which to move nodes into the corners.
+#'
+#' @returns A network layout matrix with 2 columns representing node x and y axis positions.
+#' @export
+#'
+#' @examples
+#' 
+#' 
+squarifyLayout <- function(x, rate=1){
+  # Normalize
+  x <- t(t(x)-colMeans(x))
+  x <- x/max(abs(x))
+  
+  # Squarify
+  dist <- sqrt(rowSums(x^2))
+  an <- atan2(x[,2],x[,1])
+  anmat <- cbind(cos(an),sin(an))
+  bigger <- abs(anmat[,1])>abs(anmat[,2])
+  anmat2 <- anmat
+  anmat2[bigger,] <- anmat2[bigger,]/abs(anmat[bigger,1])
+  anmat2[!bigger,] <- anmat2[!bigger,]/abs(anmat[!bigger,2])
+  distmod <- sqrt(rowSums(anmat2^2))
+  avl <- anmat*dist*(distmod^rate)
+}
