@@ -97,6 +97,33 @@ which.first <- function(x, na.first=FALSE){
 }
 
 
+#' Set-based unique and duplicate detection
+#'
+#' @param x A list of vectors
+#'
+#' @return For \code{setunique()}, a list of unique sets. 
+#' For \code{setduplicated()}, a logical vector indicating whether
+#' a set occurred previously.
+#' 
+#' @export
+#'
+#' @examples
+#' mysets <- list(a=1:3,b=2,c=3:1,d=c(1,3))
+#' setunique(mysets)
+#' setduplicated(mysets)
+#' 
+setunique <- function(x){
+  x[!duplicated(lapply(x,sort))]
+}
+
+#' @rdname setunique
+#' @export
+#' 
+setduplicated <- function(x){
+  duplicated(lapply(x,sort))
+}
+
+
 #' Produce consecutive ranks
 #' 
 #' Ranks a vector such that ranks are always 1 apart if they succeed each other
