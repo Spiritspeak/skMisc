@@ -1,5 +1,4 @@
-# Files that are "up to standard": holdout.R, formatting.R, skUtils.R, 
-# datawrangler.R
+
 
 #I don't want to import rlang, so it will be done this way instead.
 args2strings <- function(...) sapply(substitute({ ... })[-1], deparse)
@@ -45,7 +44,7 @@ clamp0 <- function(val, minval=0, maxval=1){
 #' @param x A vector.
 #'
 #' @return A vector of the same length as \code{x}, where each element represents
-#' the number of times its value in \code{x} has been repeated so far.
+#' the number of times the value in the same position in \code{x} has been repeated so far.
 #' @author Sercan Kahveci
 #' @export
 #'
@@ -77,9 +76,9 @@ which.duplicate <- function(x){
 #' @export
 #'
 #' @examples
-#' which.first(c("a","b","a","k"))
+#' duplicateof(c("a","b","a","k"))
 #' 
-which.first <- function(x, na.first=FALSE){
+duplicateof <- function(x, na.first=FALSE){
   ux<-unique(x)
   newx<-rep(NA,length(x))
   if(na.first){
@@ -96,15 +95,19 @@ which.first <- function(x, na.first=FALSE){
   return(newx)
 }
 
+# TODO: add option to ignore duplicate values
 
 #' Set-based unique and duplicate detection
+#' 
+#' These functions are like [base::unique()] and [base::duplicated()] except they only look at
+#' whether two list elements contain the same values - the order does not matter.
 #'
 #' @param x A list of vectors
 #'
 #' @return For \code{setunique()}, a list of unique sets. 
 #' For \code{setduplicated()}, a logical vector indicating whether
 #' a set occurred previously.
-#' 
+#' @author Sercan Kahveci
 #' @export
 #'
 #' @examples
@@ -540,6 +543,9 @@ vec2columns <- function(x, sep=";"){
   out <- as.data.frame(idx)
   return(out)
 }
+
+# TODO: change format to: numeric = c("age","height")
+# Add support for tidyselectors
 
 #' Change classes of columns in a data.frame
 #' 
