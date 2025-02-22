@@ -42,9 +42,9 @@ clamp0 <- function(x, minval=0, maxval=1){
 #' @describeIn clamp Rescales the vector such that it fits neatly between 
 #' the given minimum and maximum values.
 #' @export
-scale2range <- function(x, minval=0, maxval=1){
-  x <- x - min(x)
-  x <- x / max(x) * maxval + minval
+scale2range <- function(x, minval=0, maxval=1, na.rm=TRUE){
+  x <- x - min(x, na.rm=na.rm)
+  x <- x / max(x, na.rm=na.rm) * maxval + minval
   x
 }
 
@@ -67,6 +67,8 @@ cols2ids <- function(x){
   }
   x
 }
+
+# TODO: add counting direction as argument
 
 #' Count duplicate values in a vector
 #' 
