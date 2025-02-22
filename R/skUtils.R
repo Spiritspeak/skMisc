@@ -6,8 +6,8 @@ args2strings <- function(...) sapply(substitute({ ... })[-1], deparse)
 #' clamp
 #' 
 #' Clamp a numeric vector between a minimum and maximum value.
-#'
-#' @param val The vector/matrix to clamp.
+#' 
+#' @param x The vector/matrix to clamp.
 #' @param minval Minimum value; all lower values are clamped to this value.
 #' @param maxval Maximum value; all higher values are clamped to this value.
 #'
@@ -18,19 +18,54 @@ args2strings <- function(...) sapply(substitute({ ... })[-1], deparse)
 #' @examples 
 #' clamp(0:10,2,8)
 #' clamp0(rnorm(10))
+#' scale2range(rnorm(10))
 #' 
-clamp <- function(val, minval=-Inf, maxval=Inf){
-  val[val < minval] <- minval
-  val[val > maxval] <- maxval
-  val
+NULL
+
+#' @describeIn clamp Set all values exceeding the minimum and maximum to 
+#' the minimum and maximum value, respectively.
+#' @export
+clamp <- function(x, minval=-Inf, maxval=Inf){
+  x[x < minval] <- minval
+  x[x > maxval] <- maxval
+  x
 }
 
-#' @rdname clamp
+#' @describeIn clamp Same as \code{clamp())} but with a default range of 0 to 1.
 #' @export
-clamp0 <- function(val, minval=0, maxval=1){
-  val[val < minval] <- minval
-  val[val > maxval] <- maxval
-  val
+clamp0 <- function(x, minval=0, maxval=1){
+  x[x < minval] <- minval
+  x[x > maxval] <- maxval
+  x
+}
+
+#' @describeIn clamp Rescales the vector such that it fits neatly between 
+#' the given minimum and maximum values.
+#' @export
+scale2range <- function(x, minval=0, maxval=1){
+  x <- x - min(x)
+  x <- x / max(x) * maxval + minval
+  x
+}
+
+#' Transform all data.frame columns into ordered IDs
+#' 
+#' Transforms every column into a factor and then into an integer.
+#'
+#' @param x A \code{data.frame}.
+#'
+#' @return \code{x} with each column replaced by integer IDs.
+#' @author Sercan Kahveci
+#' @export
+#'
+#' @examples
+#' cols2ids(mtcars)
+#' 
+cols2ids <- function(x){
+  for(col in seq_along(x)){
+    x[,col] <- as.numeric(as.factor(x[[col]]))
+  }
+  x
 }
 
 #' Count duplicate values in a vector
