@@ -3,9 +3,9 @@
 #I don't want to import rlang, so it will be done this way instead.
 args2strings <- function(...) sapply(substitute({ ... })[-1], deparse)
 
-#' clamp
-#' 
-#' Clamp a numeric vector between a minimum and maximum value.
+#' @name clamp
+#' @title Clamp
+#' @description Clamp a numeric vector between a minimum and maximum value.
 #' 
 #' @param x The vector/matrix to clamp.
 #' @param minval Minimum value; all lower values are clamped to this value.
@@ -312,7 +312,7 @@ subdivide <- function(x, divs, divlen){
 # testvec <- sample(c(NA,1:15))
 # chop_up(testvec,maxval=9,group.high="own")
 # chop_up2(testvec,maxval=9,group.high="own")
-chop_up <- function(x, maxval, 
+bundle_up <- function(x, maxval, 
                     group.high=c("own","na","error")){
   group.high <- match.arg(group.high)
   cs <- 0
@@ -396,6 +396,39 @@ chop_up2 <- function(x, maxval,
   nonna <- which(!is.na(out))
   if(out[nonna[1]] != 1){ out <- out - out[nonna[1]] +1 }
   out
+}
+
+
+# contiguous split
+
+#' Title
+#'
+#' @param x 
+#' @param f 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' B <- LETTERS[1:10]
+#' Z <- c(1,1,1,2,2,1,1,1,1,6)
+#' csplit(B,Z)
+#' 
+csplit <- function(x,f){
+  n <- length(f)
+  if(n != length(x)){
+    stop("x and f are of unequal length")
+  }
+  y <- which(f[-1L] != f[-n])
+  y1<- c(1L, y+1L)
+  y2<- c(y, n)
+  li <- length(y)+1L
+  out <- vector(mode="list", length=li)
+  for(a in seq_len(li)){
+    out[[a]] <- x[y1[a]:y2[a]]
+  }
+  names(out) <- f[y2]
+  return(out)
 }
 
 #' Convert between a matrix and a long-format data.frame

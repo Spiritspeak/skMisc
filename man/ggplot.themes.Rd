@@ -11,13 +11,13 @@ theme_pecher()
 theme_apa()
 }
 \description{
-A number of ready-to-use ggplot2 themes for scientific manuscripts
+A number of ready-to-use ggplot2 themes for scientific manuscripts.
 }
 \section{Functions}{
 \itemize{
 \item \code{theme_pecher()}: Based on the plot design style of prof. Diane Pecher.
 
-\item \code{theme_apa()}: Theme appropriate for APA manuscripts
+\item \code{theme_apa()}: Theme appropriate for APA manuscripts.
 
 }}
 \examples{
@@ -25,4 +25,7 @@ ggplot(mtcars,aes(x=mpg,y=wt)) + geom_point() + theme_pecher()
 
 ggplot(mtcars,aes(x=mpg,y=wt)) + geom_point() + theme_apa()
 
+}
+\author{
+Sercan Kahveci
 }

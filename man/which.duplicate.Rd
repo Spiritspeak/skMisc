@@ -11,7 +11,7 @@ which.duplicate(x)
 }
 \value{
 A vector of the same length as \code{x}, where each element represents
-the number of times its value in \code{x} has been repeated so far.
+the number of times the value in the same position in \code{x} has been repeated so far.
 }
 \description{
 which.duplicate() determines for each element of a vector 

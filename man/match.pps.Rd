@@ -7,9 +7,9 @@
 match.pps(x.ids, x.dates, y.ids, y.dates)
 }
 \arguments{
-\item{x.ids, y.ids}{IDs to match}
+\item{x.ids, y.ids}{IDs to match.}
 
-\item{x.dates, y.dates}{Dates to use in the matching of IDs}
+\item{x.dates, y.dates}{Dates to use in the matching of IDs.}
 }
 \value{
 A \code{data.frame} with two columns, one specifying the indices of x and 
@@ -38,4 +38,7 @@ match.pps(x.ids=x$id,x.dates=x$date,y.ids=y$id,y.dates=y$date)
 #> 3       5       3
 #> 4       4       4
 
+}
+\author{
+Sercan Kahveci
 }

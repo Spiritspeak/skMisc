@@ -43,3 +43,6 @@ match.merge(x=x,y=y,idvar="id",datevar="date",keep.unmatched="all")
 match.merge(x=x,y=y,idvar="id",datevar="date",keep.unmatched="none")
 
 }
+\author{
+Sercan Kahveci
+}
