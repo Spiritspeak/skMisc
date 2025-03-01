@@ -313,7 +313,7 @@ subdivide <- function(x, divs, divlen){
 # chop_up(testvec,maxval=9,group.high="own")
 # chop_up2(testvec,maxval=9,group.high="own")
 bundle_up <- function(x, maxval, 
-                    group.high=c("own","na","error")){
+                      group.high=c("own","na","error")){
   group.high <- match.arg(group.high)
   cs <- 0
   grp <- 1
@@ -399,10 +399,11 @@ chop_up2 <- function(x, maxval,
 }
 
 
-# contiguous split
-
-#' Title
+#' Divide vector into groups based on contiguous indices
 #'
+#' Like [base::split()] except vector \code{x} gets divided into groups
+#' defined by contiguous sections of \code{f}.
+#' 
 #' @param x 
 #' @param f 
 #'

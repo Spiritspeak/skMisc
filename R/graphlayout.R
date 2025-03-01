@@ -117,3 +117,11 @@ squarifyLayout <- function(x, rate=1){
   out <- anmat*dist*(distmod^rate)
   return(out)
 }
+
+
+
+
+
+
+
+
