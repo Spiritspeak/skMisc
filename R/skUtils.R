@@ -221,6 +221,38 @@ allpairs <- function(nval, ntuplet=2, incl.self=FALSE){
   return(currmat)
 }
 
+#' Interweave vectors
+#' 
+#' Interweave vectors, such that the result features the first value from vector A, 
+#' then the first value from vector B, then the second value from vector A, etc.
+#'
+#' @param ... Any number of vectors of equal length or length 1.
+#'
+#' @return The input vectors interwoven into one.
+#' @export
+#'
+#' @examples
+#' interweave(1:3, 4:6, 7:9)
+#' 
+#' interweave(1:5, 0)
+#' 
+interweave <- function(...){
+  nvecs <- ...length()
+  veclens <- sapply(seq_len(nvecs),\(x){length(...elt(x))})
+  maxlen <- max(veclens)
+  if(!all(veclens == 1 | veclens == maxlen)){
+    stop("Inputs not of equal length")
+  }
+  if(nvecs==0 | maxlen==0){
+    return(NULL)
+  }
+  out <- vector(length=nvecs * maxlen)
+  for(i in seq_len(nvecs)){
+    out[i+nvecs*(0:(maxlen-1))] <- ...elt(i)
+  }
+  return(out)
+}
+
 #' Convert dates to Nth weekday of the month values
 #' 
 #' Computes which weekday of the month each date represents. 

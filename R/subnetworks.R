@@ -29,7 +29,7 @@
 #' 
 #' 
 #' 
-cyclefinder <- function(mat,maxnodes,minnodes=2){
+findloops <- function(mat,maxnodes,minnodes=2){
   nodenames <- colnames(mat)
   is_symmetric <- all(mat==t(mat))
 
