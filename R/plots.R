@@ -50,50 +50,6 @@ theme_apa <- function(){
           axis.text.y=element_text(margin=unit(c(0,8,0,0),"pt")))
 }
 
-
-#' Plot matrix as heatmap
-#'
-#' @param x A matrix.
-#' @param text Whether to print the values of the matrix as text (defaults to FALSE).
-#' @param plot Whether to plot the resulting ggplot object (defaults to TRUE).
-#' @param ... Ignored.
-#'
-#' @return Invisibly returns the ggplot object for further modification.
-#' @author Sercan Kahveci
-#' @export
-#'
-#' @examples
-#' # Create a matrix to plot
-#' mymat <- matrix(rnorm(100), nrow=10)
-#' mymat <- mymat + t(mymat)
-#' mymat[cbind(sample(c(1:10)), sample(c(1:10)))] <- NA
-#' colnames(mymat) <- rownames(mymat) <- sample(letters[1:10])
-#' 
-#' plotmat(mymat)
-#' 
-plotmat <- function(x, text=FALSE, plot=TRUE, ...){
-  out <- x |> unwrap.matrix() |> ggplot() + 
-    aes(y=.data[["row"]],x=.data[["col"]],fill=.data[["value"]]) + 
-    geom_tile() + 
-    scale_fill_gradient2(na.value="grey25") + 
-    coord_cartesian(expand=0) + 
-    theme_bw() + 
-    theme(axis.ticks=element_blank(),
-          panel.grid=element_blank(),
-          panel.border=element_blank(),
-          axis.title=element_blank(),
-          legend.title=element_blank())
-  if(text){
-    out <- out + 
-      geom_text(aes(label=dropLeadingZero(round(.data[["value"]], digits=2))),
-                size=min(2, 2*10/nrow(x)))
-  }
-  if(plot){
-    plot(out)
-  }
-  return(invisible(out))
-}
-
 #stolen from stackoverflow
 #' Plot highlighted text
 #'
