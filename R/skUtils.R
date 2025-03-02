@@ -191,6 +191,33 @@ cons.rank <- function(x){
   return(out)
 }
 
+
+#' Identify runs of identical values in a vector
+#'
+#' @param x A vector.
+#'
+#' @return An integer vector of the same length as \code{x}, 
+#' where each value identifies the run to which
+#' the same-position value in \code{x} belongs.
+#' @author Sercan Kahveci
+#' @export
+#'
+#' @examples
+#' myvec <- sample(letters[1:3],size=20,replace=TRUE)
+#' cbind(myvec,runs(myvec))
+#' 
+runs <- function(x){
+  ln <- length(x)
+  runbound <- which(x[-1] != x[-ln])
+  runend <- c(runbound,ln)
+  runstart <- c(1,runbound+1)
+  out <- integer(ln)
+  for(i in seq_along(runstart)){
+    out[runstart[i]:runend[i]] <- i
+  }
+  return(out)
+}
+
 #' Generate unique pairs or N-tuplets
 #'
 #' @param nval Number of values to arrange into unique tuplets.
@@ -229,11 +256,14 @@ allpairs <- function(nval, ntuplet=2, incl.self=FALSE){
 #' @param ... Any number of vectors of equal length or length 1.
 #'
 #' @return The input vectors interwoven into one.
+#' @author Sercan Kahveci
 #' @export
 #'
 #' @examples
+#' # Interweave 3 equal-length vectors 
 #' interweave(1:3, 4:6, 7:9)
 #' 
+#' # Interweave vector with single value
 #' interweave(1:5, 0)
 #' 
 interweave <- function(...){
@@ -428,40 +458,6 @@ chop_up2 <- function(x, maxval,
   nonna <- which(!is.na(out))
   if(out[nonna[1]] != 1){ out <- out - out[nonna[1]] +1 }
   out
-}
-
-
-#' Divide vector into groups based on contiguous indices
-#'
-#' Like [base::split()] except vector \code{x} gets divided into groups
-#' defined by contiguous sections of \code{f}.
-#' 
-#' @param x 
-#' @param f 
-#'
-#' @return
-#' @export
-#'
-#' @examples
-#' B <- LETTERS[1:10]
-#' Z <- c(1,1,1,2,2,1,1,1,1,6)
-#' csplit(B,Z)
-#' 
-csplit <- function(x,f){
-  n <- length(f)
-  if(n != length(x)){
-    stop("x and f are of unequal length")
-  }
-  y <- which(f[-1L] != f[-n])
-  y1<- c(1L, y+1L)
-  y2<- c(y, n)
-  li <- length(y)+1L
-  out <- vector(mode="list", length=li)
-  for(a in seq_len(li)){
-    out[[a]] <- x[y1[a]:y2[a]]
-  }
-  names(out) <- f[y2]
-  return(out)
 }
 
 #' Initiate an empty data frame

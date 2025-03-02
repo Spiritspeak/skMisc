@@ -101,6 +101,7 @@ trimean <- function(x, na.rm=FALSE){
 #' 
 #' @export
 #'
+#' @author Sercan Kahveci
 #' @examples
 #' mymod <- glm(am ~ cyl + disp + hp,
 #'              family="binomial", 

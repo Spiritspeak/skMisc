@@ -126,7 +126,8 @@ findloops <- function(mat,maxnodes,minnodes=2){
 #' no such subsetting is performed.
 #'
 #' @return A vector of node names that are connected to other nodes according to
-#' the rules provided in this function's arguments
+#' the rules provided in this function's arguments.
+#' @author Sercan Kahveci
 #' @export
 #'
 #' @examples
@@ -215,15 +216,19 @@ pruneUnconnectedNodes <- function(mat=NULL, node=NULL,
 #' 
 #' @return The same adjacency matrix, but the only non-null values are those edges
 #' on the shortest path from the \code{from} node and/or to the \code{to} node.
+#' @author Sercan Kahveci
 #' @export
 #'
 #' @examples
 #' 
 #' 
 #' 
-getNodeSubnetwork <- function(mat, from=NULL, to=NULL){
+getNodePaths <- function(mat, from=NULL, to=NULL){
+  
+  # Compute shortest paths
   cents <- centrality(mat, all.shortest.paths=TRUE)
   
+  # Extract relevant paths from centralities object
   if(!is.null(from) & is.null(to)){ 
     currpaths <- cents$ShortestPaths[from,] 
   }else if(is.null(from) & !is.null(to)){ 
@@ -263,6 +268,7 @@ getNodeSubnetwork <- function(mat, from=NULL, to=NULL){
 #' @details This follows the implementation of the IsingFit package.
 #'
 #' @return A symmetric adjacency matrix.
+#' @author Sercan Kahveci
 #' @export
 #'
 #' @examples

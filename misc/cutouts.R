@@ -239,3 +239,37 @@ colorEdges<-function(x,maxedge=NULL){
             v=1)
   matrix(cols,ncol=ncol(x),nrow=nrow(x))
 }
+
+
+#' Divide vector into groups based on contiguous indices
+#'
+#' Like [base::split()] except vector \code{x} gets divided into groups
+#' defined by contiguous sections of \code{f}.
+#' 
+#' @param x 
+#' @param f 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' B <- LETTERS[1:10]
+#' Z <- c(1,1,1,2,2,1,1,1,1,6)
+#' csplit(B,Z)
+#' 
+csplit <- function(x,f){
+  n <- length(f)
+  if(n != length(x)){
+    stop("x and f are of unequal length")
+  }
+  y <- which(f[-1L] != f[-n])
+  y1<- c(1L, y+1L)
+  y2<- c(y, n)
+  li <- length(y)+1L
+  out <- vector(mode="list", length=li)
+  for(a in seq_len(li)){
+    out[[a]] <- x[y1[a]:y2[a]]
+  }
+  names(out) <- f[y2]
+  return(out)
+}
