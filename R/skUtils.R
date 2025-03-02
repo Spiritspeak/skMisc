@@ -229,7 +229,7 @@ runs <- function(x){
 #' @export
 #'
 #' @examples
-#' allpairs(nval=20,ntuplet=3)
+#' allpairs(nval=5,ntuplet=3)
 #' 
 allpairs <- function(nval, ntuplet=2, incl.self=FALSE){
   currmat <- matrix(seq_len(nval), ncol=1)
@@ -592,39 +592,50 @@ verify_types <- function(...){
   return(T)
 }
 
+# TODO: enable comparison between all values in a vector;
+# comparison between two vectors of any length;
+
 #' Levenshtein distance
 #' 
 #' Counts the number of single character deletions, insertions, and substitutions 
 #' that need to be performed to turn the source string into the target string.
 #'
-#' @param source,target Strings to be compared.
+#' @param x,y Strings to be compared.
 #'
 #' @return The Levenshtein distance between the two strings.
 #' @author Sercan Kahveci
 #' @export
 #'
-#' @examples LevenshteinDistance("Yoghurt","Youtube")
+#' @examples 
+#' LevenshteinDistance("sitting","kitten")
 #' 
-LevenshteinDistance <- function(source,target){
-  source <- strsplit(source,"")[[1]]
-  target <- strsplit(target,"")[[1]]
-  sl <- length(source)
-  tl <- length(target)
-  d <- matrix(nrow=sl + 1, ncol=tl + 1)
-
-  d[,1] <- seq_len(sl + 1) - 1
-  d[1,] <- seq_len(tl + 1) - 1
+#' LevenshteinDistance(c("cheese","fish"),c("child","flan"))
+#' 
+LevenshteinDistance <- function(x,y){
+  x <- strsplit(x,"")
+  y <- strsplit(y,"")
+  xl <- sapply(x,length)
+  yl <- sapply(y,length)
+  diffs <- integer(length(x))
   
-  for(i in seq_len(sl + 1)[-1]){
-    for(j in seq_len(tl + 1)[-1]){
-      d[i, j] <- min(
-        d[i-1, j] + 1,
-        d[i, j-1] + 1,
-        d[i-1, j-1] + (source[i-1] == target[j-1])
-      )
+  for(k in seq_along(diffs)){
+    d <- matrix(NA,nrow=xl[k] + 1, ncol=yl[k] + 1)
+  
+    d[,1] <- seq_len(xl[k] + 1) - 1
+    d[1,] <- seq_len(yl[k] + 1) - 1
+    
+    for(j in seq_len(yl[k] + 1)[-1]){
+      for(i in seq_len(xl[k] + 1)[-1]){
+        d[i, j] <- min(
+          d[i-1, j] + 1,
+          d[i, j-1] + 1,
+          d[i-1, j-1] + (x[[k]][i-1] != y[[k]][j-1])
+        )
+      }
     }
+    diffs[k] <- d[xl[k] + 1, yl[k] + 1]
   }
-  return(d[sl + 1, tl + 1])
+  return(diffs)
 }
 
 ##########################################
