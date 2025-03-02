@@ -18,6 +18,11 @@ scale2range(x, minval = 0, maxval = 1, na.rm = TRUE)
 \item{minval}{Minimum value; all lower values are clamped to this value.}
 
 \item{maxval}{Maximum value; all higher values are clamped to this value.}
+
+\item{na.rm}{for \code{scale2range}, whether \code{NA}s should be removed before
+applying the function (default \code{TRUE}. 
+If \code{FALSE} and \code{x} contains \code{NA}s, then the
+complete vector will be \code{NA}.}
 }
 \value{
 Clamped vector.

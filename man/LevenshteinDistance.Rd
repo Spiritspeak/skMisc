@@ -4,10 +4,10 @@
 \alias{LevenshteinDistance}
 \title{Levenshtein distance}
 \usage{
-LevenshteinDistance(source, target)
+LevenshteinDistance(x, y)
 }
 \arguments{
-\item{source, target}{Strings to be compared.}
+\item{x, y}{Strings to be compared.}
 }
 \value{
 The Levenshtein distance between the two strings.
@@ -17,7 +17,9 @@ Counts the number of single character deletions, insertions, and substitutions
 that need to be performed to turn the source string into the target string.
 }
 \examples{
-LevenshteinDistance("Yoghurt","Youtube")
+LevenshteinDistance("sitting","kitten")
+
+LevenshteinDistance(c("cheese","fish"),c("child","flan"))
 
 }
 \author{

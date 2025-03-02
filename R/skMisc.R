@@ -25,9 +25,10 @@
 #' quantile reformulate sd setNames t.test terms update var
 #' @importFrom MASS fitdistr
 #' @importFrom car qqp
-#' @importFrom lme4 nobars findbars
+#' @importFrom lme4 nobars findbars fixef getME
 #' @importFrom igraph graph_from_adjacency_matrix E V delete_edges
-#' layout_with_kk layout_with_fr layout_with_drl layout_with_dh
+#' layout_with_kk layout_with_fr layout_with_drl layout_with_dh 
+#' make_ring subgraph_isomorphisms
 #' @importFrom graphlayouts layout_as_dynamic layout_with_stress layout_with_focus
 #' 
 #' 

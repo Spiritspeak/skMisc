@@ -137,15 +137,6 @@ cor.influence<-function(x,y){
 }
 
 
-
-# This should support sets of unequal length
-unique.set<-function(x){
-  x<-t(apply(x,1,sort))
-  x<-apply(x,1,paste,collapse="-")
-  duplicated(x)
-}
-
-
 #' Read and merge all .csv files in a folder
 #'
 #' @param folder path to a folder

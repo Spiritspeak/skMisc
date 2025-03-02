@@ -20,7 +20,7 @@ A matrix where each row is a unique N-tuplet.
 Generate unique pairs or N-tuplets
 }
 \examples{
-allpairs(nval=20,ntuplet=3)
+allpairs(nval=5,ntuplet=3)
 
 }
 \author{

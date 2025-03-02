@@ -10,6 +10,10 @@ args2strings <- function(...) sapply(substitute({ ... })[-1], deparse)
 #' @param x The vector/matrix to clamp.
 #' @param minval Minimum value; all lower values are clamped to this value.
 #' @param maxval Maximum value; all higher values are clamped to this value.
+#' @param na.rm for \code{scale2range}, whether \code{NA}s should be removed before
+#' applying the function (default \code{TRUE}. 
+#' If \code{FALSE} and \code{x} contains \code{NA}s, then the
+#' complete vector will be \code{NA}.
 #'
 #' @return Clamped vector.
 #' @author Sercan Kahveci
@@ -591,9 +595,6 @@ verify_types <- function(...){
   }
   return(T)
 }
-
-# TODO: enable comparison between all values in a vector;
-# comparison between two vectors of any length;
 
 #' Levenshtein distance
 #' 

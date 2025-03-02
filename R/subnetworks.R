@@ -29,7 +29,7 @@
 #' 
 #' 
 #' 
-findloops <- function(mat,maxnodes,minnodes=2){
+findloops <- function(mat, maxnodes, minnodes=2){
   nodenames <- colnames(mat)
   is_symmetric <- all(mat==t(mat))
 
@@ -84,10 +84,9 @@ findloops <- function(mat,maxnodes,minnodes=2){
     powers <- mat[key]
     loopprods[j] <- prod(powers)
     
-    looptexts[[j]] <- 
-      paste(paste(looptexts[[j]],c(ifelse(sign(powers)==1,"+>","->"),"")),collapse=" ") %>%
-      trimws() %>% 
-      paste0(ifelse(sign(prod(powers))==1,"(+) ","(-) "),.)
+    looptexts[[j]] <- paste(looptexts[[j]],c(ifelse(sign(powers)==1,"+>","->"),"")) %>%
+      paste(collapse=" ") %>% trimws()
+    looptexts[[j]] <- paste0(ifelse(sign(prod(powers))==1,"(+) ","(-) "),looptexts[[j]])
     
     currloopmat <- mat
     currloopmat[] <- 0

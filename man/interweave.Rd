@@ -17,8 +17,10 @@ Interweave vectors, such that the result features the first value from vector A,
 then the first value from vector B, then the second value from vector A, etc.
 }
 \examples{
+# Interweave 3 equal-length vectors 
 interweave(1:3, 4:6, 7:9)
 
+# Interweave vector with single value
 interweave(1:5, 0)
 
 }
