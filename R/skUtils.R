@@ -368,84 +368,70 @@ subdivide <- function(x, divs, divlen){
   return(exli)
 }
 
-# assign consecutive numeric values in x to groups 
-# such that each group sums up to the highest possible value below maxval
-# Not ready yet: cannot handle values in x higher than maxval
-# testvec <- sample(c(NA,1:15))
-# chop_up(testvec,maxval=9,group.high="own")
-# chop_up2(testvec,maxval=9,group.high="own")
+#' Assign numeric values to bundles summing up to a set value
+#'
+#' @param x A numeric vector to bundle up.
+#' @param maxval The maximum value a bundle can have.
+#' @param group.high What should be done if an individual value exceeds \code{maxval}?
+#' \code{"own"} assigns it to its own bundle, \code{"na"} assigns it to \code{NA}, and 
+#' \code{"error"} gives an error.
+#' @param group.na What should be done if a value is \code{NA}? 
+#' \code{"own"} assigns it to its own bundle, \code{"na"} assigns it to \code{NA}, 
+#' \code{"same"} assigns it to the same bundle as the previous value, and 
+#' \code{"error"} gives an error.
+#'
+#' @return An integer vector of the same length as \code{x}, where each value indicates
+#' to which bundle the value in \code{x} has been assigned.
+#' @author Sercan Kahveci
+#' @export
+#'
+#' @examples
+#' testvec <- sample(c(NA,NA,1:14))
+#' t(cbind(testvec,bundle_up(testvec,maxval=12,group.high="own",group.na="own")))
+#' 
+#' bundle_up(testvec,maxval=10,group.high="na",group.na="na")
+#' 
 bundle_up <- function(x, maxval, 
-                      group.high=c("own","na","error")){
-  group.high <- match.arg(group.high)
-  cs <- 0
-  grp <- 1
-  out <- numeric(length(x))
-  
-  excess <- x > maxval
-  addna <- 0
-  grpbump <- 2
-  if(any(excess) & group.high=="error"){
-    stop("Value exceeds maximum")
-  }else if(group.high=="na"){
-    addna <- NA
-    grpbump <- 1
-  }
-  
-  for(i in seq_along(x)){
-    if(excess[i]){
-      grp <- grp + grpbump
-      cs <- 0
-      out[i] <- grp -1 + addna
-    }else{
-      cs <- cs+x[i]
-      if(cs > maxval){
-        cs <- x[i]
-        grp <- grp + 1
-      }
-      out[i] <- grp
-    }
-  }
-  nonna <- which(!is.na(out))
-  if(out[nonna[1]] != 1){ out <- out - out[nonna[1]] +1 }
-  out
-}
-
-
-chop_up2 <- function(x, maxval, 
                     group.high=c("own","na","error"),
-                    group.na=c("own","na","error")){
+                    group.na=c("own","na","same","error")){
   group.high <- match.arg(group.high)
   group.na <- match.arg(group.na)
   cs <- 0
   grp <- 1
   out <- numeric(length(x))
   
-  excess <- x > maxval
-  addna <- 0
-  grpbump <- 2
-  if(any(excess) & group.high=="error"){
-    stop("Value exceeds maximum")
-  }else if(group.high=="na"){
-    addna <- NA
-    grpbump <- 1
-  }
-  
   naval <- is.na(x)
+  na.addna <- 0
+  na.grpbump <- 2
   if(any(naval) & group.na=="error"){
     stop("NA values not permitted")
   }else if(group.na=="na"){
     na.addna <- NA
     na.grpbump <- 1
+  }else if(group.na=="same"){
+    x[naval] <- 0
+    naval[naval] <- F
+  }
+  
+  excess <- x > maxval
+  ex.addna <- 0
+  ex.grpbump <- 2
+  if(any(excess) & group.high=="error"){
+    stop("Value exceeds maximum")
+  }else if(group.high=="na"){
+    ex.addna <- NA
+    ex.grpbump <- 1
   }
   
   for(i in seq_along(x)){
     if(naval[i]){
       grp <- grp + na.grpbump
-      out[i] <- grp + na.addna
-    }else if(excess[i]){
-      grp <- grp + grpbump
       cs <- 0
-      out[i] <- grp -1 + addna
+      out[i] <- grp -1 + na.addna
+    }else if(excess[i]){
+      grp <- grp + ex.grpbump
+      cs <- 0
+      out[i] <- grp -1 + ex.addna
     }else{
       cs <- cs+x[i]
       if(cs > maxval){
