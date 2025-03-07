@@ -312,11 +312,11 @@ nthWeekdayOfMonth <- function(x){
   return(out)
 }
 
-#' Quantize vector
+#' Find quantiles of vector
 #' 
 #' Will replace vector values with their quantile.
 #' 
-#' @param x A numeric vector to quantize.
+#' @param x A numeric vector to replace with the quantile of its values.
 #' @param n The number of quantiles to divide it into.
 #'
 #' @return A vector with values replaced by their quantile membership.
@@ -325,14 +325,12 @@ nthWeekdayOfMonth <- function(x){
 #'
 #' @examples
 #' a<-rnorm(100)
-#' quantize(a,5)
+#' findQuantile(a,5)
 #' 
-quantize <- function(x, n){
-  quants <- quantile(x, seq_len(n-1)/n, na.rm=T)
-  quants <- c(-Inf, quants, Inf)
-  cut(x, breaks=quants, labels=seq_len(n))
+findQuantile <- function(x, n){
+  quants <- c(-Inf,quantile(x, seq_len(n-1)/n, na.rm=T))
+  findInterval(x, vec=quants)
 }
-
 
 #' Divide a vector or list
 #' 

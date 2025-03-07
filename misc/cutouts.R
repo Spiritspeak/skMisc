@@ -200,14 +200,14 @@ brms.check <- function(x,min.ess=400,max.rhat=1.05){
   
   toolow.ess <- info$ess < min.ess
   if(any(toolow.ess)){
-    warning("The following variable(s) have an excessively low ",
+    warning("The following parameter(s) have an excessively low ",
             "effective sample size, consider raising the iteration count: ",
             paste0(info$par[toolow.ess],collapse=", "))
   }
   
   toohigh.rhat <- info$rhat > max.rhat
   if(any(toohigh.rhat)){
-    warning("The following variable(s) have an excessively high ",
+    warning("The following parameter(s) have an excessively high ",
             "Rhat, consider changing the model or adding more warmup samples: ",
             paste0(info$par[toohigh.rhat],collapse=", "))
   }
