@@ -328,8 +328,8 @@ nthWeekdayOfMonth <- function(x){
 #' findQuantile(a,5)
 #' 
 findQuantile <- function(x, n){
-  quants <- c(-Inf,quantile(x, seq_len(n-1)/n, na.rm=T))
-  findInterval(x, vec=quants)
+  quants <- c(-Inf,quantile(x, seq_len(n-1)/n, na.rm=T),Inf)
+  .bincode(x, breaks=quants)
 }
 
 #' Divide a vector or list
