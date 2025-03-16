@@ -1,5 +1,6 @@
 
 
+# TODO: add support for alpha-based predictor exclusion
 detrendVAR <- function(data,vars,idvar,dayvar=NULL,beepvar=NULL,verbose=FALSE){
   if(is.null(dayvar) && is.null(beepvar)){ 
     stop("At least one of dayvar and beepvar must be provided")
@@ -22,7 +23,8 @@ checkAsyncVARComponents <- function(modlist,idvar){
   modlist %>% sapply(function(x) x@optinfo$conv$opt)
   modlist %>% sapply(function(x) x@optinfo$conv$lme4$messages)
   modlist %>% sapply(car::vif)
-  modlist %>% sapply(function(x)apply(ranef(x)[[idvar]],2,sd)) %>% {.<0.001} %>% rowMeans()
+  modlist %>% sapply(function(x)apply(ranef(x)[[idvar]],2,sd)) %>% 
+    {.<0.001} %>% rowMeans()
 }
 
 extractAsyncVARComponents <- function(modlist,allpreds,alpha){
@@ -41,11 +43,14 @@ extractAsyncVARComponents <- function(modlist,allpreds,alpha){
 
 # TODO: reintroduce support for beepvar
 # TODO: remove hardcoded reliance on alpha
+# TODO: make contemp and between-subject skippable
+# TODO: add t-based significance testing
 asyncVAR<-function(data,vars,idvar,dayvar,beepvar,covar=NULL,
-                   contemporaneous = c("default", "correlated",
-                                       "orthogonal", "fixed", "unique"), 
                    temporal = c("default", "correlated", 
-                                "orthogonal", "fixed", "unique"), 
+                                "orthogonal", "fixed"), 
+                   contemporaneous = c("default", "correlated",
+                                       "orthogonal", "fixed", "skip"), 
+                   between = c("default", "skip"),
                    nCores = 1, scale = TRUE, alpha=0.05){
   
   allpreds <- unlist(vars)
@@ -189,5 +194,8 @@ asyncVAR<-function(data,vars,idvar,dayvar,beepvar,covar=NULL,
   between.mat <- (between.mat + t(between.mat))/2
   between.mat[zeromask] <- 0
 
+  ##########
+  # Output #
+  ##########
   
 }
