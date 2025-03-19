@@ -79,14 +79,16 @@ trimean <- function(x, na.rm=FALSE){
   sum(c(1,2,1) * quantile(x,c(.25,.5,.75)), na.rm=na.rm)/4
 }
 
-# Maximum-likelihood-based; minimizes squared distance
-angular.mean.ml <- function(x,period=12){
-  scorefun<-function(par){
-    scv<-abs(par-x)
-    scv<-pmin(scv,period-scv)
+# minimizes squared distance using optimization
+modular.mean <- function(x, period=12){
+  x <- x %% period
+  scorefun <- function(par){
+    scv <- abs(par - x)
+    scv <- pmin(scv, period - scv)
     sum(scv^2)
   }
-  optimize(f=scorefun,interval=c(0,period-.Machine$double.eps))$minimum
+  optimize(f=scorefun, interval=c(0, period-.Machine$double.eps),
+           tol=sqrt(.Machine$double.eps))$minimum
 }
 
 #' Get classification accuracy metrics
