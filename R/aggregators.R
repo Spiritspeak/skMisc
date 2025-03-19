@@ -80,15 +80,24 @@ trimean <- function(x, na.rm=FALSE){
 }
 
 # minimizes squared distance using optimization
-modular.mean <- function(x, period=12){
+modular.mean <- function(x, period=12, check=TRUE){
   x <- x %% period
+  if(length(x) > 1 && check){
+    x <- sort.default(x)
+    dists <- abs(diff(c(x, x[1])))
+    dists <- pmin(dists, period - dists)
+    if(length(unique(dists)) == 1){
+      return(NA)
+    }
+  }
   scorefun <- function(par){
     scv <- abs(par - x)
     scv <- pmin(scv, period - scv)
-    sum(scv^2)
+    sum(scv ^ 2)
   }
-  optimize(f=scorefun, interval=c(0, period-.Machine$double.eps),
-           tol=sqrt(.Machine$double.eps))$minimum
+  est <- optimize(f=scorefun, interval=c(0, period - .Machine$double.eps),
+                  tol=sqrt(.Machine$double.eps))$minimum
+  return(est)
 }
 
 #' Get classification accuracy metrics
