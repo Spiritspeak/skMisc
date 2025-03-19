@@ -79,7 +79,23 @@ trimean <- function(x, na.rm=FALSE){
   sum(c(1,2,1) * quantile(x,c(.25,.5,.75)), na.rm=na.rm)/4
 }
 
-# minimizes squared distance using optimization
+#' Title
+#' 
+#' @param x  
+#' @param period 
+#' @param check Should a check be performed to detect whether there is no identifiable mean?
+#' This should be set to \code{FALSE} when such a situation is not expected in the data, since
+#' this check can be costly.
+#' 
+#' @details
+#' This function finds the value that has the smallest squared distance 
+#' to all values in \code{x}.
+#' 
+#' @returns
+#' @export
+#'
+#' @examples
+#' 
 modular.mean <- function(x, period=12, check=TRUE){
   x <- x %% period
   if(length(x) > 1 && check){
