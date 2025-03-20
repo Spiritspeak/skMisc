@@ -81,11 +81,13 @@ trimean <- function(x, na.rm=FALSE){
 
 #' Title
 #' 
-#' @param x  
-#' @param period 
+#' @param x A numeric vector of modular quantities to be averaged.
+#' @param mod The modulus of \code{x}, i.e. where the numbers "loop back" to zero. 
+#' On a clock this is 12, in degrees it is 360, etc.
 #' @param check Should a check be performed to detect whether there is no identifiable mean?
 #' This should be set to \code{FALSE} when such a situation is not expected in the data, since
-#' this check can be costly.
+#' this check can be computationally costly.
+#' @param na.rm Should \code{NA} values be removed? Defaults to \code{TRUE}.
 #' 
 #' @details
 #' This function finds the value that has the smallest squared distance 
@@ -96,22 +98,36 @@ trimean <- function(x, na.rm=FALSE){
 #'
 #' @examples
 #' 
-modular.mean <- function(x, period=12, check=TRUE){
-  x <- x %% period
-  if(length(x) > 1 && check){
-    x <- sort.default(x)
-    dists <- abs(diff(c(x, x[1])))
-    dists <- pmin(dists, period - dists)
-    if(length(unique(dists)) == 1){
+#' 
+#' # Situations where no modular mean exists (points are evenly divided around the circle)
+#' modular.mean(c(0,3,6,9),mod=12)
+#' modular.mean(c(0,1,3,4,6,7,9,10),mod=12)
+#' 
+modular.mean <- function(x, mod, check=TRUE, na.rm=TRUE){
+  nas <- is.na(x)
+  if(any(nas)){
+    if(na.rm){
+      x <- x[!nas]
+    }else{
+      return(NA)
+    }
+  }
+  x <- x %% mod
+  
+  # Detect if the mean location on a circle is in the middle
+  if(length(x) > 1 && check && length(unique(x))>1){
+    if(abs(mean(cos(x/mod*2*pi)))<.Machine$double.eps && 
+       abs(mean(sin(x/mod*2*pi)))<.Machine$double.eps){
       return(NA)
     }
   }
   scorefun <- function(par){
     scv <- abs(par - x)
-    scv <- pmin(scv, period - scv)
+    scv <- pmin(scv, mod - scv)
     sum(scv ^ 2)
   }
-  est <- optimize(f=scorefun, interval=c(0, period - .Machine$double.eps),
+  est <- optimize(f=scorefun, 
+                  interval=c(0, mod - .Machine$double.eps),
                   tol=sqrt(.Machine$double.eps))$minimum
   return(est)
 }
