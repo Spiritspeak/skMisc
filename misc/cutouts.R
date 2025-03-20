@@ -231,3 +231,9 @@ colorEdges<-function(x,maxedge=NULL){
   matrix(cols,ncol=ncol(x),nrow=nrow(x))
 }
 
+angular.mean <- function(x,period=2*pi){
+  period/(2*pi)*atan2(mean(sin(x/period*2*pi)),mean(cos(x/period*2*pi)))
+}
+
+# angular.mean(c(12,11,7),period=12)
+# angular.mean(c(12,11,8),period=12)

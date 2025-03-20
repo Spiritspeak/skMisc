@@ -45,11 +45,10 @@ extractAsyncVARComponents <- function(modlist,allpreds,alpha){
 # TODO: remove hardcoded reliance on alpha
 # TODO: make contemp and between-subject skippable
 # TODO: add t-based significance testing
+# TODO: add support for glmnet lasso
 asyncVAR<-function(data,vars,idvar,dayvar,beepvar,covar=NULL,
-                   temporal = c("default", "correlated", 
-                                "orthogonal", "fixed"), 
-                   contemporaneous = c("default", "correlated",
-                                       "orthogonal", "fixed", "skip"), 
+                   model = c("default", "correlated", 
+                             "orthogonal", "fixed"), 
                    between = c("default", "skip"),
                    nCores = 1, scale = TRUE, alpha=0.05){
   
@@ -57,6 +56,18 @@ asyncVAR<-function(data,vars,idvar,dayvar,beepvar,covar=NULL,
   predrank <- sapply(allpreds,function(x){ 
     which(sapply(seq_along(vars),function(y){any(x == vars[[y]])}))
   })
+  
+  # Process arguments
+  model<-match.arg(model)
+  if(model=="default"){
+    if(length(unique(data[[idvar]]))==1){
+      model<-"fixed"
+    }else if(length(allpreds)>=6){
+      model<-"orthogonal"
+    }else{
+      model<-"correlated"
+    }
+  }
     
   cl<-makeCluster(spec=nCores)
   registerDoParallel(cl=cl,cores=nCores)
@@ -89,13 +100,19 @@ asyncVAR<-function(data,vars,idvar,dayvar,beepvar,covar=NULL,
       }
       
       # Run mod
-      form<-paste0("dv_lagged ~ ",paste0(c(allpreds,covar),collapse=" + "),
-                   " + (",paste0(allpreds,collapse=" + "),
-                   ifelse(temporal=="correlated","|","||"),idvar,")") %>% as.formula()
-      
-      mlvmod<-lmer(formula=form,data=currdata,
-                   control=lmerControl(optimizer="bobyqa",calc.derivs=F,
-                                       optCtrl=list(maxfun=1e6)))
+      if(any(model == c("correlated","orthogonal"))){
+        form<-paste0("dv_lagged ~ ",paste0(c(allpreds,covar),collapse=" + "),
+                     " + (",paste0(allpreds,collapse=" + "),
+                     ifelse(model=="correlated","|","||"),idvar,")") %>% as.formula()
+        
+        mlvmod<-lmer(formula=form,data=currdata,
+                     control=lmerControl(optimizer="bobyqa",calc.derivs=F,
+                                         optCtrl=list(maxfun=1e6)))
+      }else if(model == "fixed"){
+        form<-paste0("dv_lagged ~ ",paste0(c(allpreds,covar),collapse=" + ")) %>% 
+          as.formula()
+        mlvmod<-lm(formula=form,data=currdata)
+      }
       
       # Return
       #temporal.models[[cpred]]<-
@@ -133,13 +150,19 @@ asyncVAR<-function(data,vars,idvar,dayvar,beepvar,covar=NULL,
     currpreds <- allpreds[predrank==predrank[allpreds==cpred]]
     
     # Run mod
-    form<-paste0(cpred," ~ ",paste0(c(currpreds,covar),collapse=" + "),
-                 " + (",paste0(currpreds,collapse=" + "),
-                 ifelse(contemporaneous=="correlated","|","||"),idvar,")") %>% as.formula()
-    
-    mlvmod<-lmer(formula=form,data=residframe,
-                 control=lmerControl(optimizer="bobyqa",calc.derivs=F,
-                                     optCtrl=list(maxfun=1e6)))
+    if(any(model == c("correlated","orthogonal"))){
+      form<-paste0(cpred," ~ ",paste0(c(currpreds,covar),collapse=" + "),
+                   " + (",paste0(currpreds,collapse=" + "),
+                   ifelse(model=="correlated","|","||"),idvar,")") %>% as.formula()
+      
+      mlvmod<-lmer(formula=form,data=residframe,
+                   control=lmerControl(optimizer="bobyqa",calc.derivs=F,
+                                       optCtrl=list(maxfun=1e6)))
+    }else of(model=="fixed"){
+      form<-paste0(cpred," ~ ",paste0(c(currpreds,covar),collapse=" + ")) %>% 
+        as.formula()
+      mlvmod<-lm(formula=form,data=residframe)
+    }
     
     mlvmod
   }
