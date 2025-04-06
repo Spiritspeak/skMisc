@@ -287,6 +287,57 @@ interweave <- function(...){
   return(out)
 }
 
+#' Generate and concatenate multiple integer sequences
+#' 
+#' This generates multiple integer sequences and concatenates them.
+#'
+#' @param from,to the starting and (maximal) end values of the sequences. 
+#' Multiple can be given.
+#'
+#' @returns An integer vector of multiple concatenated integer sequences.
+#' @export
+#' @author Sercan Kahveci
+#'
+#' @examples
+#' seq_composite(from=c(1,7),to=c(3,8))
+#' 
+seq_composite <- function(from,to){
+  unlist(mapply(\(x,y){x:y},from,to))
+}
+
+#' Carry non-NA values forward into NA values
+#' 
+#' This replaces every \code{NA} value with their last preceding non-\code{NA} value.
+#'
+#' @param x A vector.
+#'
+#' @returns \code{x} with all \code{NA} values replaced with their 
+#' last preceding non-\code{NA} value.
+#' @export
+#' @author Sercan Kahveci
+#'
+#' @examples
+#' carryforward(c(NA,1,NA,NA,2))
+#' 
+carryforward <- function(x){
+  runend <- which(!is.na(x) & is.na(quicklag(x))) -1L
+  runstart <- which(is.na(x) & !is.na(quicklag(x)))
+  if(length(runstart)==0){ return(x) }
+  if(runstart[1] > runend[1]){
+    runend <- runend[-1]
+  }
+  if(length(runend)==0){
+    runend <- c(runend, length(x))
+  }else if(runstart[length(runstart)] > runend[length(runend)]){
+    runend <- c(runend, length(x))
+  }
+  
+  x[seq_composite(runstart, runend)] <- rep(x[runstart-1], times=runend-runstart+1)
+  return(x)
+}
+quicklag <- function(x){ c(NA,x[-length(x)]) }
+
+
 #' Convert dates to Nth weekday of the month values
 #' 
 #' Computes which weekday of the month each date represents. 

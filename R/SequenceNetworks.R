@@ -39,56 +39,104 @@ onsets2idmat <- function(pat, preds){
   return(idmat)
 }
 
-# Predictor level is x to the power of N new states entered since the state
-get_powermat <- function(x, stairmat){
+stairmat2predmat <- function(x, stairmat, type=c("step", "flat", "power",
+                                                    "inverse", "accrual")){
+  type <- match.arg(type)
   nonzero_stairmat <- stairmat!=0
-  powermat <- Matrix(data=0,
-                     nrow=nrow(stairmat),
-                     ncol=ncol(stairmat),
-                     dimnames=list(c(), colnames(stairmat)))
-  powermat[nonzero_stairmat] <- x^(stairmat[nonzero_stairmat]-1)
-  return(powermat)
+  
+  # Predictor level is x to the power of N new states entered since the state
+  if(type == "power"){
+    out <- Matrix(data=0,
+                  nrow=nrow(stairmat),
+                  ncol=ncol(stairmat),
+                  dimnames=list(c(), colnames(stairmat)))
+    out[nonzero_stairmat] <- x^(stairmat[nonzero_stairmat]-1)
+  }
+  
+  # Predictor level is 1 divided by the number of states entered since that state
+  if(type == "inverse"){
+    out <- Matrix(data=0,
+                  nrow=nrow(stairmat),
+                  ncol=ncol(stairmat),
+                  dimnames=list(c(), colnames(stairmat)))
+    out[nonzero_stairmat] <- (x+1)/(x+stairmat[nonzero_stairmat])
+  }
+  
+  # Predictor level is set to 1 for a set number of rows after a state is entered
+  if(type=="flat"){
+    out <- Matrix(data=as.numeric(nonzero_stairmat),
+                  nrow=nrow(stairmat),
+                  ncol=ncol(stairmat),
+                  dimnames=list(c(), colnames(stairmat)),
+                  sparse=T)
+    out[stairmat > x] <- 0
+  }
+  
+  # Predictor level goes down in discrete steps until 0 after a state is entered
+  if(type=="step"){
+    nonzero_stairmat[stairmat>x] <- F
+    out <- Matrix(data=0,
+                  nrow=nrow(stairmat),
+                  ncol=ncol(stairmat),
+                  dimnames=list(c(), colnames(stairmat)))
+    out[nonzero_stairmat] <- (x+1-stairmat[nonzero_stairmat])/x
+  }
+  
+  # Once you enter a state, the predictor is set to 1 indefinitely
+  if(type=="accrual"){
+    out <- nonzero_stairmat+0
+  }
+  
+  return(out)
 }
 
-# Predictor level is 1 divided by the number of states entered since that state
-get_inversemat <- function(x, stairmat){
-  nonzero_stairmat <- stairmat!=0
-  inversemat <- Matrix(data=0,
-                       nrow=nrow(stairmat),
-                       ncol=ncol(stairmat),
-                       dimnames=list(c(), colnames(stairmat)))
-  inversemat[nonzero_stairmat] <- (x+1)/(x+stairmat[nonzero_stairmat])
-  return(inversemat)
+get_recencymat <- function(data, maxdate, preds, 
+                           type=c("flat", "step"), 
+                           seq.onset=TRUE, verbose=FALSE){
+  type <- match.arg(type)
+  
+  quickave <- function(X, INDEX, FUN){
+    split(X, INDEX) <- lapply(split(X, INDEX), FUN)
+    X
+  }
+  
+  data %<>% arrange(sequence, date)
+  onsets <- !duplicated(paste(data$sequence, data$state, sep="+"))
+  pat <- data[onsets, c("sequence", "state", "date")]
+  out <- matrix(0, ncol=length(preds), nrow=nrow(pat), dimnames=list(NULL, preds))
+  
+  for(currstate in preds){
+    if(verbose){ cat("\r", currstate, "                        ") }
+    indices <- 1:nrow(data)
+    indices[data$state != currstate] <- NA
+    indices <- quickave(X=indices, INDEX=data$sequence, FUN=carryforward)
+    lastreldate <- data$date[indices]
+    out[,currstate] <- data$date[onsets] - lastreldate[onsets]
+  }
+  rm(indices, lastreldate, onsets)
+  out[is.na(out)] <- 0
+  
+  if(seq.onset){
+    if(verbose){ cat("\r(Start)                        ") }
+    indices <- 1:nrow(pat)
+    authoronset <- lag(pat$sequence) != pat$sequence
+    authoronset[1] <- T
+    indices[!authoronset] <- NA
+    indices <- carryforward(indices)
+    out <- cbind(`(Start)`=pat$date - pat$date[indices] + 1, out)
+    rm(indices, authoronset)
+  }
+  
+  if(type=="flat"){
+    out <- 0 + (out > 0 & out < maxdate)
+  }else if(type == "step"){
+    out <- maxdate - out
+    out[out < 0 | out == maxdate] <- 0
+  }
+  out <- Matrix(out, dimnames=list(NULL, colnames(out)))
+  return(list(pat=pat, predmat=out))
 }
 
-# Predictor level is set to 1 for a set number of rows after a state is entered
-get_flatmat <- function(x, stairmat){
-  flatmat <- Matrix(data=as.numeric(stairmat!=0),
-                    nrow=nrow(stairmat),
-                    ncol=ncol(stairmat),
-                    dimnames=list(c(), colnames(stairmat)),
-                    sparse=T)
-  flatmat[stairmat > x] <- 0
-  return(flatmat)
-}
-
-# Predictor level goes down in discrete steps until 0 after a state is entered
-get_stepmat <- function(x, stairmat){
-  currmask <- stairmat!=0
-  currmask[stairmat>x] <- F
-  stepmat <- Matrix(data=0,
-                    nrow=nrow(stairmat),
-                    ncol=ncol(stairmat),
-                    dimnames=list(c(), colnames(stairmat)))
-  stepmat[currmask] <- (x+1-stairmat[currmask])/x
-  return(stepmat)
-}
-
-# Once you enter a state, the predictor is set to 1 indefinitely
-get_accrualmat <- function(x, stairmat){
-  accrualmat <- (stairmat!=0)+0
-  return(accrualmat)
-}
 
 ################################
 # Predictor generators in Rcpp #
@@ -238,20 +286,20 @@ assembleCoefficients <- function(statefits, extrapreds=NULL){
 # TRANSITION NETWORK FUNCTIONS #
 ################################
 
-nodewiseTransitionNet<-function(pat,
-                                mattype,
-                                parameter,
-                                by="index",
-                                direction=1,
-                                sampletype="all",
-                                gammas=seq(0, 1, .1),
-                                alpha=1,
-                                force.positive=FALSE,
-                                idmat=NULL,
-                                stairmat=NULL,
-                                predictors=NULL,
-                                ncores=NULL,
-                                verbose=TRUE){
+nodewiseTransitionNet <- function(pat,
+                                  mattype,
+                                  parameter,
+                                  by="index",
+                                  direction=1,
+                                  sampletype="all",
+                                  gammas=seq(0, 1, .1),
+                                  alpha=1,
+                                  force.positive=FALSE,
+                                  idmat=NULL,
+                                  stairmat=NULL,
+                                  predictors=NULL,
+                                  ncores=NULL,
+                                  verbose=TRUE){
   
   # Generate id/stair matrices if missing
   if(is.null(idmat)){
@@ -273,8 +321,7 @@ nodewiseTransitionNet<-function(pat,
   
   # Form predictor matrix
   if(verbose){ message("Generating predictor matrix") }
-  predmat <- do.call(what=paste0("get_", mattype),
-                     args=list(x=parameter, stairmat=stairmat))
+  predmat <- stairmat2predmat(x=parameter, stairmat=stairmat, mattype=mattype)
   rm(stairmat)
   
   if(force.positive){
