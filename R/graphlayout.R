@@ -52,13 +52,13 @@ altlayout <- function(x, type=c("stress", "kk", "fr", "drl", "dh", "focus"),
   type <- match.arg(type)
   
   # Convert to igraph
-  qgr <- igraph::graph_from_adjacency_matrix(x)
+  qgr <- igraph::graph_from_adjacency_matrix(x, weighted=T)
   oldwts <- igraph::E(qgr)$weight
   
   # Compute exponentiated weights for the algorithms that 
   # cannot handle negative values
   if(type!="focus"){
-    newwts <- exp(-oldwts*repulsion*ifelse(oldwts<0,negrepulsion,1))
+    newwts <- exp(-oldwts*repulsion*ifelse(oldwts<0, negrepulsion, 1))
   }
   
   # Run layout functions
