@@ -100,7 +100,7 @@ get_recencymat <- function(data, maxdate, preds,
     X
   }
   
-  data %<>% arrange(sequence, date)
+  data <- dplyr::arrange(data, sequence, date)
   onsets <- !duplicated(paste(data$sequence, data$state, sep="+"))
   pat <- data[onsets, c("sequence", "state", "date")]
   out <- matrix(0, ncol=length(preds), nrow=nrow(pat), dimnames=list(NULL, preds))
@@ -119,12 +119,12 @@ get_recencymat <- function(data, maxdate, preds,
   if(seq.onset){
     if(verbose){ cat("\r(Start)                        ") }
     indices <- 1:nrow(pat)
-    authoronset <- lag(pat$sequence) != pat$sequence
-    authoronset[1] <- T
-    indices[!authoronset] <- NA
+    sequenceonset <- lag(pat$sequence) != pat$sequence
+    sequenceonset[1] <- T
+    indices[!sequenceonset] <- NA
     indices <- carryforward(indices)
     out <- cbind(`(Start)`=pat$date - pat$date[indices] + 1, out)
-    rm(indices, authoronset)
+    rm(indices, sequenceonset)
   }
   
   if(type=="flat"){
@@ -179,8 +179,7 @@ onsets2stairmat <- function(pat,
                             preds,
                             by=c("index", "date"),
                             direction=1,
-                            start=TRUE,
-                            end=TRUE,
+                            seq.onset=TRUE,
                             verbose=FALSE){
   seqchains <- split(pat[["state"]], pat[["sequence"]])
   by <- match.arg(by)
@@ -207,16 +206,16 @@ onsets2stairmat <- function(pat,
     stairs[[s]] <- currvec |> Matrix(ncol=1)
   }
   
-  if(start & direction == 1){
-    if(verbose){ cat("\r", "(start)                        ") }
-    stairs[["(start)"]] <- 
+  if(seq.onset & direction == 1){
+    if(verbose){ cat("\r", "(Start)                        ") }
+    stairs[["(Start)"]] <- 
       timechains |> 
       lapply(function(x){ x-x[1]+1 }) |> 
       unsplit(pat[["sequence"]])
   }  
-  if(end & direction == -1){
-    if(verbose){ cat("\r", "(end)                        ") }
-    stairs[["(end)"]] <- 
+  if(seq.onset & direction == -1){
+    if(verbose){ cat("\r", "(End)                        ") }
+    stairs[["(End)"]] <- 
       timechains |> 
       lapply(function(x){ x[length(x)]-x+1 }) |> 
       unsplit(pat[["sequence"]])
@@ -239,7 +238,7 @@ getStateMask <- function(currstate, pat, sampletype, direction){
     include_nonvisitors <- F
   }
   mask <- pat |> 
-    group_by(author) |> 
+    group_by(sequence) |> 
     mutate(limited=any(state == currstate)) |>
     transmute(mask= ifelse(limited, 
                            idx <= idx[state == currstate], 
@@ -252,7 +251,7 @@ assembleCoefficients <- function(statefits, extrapreds=NULL){
   # Extract ebics
   ebicmat <- sapply(statefits, \(x)x$ebics)
   
-  # Add zeroes for own subreddit and for start
+  # Add zeroes for each fit's own state and for start
   statenames <- names(statefits)
   betalist <- statefits |> lapply(\(x)x[["betas"]])
   for(statename in statenames){
@@ -263,7 +262,7 @@ assembleCoefficients <- function(statefits, extrapreds=NULL){
     
     # Reorder
     betalist[[statename]] <- 
-      betalist[[statename]][c("(Intercept)", extrapreds, subnames),]
+      betalist[[statename]][c("(Intercept)", extrapreds, statenames),]
   }
   
   # Extract betas by gamma
@@ -286,46 +285,70 @@ assembleCoefficients <- function(statefits, extrapreds=NULL){
 # TRANSITION NETWORK FUNCTIONS #
 ################################
 
-nodewiseTransitionNet <- function(pat,
-                                  mattype,
+nodewiseTransitionNet <- function(data,
+                                  predictors,
+                                  mattype=c("step", "flat", "power",
+                                            "inverse", "accrual"),
                                   parameter,
-                                  by="index",
+                                  type=c("onset-to-onset",
+                                         "recent-onset-to-onset",
+                                         "recency-to-onset"),
                                   direction=1,
                                   sampletype="all",
                                   gammas=seq(0, 1, .1),
                                   alpha=1,
                                   force.positive=FALSE,
-                                  idmat=NULL,
-                                  stairmat=NULL,
-                                  predictors=NULL,
                                   ncores=NULL,
                                   verbose=TRUE){
+  type <- match.arg(type)
+  mattype <- match.arg(mattype)
   
-  # Generate id/stair matrices if missing
-  if(is.null(idmat)){
-    stopifnot(!is.null(predictors))
-    if(verbose){ message("Generating DV matrix") }
-    idmat <- onsets2idmat(pat=pat, preds=predictors)
+  if(type=="recency-to-onset"){
+    if(verbose){ message("Generating predictor matrix") }
+    stopifnot(mattype %in% c("step","flat"),!missing(data))
+    recencydata <- get_recencymat(data=data,
+                                  maxdate=parameter,
+                                  preds=predictors,
+                                  type=mattype,
+                                  seq.onset=TRUE,
+                                  verbose=verbose)
+    pat <- recencydata$pat
+    predmat <- recencydata$predmat
+    rm(recencydata, data)
+    gc()
   }
-  if(is.null(stairmat)){
+  
+  if(type %in% c("onset-to-onset","recency-onset-to-onset")){
     stopifnot(!is.null(predictors))
     if(verbose){ message("Generating predictor matrix precursor") }
+    pat <- data[!duplicated(paste(data$sequence, data$state, sep="+")), 
+                c("sequence", "state", "date")]
     stairmat <- onsets2stairmat(pat=pat,
                                 preds=predictors,
-                                by=by,
+                                by=switch(type,
+                                          `onset-to-onset`="idx",
+                                          `recency-onset-to-onset`="date"),
                                 direction=direction,
-                                start=direction==1,
-                                end=direction==-1,
+                                seq.onset=TRUE,
                                 verbose=verbose)
+    
+    # Form predictor matrix
+    if(verbose){ message("Generating predictor matrix") }
+    predmat <- stairmat2predmat(x=parameter, stairmat=stairmat, type=mattype)
+    rm(stairmat, data)
+    gc()
   }
   
-  # Form predictor matrix
-  if(verbose){ message("Generating predictor matrix") }
-  predmat <- stairmat2predmat(x=parameter, stairmat=stairmat, mattype=mattype)
-  rm(stairmat)
+  # Generate id matrix
+  stopifnot(!is.null(predictors))
+  if(verbose){ message("Generating DV matrix") }
+  idmat <- onsets2idmat(pat=pat, preds=predictors)
+  
+  # add idx column to pat
+  pat$idx <- ave(seq_along(pat$sequence),pat$sequence,FUN=function(x){seq_along(x)})
   
   if(force.positive){
-    minweights <- ifelse(colnames(predmat) %in% c("(start)","(end)","(Intercept)"),
+    minweights <- ifelse(colnames(predmat) %in% c("(Start)","(End)","(Intercept)"),
                          -Inf, 0)
   }else{
     minweights <- rep(-Inf, ncol(predmat))
@@ -354,15 +377,15 @@ nodewiseTransitionNet <- function(pat,
                                  sampletype=sampletype, direction=direction)
               
               iterfit<-glmnet(x=predmat[mask, colnames(predmat) != currstate],
-                              y=idmat[mask, currstate,drop=F],
+                              y=idmat[mask, currstate, drop=F],
                               family="binomial",
                               alpha=alpha,
                               lower.limits=minweights[colnames(predmat) != currstate])
               extract_coefs(iterfit, gammas)
             }
   if(verbose){ message("Assembling results") }
-  names(subfits) <- colnames(idmat)
-  extrapreds <- ifelse(direction==1, "(start)", "(end)")
+  names(fits) <- colnames(idmat)
+  extrapreds <- ifelse(direction==1, "(Start)", "(End)")
   out <- assembleCoefficients(fits, extrapreds=extrapreds)
   return(out)
 }
@@ -372,7 +395,7 @@ nodewiseTransitionNet <- function(pat,
 ##########################
 
 # This is a more efficient clone of IsingFit
-nodewiseCooccurrenceNet<-
+nodewiseCooccurrenceNet <-
   function(coocmat,
            gammas=seq(0, 1, .1),
            ncores=NULL,
