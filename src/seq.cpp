@@ -22,3 +22,18 @@ IntegerVector seq_composite(IntegerVector from, IntegerVector to){
   }
   return out;
 }
+
+NumericVector carryforward(NumericVector x){
+  int tl=x.length();
+  if(tl<2){
+    return x;
+  }
+  NumericVector out = clone(x);
+  LogicalVector nas = is_na(x);
+  for(int i=1; i<tl; i++){
+    if(nas[i]){
+      out[i]=out[i-1];
+    }
+  }
+  return out;
+}
