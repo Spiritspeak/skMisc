@@ -37,8 +37,9 @@ onsets2idmat <- function(pat, preds){
   return(idmat)
 }
 
-stairmat2predmat <- function(x, stairmat, type=c("step", "flat", "power",
-                                                    "inverse", "accrual")){
+stairmat2predmat <- function(x, stairmat, 
+                             type=c("step", "flat", "power", 
+                                    "inverse", "accrual")){
   type <- match.arg(type)
   nonzero_stairmat <- stairmat!=0
   
@@ -88,11 +89,7 @@ stairmat2predmat <- function(x, stairmat, type=c("step", "flat", "power",
   return(out)
 }
 
-get_recencymat <- function(data, maxdate, preds, 
-                           type=c("flat", "step"), 
-                           seq.onset=TRUE, verbose=FALSE){
-  type <- match.arg(type)
-  
+get_recencymat <- function(data, preds, seq.onset=TRUE, verbose=FALSE){
   quickave <- function(X, INDEX, FUN){
     split(X, INDEX) <- lapply(split(X, INDEX), FUN)
     X
@@ -107,7 +104,7 @@ get_recencymat <- function(data, maxdate, preds,
     if(verbose){ cat("\r", currstate, "                        ") }
     indices <- 1:nrow(data)
     indices[data$state != currstate] <- NA
-    indices <- quickave(X=indices, INDEX=data$sequence, FUN=carryforward)
+    indices <- quickave(X=indices, INDEX=data$sequence, FUN=carryforward_numeric)
     lastreldate <- data$date[indices]
     out[,currstate] <- data$date[onsets] - lastreldate[onsets]
   }
@@ -120,19 +117,13 @@ get_recencymat <- function(data, maxdate, preds,
     sequenceonset <- lag(pat$sequence) != pat$sequence
     sequenceonset[1] <- T
     indices[!sequenceonset] <- NA
-    indices <- carryforward(indices)
+    indices <- carryforward_numeric(indices)
     out <- cbind(`(Start)`=pat$date - pat$date[indices] + 1, out)
     rm(indices, sequenceonset)
   }
   
-  if(type=="flat"){
-    out <- 0 + (out > 0 & out < maxdate)
-  }else if(type == "step"){
-    out <- maxdate - out
-    out[out < 0 | out == maxdate] <- 0
-  }
   out <- Matrix(out, dimnames=list(NULL, colnames(out)))
-  return(list(pat=pat, predmat=out))
+  return(list(pat=pat, stairmat=out))
 }
 
 onsets2stairmat <- function(pat,
@@ -259,14 +250,83 @@ extract_coefs <- function(fit, gammas){
 # TRANSITION NETWORK FUNCTIONS #
 ################################
 
-nodewiseTransitionNet <- function(data,
+#' Model a transition network from sequence data
+#'
+#' @param data A data.frame with 3 columns: sequence (character), 
+#' state (character), and date (numeric).
+#' @param predictors Which states should be included in the network?
+#' @param decaytype Once a state has occurred, how should its predictor look?
+#' 
+#' * If "flat", the predictor is 1 after the state has occurred until it 
+#' no longer satisfies the condition set by the parameter argument.
+#' 
+#' * If "step", the predictor is 1 immediately after the state has occurred,
+#' and decays to 0 until it no longer satisfies the condition set by 
+#' the parameter argument.
+#' 
+#' * If "accrual", the predictor is 1 after the state has occurred 
+#' until sequence end.
+#' @param parameter This determines the largest temporal distance from 
+#' the occurrence of a state that is transformed into a nonzero value 
+#' as a predictor. The exact behavior of this argument is determined by
+#' the \code{decaytype} argument. See Details for clarification.
+#' @param predtype 
+#' @param direction In which direction should predictions be made?
+#' 1 means current states predict future states, -1 means current states predict
+#' past states.
+#' @param sampletype When the occurrence of a state is predicted, should every 
+#' sequence be included ("all") or only those that contain the state ("visitors")?
+#' @param gammas Which EBIC gamma values should be used for model selection?
+#' Higher values mean less edges are retained in the network.
+#' @param alpha This is the elasticnet mixing parameter.
+#' 1 (default) means lasso regularization, 0 means ridge regularization, and 
+#' values in-between mix the two. See [glmnet::glmnet()].
+#' @param force.positive Should model beta values be restricted to 
+#' the positive range?
+#' @param ncores Number of models to run in parallel. 
+#' Be careful not to overload system memory.
+#' @param verbose Produce verbose output in console?
+#' 
+#' @details
+#' # Rationale
+#' 
+#' This is a method for analyzing sequences of states. The first occurrence 
+#' of each state is predicted with the preceding first or most recent occurrences 
+#' of other states using lasso-regularized logistic regressions. 
+#' You set with the \code{preds} argument which states are predicted and 
+#' used as predictors. All other states are kept in the data, 
+#' but do not contribute to prediction nor are predicted.
+#' 
+#' The level of analysis (and the actual data analyzed) is the _first_ 
+#' occurrences of all states. That is, each row represents 
+#' the first occurrence of a state.
+#' For each model, the dependent variable is coded 
+#' as 0 if the first occurrence of a state on the current row
+#' is not the state being predicted, and 1 if it is that state; 
+#' prediction within a single sequence continues until 
+#' this state or the end of the sequence is reached. 
+#' Hence, if a state is reached before the end of the sequence, 
+#' all states after it are ignored in the prediction of that state, 
+#' since there can only be one _first_ occurrence of a state within a sequence,
+#' and therefore prediction of a first occurrence would not make sense
+#' after the first occurrence hadd already occurred.
+#' 
+#' 
+#' @md
+#' @returns
+#' @author Sercan Kahveci
+#' @export
+#'
+#' @examples
+#' 
+#' 
+transitionNet <- function(data,
                                   predictors,
-                                  mattype=c("step", "flat", "power",
-                                            "inverse", "accrual"),
+                                  decaytype=c("step", "flat", "accrual"),
                                   parameter,
-                                  type=c("onset-to-onset",
-                                         "recent-onset-to-onset",
-                                         "recency-to-onset"),
+                                  predtype=c("onset-to-onset",
+                                             "recent-onset-to-onset",
+                                             "recency-to-onset"),
                                   direction=1,
                                   sampletype="all",
                                   gammas=seq(0, 1, .1),
@@ -274,25 +334,23 @@ nodewiseTransitionNet <- function(data,
                                   force.positive=FALSE,
                                   ncores=NULL,
                                   verbose=TRUE){
-  type <- match.arg(type)
+  predtype <- match.arg(predtype)
   mattype <- match.arg(mattype)
   
-  if(type=="recency-to-onset"){
-    if(verbose){ message("Generating predictor matrix") }
-    stopifnot(mattype %in% c("step","flat"),!missing(data))
+  if(predtype=="recency-to-onset"){
+    if(verbose){ message("Generating predictor matrix precursor") }
+    stopifnot(direction==1)
     recencydata <- get_recencymat(data=data,
-                                  maxdate=parameter,
                                   preds=predictors,
-                                  type=mattype,
                                   seq.onset=TRUE,
                                   verbose=verbose)
     pat <- recencydata$pat
-    predmat <- recencydata$predmat
-    rm(recencydata, data)
+    stairmat <- recencydata$stairmat
+    rm(recencydata)
     gc()
   }
   
-  if(type %in% c("onset-to-onset","recency-onset-to-onset")){
+  if(predtype %in% c("onset-to-onset","recency-onset-to-onset")){
     stopifnot(!is.null(predictors))
     if(verbose){ message("Generating predictor matrix precursor") }
     pat <- data[!duplicated(paste(data$sequence, data$state, sep="+")), 
@@ -305,13 +363,13 @@ nodewiseTransitionNet <- function(data,
                                 direction=direction,
                                 seq.onset=TRUE,
                                 verbose=verbose)
-    
-    # Form predictor matrix
-    if(verbose){ message("Generating predictor matrix") }
-    predmat <- stairmat2predmat(x=parameter, stairmat=stairmat, type=mattype)
-    rm(stairmat, data)
-    gc()
   }
+  
+  # Form predictor matrix
+  if(verbose){ message("Generating predictor matrix") }
+  predmat <- stairmat2predmat(x=parameter, stairmat=stairmat, type=mattype)
+  rm(stairmat, data)
+  gc()
   
   # Generate id matrix
   stopifnot(!is.null(predictors))
@@ -369,7 +427,7 @@ nodewiseTransitionNet <- function(data,
 ##########################
 
 # This is a more efficient clone of IsingFit
-nodewiseCooccurrenceNet <-
+cooccurrenceNet <-
   function(coocmat,
            gammas=seq(0, 1, .1),
            ncores=NULL,
