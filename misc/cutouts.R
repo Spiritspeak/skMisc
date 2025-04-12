@@ -237,3 +237,23 @@ angular.mean <- function(x,period=2*pi){
 
 # angular.mean(c(12,11,7),period=12)
 # angular.mean(c(12,11,8),period=12)
+
+
+
+#' Generate and concatenate multiple integer sequences
+#' 
+#' This generates multiple integer sequences and concatenates them.
+#'
+#' @param from,to the starting and (maximal) end values of the sequences. 
+#' Multiple can be given.
+#'
+#' @returns An integer vector of multiple concatenated integer sequences.
+#' @export
+#' @author Sercan Kahveci
+#'
+#' @examples
+#' seq_composite(from=c(1,7),to=c(3,8))
+#' 
+seq_composite <- function(from,to){
+  unlist(mapply(\(x,y){x:y},from,to))
+}

@@ -1,28 +1,26 @@
 
 
-EBIC.glmnet <- function(md,gamma){
-  tLL <- -deviance(md)
-  k <- md$df
-  n <- md$nobs
-  p <- nrow(md$beta)
+#' Extended Bayesian Information Criterion for \code{glmnet} objects
+#'
+#' @param x The \code{glmnet} model.
+#' @param gamma The gamma parameter. This should be a value between 0 and 1.
+#' At a gamma of 0, EBIC is equivalent to BIC, while at higher values, it is
+#' more strict on the number of predictors modelled.
+#'
+#' @returns The EBIC of the model.
+#' @export
+#'
+#' @examples
+#' 
+#' 
+EBIC.glmnet <- function(x, gamma){
+  tLL <- -deviance(x)
+  k <- x$df
+  n <- x$nobs
+  p <- nrow(x$beta)
   EBIC <- -tLL + log(n)*k + 2*gamma*k*log(p)
   return(EBIC)
 }
-
-extract_coefs <- function(fit,gammas){
-  iterminebics <- iterebics <- numeric(length(gammas))
-  for(gammidx in seq_along(gammas)){
-    ebicvec <- EBIC.glmnet(fit, gamma=gammas[gammidx])
-    iterminebics[gammidx] <- which.min(ebicvec)
-    iterebics[gammidx] <- min(ebicvec)
-  }
-  betamat <- coef(fit)[,iterminebics]
-  colnames(betamat) <- names(iterebics) <- paste0("gamma", gammas)
-  
-  out <- list(betas=betamat, ebics=iterebics)
-  return(out)
-}
-
 
 #################################
 # Predictor generator functions #
@@ -137,44 +135,6 @@ get_recencymat <- function(data, maxdate, preds,
   return(list(pat=pat, predmat=out))
 }
 
-
-################################
-# Predictor generators in Rcpp #
-################################
-
-cppFunction(
-  "
-List EnumerateFrom(List sequences, List times, String target){
-  int ll = sequences.length();
-  List out (ll);
-  for(int i = 0; i < ll; ++i){
-    CharacterVector currauth = sequences[i];
-    int cl = currauth.length();
-    IntegerVector currtimes = times[i];
-    
-    bool found = false;
-    int flippoint = cl+1;
-    for(int j = 0; j < cl; ++j){
-      if(currauth[j] == target){
-        flippoint = currtimes[j];
-        found = true;
-        break;
-      }
-    }
-    
-    NumericVector newtimes (cl);
-    if(found){
-      newtimes = currtimes - flippoint;
-    }else{
-      newtimes = rep(0, cl);
-    }
-    
-    out[i] = newtimes;
-  }
-  return out;
-}
-")
-
 onsets2stairmat <- function(pat,
                             preds,
                             by=c("index", "date"),
@@ -278,6 +238,20 @@ assembleCoefficients <- function(statefits, extrapreds=NULL){
   
   # Return output
   out <- list(gammacoefs=gamma_coeflist, ebicmat=ebicmat)
+  return(out)
+}
+
+extract_coefs <- function(fit, gammas){
+  iterminebics <- iterebics <- numeric(length(gammas))
+  for(gammidx in seq_along(gammas)){
+    ebicvec <- EBIC.glmnet(fit, gamma=gammas[gammidx])
+    iterminebics[gammidx] <- which.min(ebicvec)
+    iterebics[gammidx] <- min(ebicvec)
+  }
+  betamat <- coef(fit)[,iterminebics]
+  colnames(betamat) <- names(iterebics) <- paste0("gamma", gammas)
+  
+  out <- list(betas=betamat, ebics=iterebics)
   return(out)
 }
 
@@ -413,10 +387,10 @@ nodewiseCooccurrenceNet <-
   })
   
   # Run regressions
-  fits<-foreach(currsub=colnames(coocmat),
-                .packages=c("glmnet","dplyr"),
-                .export=c("extract_coefs","EBIC.glmnet"),
-                .multicombine=T) %dopar% {
+  fits <- foreach(currsub=colnames(coocmat),
+                  .packages=c("glmnet", "dplyr"),
+                  .export=c("extract_coefs", "EBIC.glmnet"),
+                  .multicombine=T) %dopar% {
                      
     iterfit<-glmnet(x=coocmat[,colnames(coocmat) != currsub, drop=F],
                     y=coocmat[,currsub, drop=F],

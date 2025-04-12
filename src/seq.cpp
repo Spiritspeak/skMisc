@@ -1,6 +1,20 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
+//' Generate and concatenate multiple integer sequences
+//' 
+//' This generates multiple integer sequences and concatenates them.
+//'
+//' @param from,to the starting and (maximal) end values of the sequences. 
+//' Multiple can be given.
+//'
+//' @returns An integer vector of multiple concatenated integer sequences.
+//' @export
+//' @author Sercan Kahveci
+//'
+//' @examples
+//' seq_composite(from=c(1,7),to=c(3,8))
+//' 
 // [[Rcpp::export]]
 IntegerVector seq_composite(IntegerVector from, IntegerVector to){
   int fl=from.length();
@@ -23,7 +37,8 @@ IntegerVector seq_composite(IntegerVector from, IntegerVector to){
   return out;
 }
 
-NumericVector carryforward(NumericVector x){
+// [[Rcpp::export]]
+NumericVector carryforward_numeric(NumericVector x){
   int tl=x.length();
   if(tl<2){
     return x;
@@ -34,6 +49,36 @@ NumericVector carryforward(NumericVector x){
     if(nas[i]){
       out[i]=out[i-1];
     }
+  }
+  return out;
+}
+
+// [[Rcpp::export]]
+List EnumerateFrom(List sequences, List times, String target){
+  int ll = sequences.length();
+  List out (ll);
+  for(int i = 0; i < ll; ++i){
+    CharacterVector currauth = sequences[i];
+    int cl = currauth.length();
+    IntegerVector currtimes = times[i];
+    
+    bool found = false;
+    int flippoint = cl+1;
+    for(int j = 0; j < cl; ++j){
+      if(currauth[j] == target){
+        flippoint = currtimes[j];
+        found = true;
+        break;
+      }
+    }
+    
+    NumericVector newtimes (cl);
+    if(found){
+      newtimes = currtimes - flippoint;
+    }else{
+      newtimes = rep(0, cl);
+    }
+    out[i] = newtimes;
   }
   return out;
 }
