@@ -13,7 +13,7 @@ AnovaTable(
   suppress = c("AIC", "deviance", "logLik")
 )
 
-\method{print}{AnovaTable}(x, ...)
+print.AnovaTable(x, ...)
 }
 \arguments{
 \item{...}{Model objects to be compared}
@@ -39,9 +39,9 @@ deviance, and a likelihood ratio test.
 \description{
 Compare multilevel models
 }
-\section{Methods (by generic)}{
+\section{Functions}{
 \itemize{
-\item \code{print(AnovaTable)}: Print generic for anova tables.
+\item \code{print.AnovaTable()}: Print generic for anova tables.
 
 }}
 \examples{

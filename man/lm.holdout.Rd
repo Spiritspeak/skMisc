@@ -14,7 +14,7 @@ lm.holdout(
   verbose = FALSE
 )
 
-\method{print}{lm.holdout}(x, ...)
+print.lm.holdout(x, ...)
 
 \method{plot}{lm.holdout}(x, ...)
 }

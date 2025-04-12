@@ -270,7 +270,7 @@ extract_coefs <- function(fit, gammas){
 #' the occurrence of a state that is transformed into a nonzero value 
 #' as a predictor. The exact behavior of this argument is determined by
 #' the \code{decaytype} argument. See Details for clarification.
-#' @param predtype 
+#' @param predtype What type of predictor should be used? See Details.
 #' @param direction In which direction should predictions be made?
 #' 1 means current states predict future states, -1 means current states predict
 #' past states.

@@ -158,7 +158,7 @@ asyncVAR<-function(data,vars,idvar,dayvar,beepvar,covar=NULL,
       mlvmod<-lmer(formula=form,data=residframe,
                    control=lmerControl(optimizer="bobyqa",calc.derivs=F,
                                        optCtrl=list(maxfun=1e6)))
-    }else of(model=="fixed"){
+    }else if(model=="fixed"){
       form<-paste0(cpred," ~ ",paste0(c(currpreds,covar),collapse=" + ")) %>% 
         as.formula()
       mlvmod<-lm(formula=form,data=residframe)
