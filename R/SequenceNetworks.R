@@ -291,8 +291,9 @@ extract_coefs <- function(fit, gammas){
 #' # Rationale
 #' 
 #' This is a method for analyzing sequences of states. The first occurrence 
-#' of each state is predicted with the preceding first or most recent occurrences 
-#' of other states using lasso-regularized logistic regressions. 
+#' of each state is predicted with the recently preceding 
+#' first or most recent occurrences of other states 
+#' using lasso-regularized logistic regressions. 
 #' You set with the \code{preds} argument which states are predicted and 
 #' used as predictors. All other states are kept in the data, 
 #' but do not contribute to prediction nor are predicted.
@@ -307,10 +308,33 @@ extract_coefs <- function(fit, gammas){
 #' this state or the end of the sequence is reached. 
 #' Hence, if a state is reached before the end of the sequence, 
 #' all states after it are ignored in the prediction of that state, 
-#' since there can only be one _first_ occurrence of a state within a sequence,
+#' since there can only be one first occurrence of a state in a sequence,
 #' and therefore prediction of a first occurrence would not make sense
-#' after the first occurrence hadd already occurred.
+#' after the first occurrence had already occurred.
 #' 
+#' # Predictors
+#' 
+#' In a model predicting the first occurrence of state A, 
+#' all other selected states are used as predictors. 
+#' When \code{predtype} is \code{"onset-to-onset"},
+#' the predictor for state B is 0 before and when that state first occurs, and 
+#' it is 1 for the first state occurring directly after. 
+#' Depending on \code{decaytype}, it tapers down (\code{"step"}) or 
+#' remains 1 (\code{"flat"}), until a number of states have passed 
+#' equal to \code{parameter}. Sensible values may thus include 1 to 10 
+#' (measured in first occurrences).
+#' 
+#' When \code{predtype} is \code{"recent-onset-to-onset"},
+#' the predictor for state B is instead 1 or tapered down from 1 to 0 
+#' depending on the amount of time that has passed since 
+#' the first occurrence of state B; that amount of time is given by \code{parameter}.
+#' Sensible values depend on the unit of time in the date column, 
+#' e.g. 24\*60\*60 for a day in seconds.
+#' 
+#' When \code{predtype} is \code{"recency-to-onset"}, the unit is again time,
+#' but measured from the most recent occurrence of state B rather than the first.
+#' Hence, if state B first occurred early on and was followed by many other states,
+#' it would be 1 if it occurred again right before state A.
 #' 
 #' @md
 #' @returns
@@ -321,19 +345,19 @@ extract_coefs <- function(fit, gammas){
 #' 
 #' 
 transitionNet <- function(data,
-                                  predictors,
-                                  decaytype=c("step", "flat", "accrual"),
-                                  parameter,
-                                  predtype=c("onset-to-onset",
-                                             "recent-onset-to-onset",
-                                             "recency-to-onset"),
-                                  direction=1,
-                                  sampletype="all",
-                                  gammas=seq(0, 1, .1),
-                                  alpha=1,
-                                  force.positive=FALSE,
-                                  ncores=NULL,
-                                  verbose=TRUE){
+                          predictors,
+                          decaytype=c("step", "flat", "accrual"),
+                          parameter,
+                          predtype=c("onset-to-onset",
+                                     "recent-onset-to-onset",
+                                     "recency-to-onset"),
+                          direction=1,
+                          sampletype="all",
+                          gammas=seq(0, 1, .1),
+                          alpha=1,
+                          force.positive=FALSE,
+                          ncores=NULL,
+                          verbose=TRUE){
   predtype <- match.arg(predtype)
   mattype <- match.arg(mattype)
   
@@ -367,7 +391,7 @@ transitionNet <- function(data,
   
   # Form predictor matrix
   if(verbose){ message("Generating predictor matrix") }
-  predmat <- stairmat2predmat(x=parameter, stairmat=stairmat, type=mattype)
+  predmat <- stairmat2predmat(x=parameter, stairmat=stairmat, type=decaytype)
   rm(stairmat, data)
   gc()
   
