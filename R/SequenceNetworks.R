@@ -22,161 +22,6 @@ EBIC.glmnet <- function(x, gamma){
   return(EBIC)
 }
 
-#################################
-# Predictor generator functions #
-#################################
-
-onsets2idmat <- function(pat, preds){
-  idmat <- vector(mode="list", length=length(preds))
-  names(idmat) <- preds
-  for(s in preds){
-    idmat[[s]] <- Matrix(as.numeric(pat[["state"]]==s), ncol=1)
-  }
-  idmat <- do.call(cbind, idmat)
-  colnames(idmat) <- preds
-  return(idmat)
-}
-
-stairmat2predmat <- function(x, stairmat, 
-                             type=c("step", "flat", "power", 
-                                    "inverse", "accrual")){
-  type <- match.arg(type)
-  nonzero_stairmat <- stairmat!=0
-  
-  # Predictor level is x to the power of N new states entered since the state
-  if(type == "power"){
-    out <- Matrix(data=0,
-                  nrow=nrow(stairmat),
-                  ncol=ncol(stairmat),
-                  dimnames=list(c(), colnames(stairmat)))
-    out[nonzero_stairmat] <- x^(stairmat[nonzero_stairmat]-1)
-  }
-  
-  # Predictor level is 1 divided by the number of states entered since that state
-  if(type == "inverse"){
-    out <- Matrix(data=0,
-                  nrow=nrow(stairmat),
-                  ncol=ncol(stairmat),
-                  dimnames=list(c(), colnames(stairmat)))
-    out[nonzero_stairmat] <- (x+1)/(x+stairmat[nonzero_stairmat])
-  }
-  
-  # Predictor level is set to 1 for a set number of rows after a state is entered
-  if(type=="flat"){
-    out <- Matrix(data=as.numeric(nonzero_stairmat),
-                  nrow=nrow(stairmat),
-                  ncol=ncol(stairmat),
-                  dimnames=list(c(), colnames(stairmat)),
-                  sparse=T)
-    out[stairmat > x] <- 0
-  }
-  
-  # Predictor level goes down in discrete steps until 0 after a state is entered
-  if(type=="step"){
-    nonzero_stairmat[stairmat>x] <- F
-    out <- Matrix(data=0,
-                  nrow=nrow(stairmat),
-                  ncol=ncol(stairmat),
-                  dimnames=list(c(), colnames(stairmat)))
-    out[nonzero_stairmat] <- (x+1-stairmat[nonzero_stairmat])/x
-  }
-  
-  # Once you enter a state, the predictor is set to 1 indefinitely
-  if(type=="accrual"){
-    out <- nonzero_stairmat+0
-  }
-  
-  return(out)
-}
-
-get_recencymat <- function(data, preds, seq.onset=TRUE, verbose=FALSE){
-  quickave <- function(X, INDEX, FUN){
-    split(X, INDEX) <- lapply(split(X, INDEX), FUN)
-    X
-  }
-  
-  data <- dplyr::arrange(data, sequence, date)
-  onsets <- !duplicated(paste(data$sequence, data$state, sep="+"))
-  pat <- data[onsets, c("sequence", "state", "date")]
-  out <- matrix(0, ncol=length(preds), nrow=nrow(pat), dimnames=list(NULL, preds))
-  
-  for(currstate in preds){
-    if(verbose){ cat("\r", currstate, "                        ") }
-    indices <- 1:nrow(data)
-    indices[data$state != currstate] <- NA
-    indices <- quickave(X=indices, INDEX=data$sequence, FUN=carryforward_numeric)
-    lastreldate <- data$date[indices]
-    out[,currstate] <- data$date[onsets] - lastreldate[onsets]
-  }
-  rm(indices, lastreldate, onsets)
-  out[is.na(out)] <- 0
-  
-  if(seq.onset){
-    if(verbose){ cat("\r(Start)                        ") }
-    indices <- 1:nrow(pat)
-    sequenceonset <- lag(pat$sequence) != pat$sequence
-    sequenceonset[1] <- T
-    indices[!sequenceonset] <- NA
-    indices <- carryforward_numeric(indices)
-    out <- cbind(`(Start)`=pat$date - pat$date[indices] + 1, out)
-    rm(indices, sequenceonset)
-  }
-  
-  out <- Matrix(out, dimnames=list(NULL, colnames(out)))
-  return(list(pat=pat, stairmat=out))
-}
-
-onsets2stairmat <- function(pat,
-                            preds,
-                            by=c("index", "date"),
-                            direction=1,
-                            seq.onset=TRUE,
-                            verbose=FALSE){
-  seqchains <- split(pat[["state"]], pat[["sequence"]])
-  by <- match.arg(by)
-  if(by == "index"){
-    timechains <- split(pat[["idx"]], pat[["sequence"]])
-  }else{
-    timechains <- split(pat[["date"]], pat[["sequence"]])
-  }
-  
-  allpreds <- preds
-  if(seq.onset & direction == -1){ allpreds <- c("(End)", allpreds) }
-  if(seq.onset & direction ==  1){ allpreds <- c("(Start)", allpreds) }
-  
-  stairs <- vector(length(allpreds), mode="list")
-  names(stairs) <- allpreds
-  for(s in preds){
-    if(verbose){ cat("\r", s, "                        ") }
-    currvec <- direction *
-      unsplit(EnumerateFrom(sequences=seqchains,
-                            times=timechains,
-                            target=s),
-              pat[["sequence"]])
-    currvec[currvec < 0] <- 0
-    stairs[[s]] <- currvec |> Matrix(ncol=1)
-  }
-  
-  if(seq.onset & direction == 1){
-    if(verbose){ cat("\r", "(Start)                        ") }
-    stairs[["(Start)"]] <- 
-      timechains |> 
-      lapply(function(x){ x-x[1]+1 }) |> 
-      unsplit(pat[["sequence"]])
-  }  
-  if(seq.onset & direction == -1){
-    if(verbose){ cat("\r", "(End)                        ") }
-    stairs[["(End)"]] <- 
-      timechains |> 
-      lapply(function(x){ x[length(x)]-x+1 }) |> 
-      unsplit(pat[["sequence"]])
-  }
-  if(verbose){ cat("\r") }
-  stairs <- do.call(cbind, stairs)
-  colnames(stairs) <- allpreds
-  return(stairs)
-}
-
 ###################################
 # Helper functions for regressors #
 ###################################
@@ -291,26 +136,28 @@ extract_coefs <- function(fit, gammas){
 #' # Rationale
 #' 
 #' This is a method for analyzing sequences of states. The first occurrence 
-#' of each state is predicted with the recently preceding 
-#' first or most recent occurrences of other states 
-#' using lasso-regularized logistic regressions. 
-#' You set with the \code{preds} argument which states are predicted and 
+#' of each state within a sequence (its _discovery_, for short) 
+#' is predicted with the recently preceding first or most recent occurrences 
+#' of other states, using lasso-regularized logistic regressions. 
+#' The \code{preds} argument sets which states are predicted and 
 #' used as predictors. All other states are kept in the data, 
 #' but do not contribute to prediction nor are predicted.
 #' 
-#' The level of analysis (and the actual data analyzed) is the _first_ 
-#' occurrences of all states. That is, each row represents 
-#' the first occurrence of a state.
-#' For each model, the dependent variable is coded 
-#' as 0 if the first occurrence of a state on the current row
-#' is not the state being predicted, and 1 if it is that state; 
-#' prediction within a single sequence continues until 
+#' # Dependent variable
+#' 
+#' The level of analysis (and the actual data analyzed) is 
+#' the discoveries of all states. That is, the imputed sequences 
+#' in \code{data} are transformed such that each row represents a discovery, 
+#' not a mere occurrence of a state.
+#' For each predicted state, the dependent variable is coded as 0 
+#' if the discovery on the current row is not the predicted state, 
+#' and 1 if it is that state; prediction within a sequence continues until 
 #' this state or the end of the sequence is reached. 
-#' Hence, if a state is reached before the end of the sequence, 
-#' all states after it are ignored in the prediction of that state, 
-#' since there can only be one first occurrence of a state in a sequence,
-#' and therefore prediction of a first occurrence would not make sense
-#' after the first occurrence had already occurred.
+#' Hence, if a state is discovered before the end of the sequence, 
+#' all discoveries after it are ignored in the prediction of that state, 
+#' since there can only be one discovery of a state in a sequence,
+#' and therefore it would not make sense to keep predicting a discovery
+#' after it has already occurred.
 #' 
 #' # Predictors
 #' 
@@ -321,8 +168,9 @@ extract_coefs <- function(fit, gammas){
 #' it is 1 for the first state occurring directly after. 
 #' Depending on \code{decaytype}, it tapers down (\code{"step"}) or 
 #' remains 1 (\code{"flat"}), until a number of states have passed 
-#' equal to \code{parameter}. Sensible values may thus include 1 to 10 
-#' (measured in first occurrences).
+#' equal to \code{parameter}. Hence, if \code{parameter} is 3 and 
+#' \code{decaytype} is "flat, it means the predictor value is 1 for 
+#' the first 3 first occurrences of states after the first occurrences of state B.
 #' 
 #' When \code{predtype} is \code{"recent-onset-to-onset"},
 #' the predictor for state B is instead 1 or tapered down from 1 to 0 
@@ -363,9 +211,9 @@ transitionNet <- function(data,
   
   if(predtype=="recency-to-onset"){
     if(verbose){ message("Generating predictor matrix precursor") }
-    stopifnot(direction==1)
     recencydata <- get_recencymat(data=data,
                                   preds=predictors,
+                                  direction=direction,
                                   seq.onset=TRUE,
                                   verbose=verbose)
     pat <- recencydata$pat
