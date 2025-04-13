@@ -79,7 +79,7 @@ get_recencymat <- function(data, preds, by=c("date", "index"),
       out <- cbind(`(End)`=idx[onsets] - 
                      indices[onsets] + 1, out)
     }
-    rm(indices, sequenceonset)
+    rm(indices, sequenceend)
   }
   
   out <- Matrix(out, dimnames=list(NULL, colnames(out)))

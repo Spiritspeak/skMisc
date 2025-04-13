@@ -196,9 +196,8 @@ transitionNet <- function(data,
                           predictors,
                           decaytype=c("step", "flat", "accrual"),
                           parameter,
-                          predtype=c("onset-to-onset",
-                                     "recent-onset-to-onset",
-                                     "recency-to-onset"),
+                          decayby=c("index","date"),
+                          decayfrom=c("discovery","state"),
                           direction=1,
                           sampletype="all",
                           gammas=seq(0, 1, .1),
@@ -208,11 +207,14 @@ transitionNet <- function(data,
                           verbose=TRUE){
   predtype <- match.arg(predtype)
   mattype <- match.arg(mattype)
+  decayby <- match.arg(decayby)
+  decayfrom <- match.arg(decayfrom)
   
-  if(predtype=="recency-to-onset"){
+  if(decayfrom=="state"){
     if(verbose){ message("Generating predictor matrix precursor") }
     recencydata <- get_recencymat(data=data,
                                   preds=predictors,
+                                  by=decayby,
                                   direction=direction,
                                   seq.onset=TRUE,
                                   verbose=verbose)
@@ -222,16 +224,14 @@ transitionNet <- function(data,
     gc()
   }
   
-  if(predtype %in% c("onset-to-onset","recency-onset-to-onset")){
+  if(decayfrom=="discovery"){
     stopifnot(!is.null(predictors))
     if(verbose){ message("Generating predictor matrix precursor") }
     pat <- data[!duplicated(paste(data$sequence, data$state, sep="+")), 
                 c("sequence", "state", "date")]
     stairmat <- onsets2stairmat(pat=pat,
                                 preds=predictors,
-                                by=switch(predtype,
-                                          `onset-to-onset`="idx",
-                                          `recency-onset-to-onset`="date"),
+                                by=decayby,
                                 direction=direction,
                                 seq.onset=TRUE,
                                 verbose=verbose)
