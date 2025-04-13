@@ -4,7 +4,7 @@
 \alias{print.CorTable}
 \title{Print a \code{CorTable} object}
 \usage{
-print.CorTable(x, type = c("full", "r/p", "r/h"), alpha = 0, digits = 2, ...)
+\method{print}{CorTable}(x, type = c("full", "r/p", "r/h"), alpha = 0, digits = 2, ...)
 }
 \arguments{
 \item{x}{a \code{CorTable} object}

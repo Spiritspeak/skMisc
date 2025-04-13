@@ -19,12 +19,11 @@ detrendVAR <- function(data,vars,idvar,dayvar=NULL,beepvar=NULL,verbose=FALSE){
   return(data)
 }
 
-checkAsyncVARComponents <- function(modlist,idvar){
+checkAsyncVARComponents <- function(modlist, idvar){
   modlist %>% sapply(function(x) x@optinfo$conv$opt)
   modlist %>% sapply(function(x) x@optinfo$conv$lme4$messages)
   modlist %>% sapply(car::vif)
-  modlist %>% sapply(function(x)apply(ranef(x)[[idvar]],2,sd)) %>% 
-    {.<0.001} %>% rowMeans()
+  rowMeans(apply(modlist,function(x)apply(ranef(x)[[idvar]],2,sd)) <0.001)
 }
 
 extractAsyncVARComponents <- function(modlist,allpreds,alpha){
@@ -170,7 +169,7 @@ asyncVAR<-function(data,vars,idvar,dayvar,beepvar,covar=NULL,
   registerDoSEQ()
   stopCluster(cl=cl)
   
-  contemp.check <- checkAsyncVarComponent(modlist=contemp.models,idvar=idvar)
+  contemp.check <- checkAsyncVARComponents(modlist=contemp.models,idvar=idvar)
   contemp.mat <- extractAsyncVARComponents(modlist=contemp.models,allpreds=allpreds,
                                            alpha=alpha)
   diag(contemp.mat) <- 0

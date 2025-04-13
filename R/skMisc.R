@@ -16,7 +16,7 @@
 #' @useDynLib skMisc
 #' @md 
 #' @import magrittr dplyr lmerTest ggplot2 coin doParallel parallel foreach iterators MuMIn
-#' @import qgraph Matrix Rcpp deldir 
+#' @import qgraph Rcpp deldir 
 #' @importFrom utils install.packages
 #' @importFrom methods as Quote
 #' @importFrom grDevices rgb col2rgb dev.off png
@@ -34,6 +34,7 @@
 #' @importFrom graphlayouts layout_as_dynamic layout_with_stress layout_with_focus
 #' @importFrom glmnet glmnet
 #' @importFrom arm se.coef
+#' @importFrom Matrix Matrix
 #' 
 #' 
 "_PACKAGE"

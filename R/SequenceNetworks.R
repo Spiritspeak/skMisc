@@ -141,8 +141,8 @@ onsets2stairmat <- function(pat,
   }
   
   allpreds <- preds
-  if(end){ allpreds <- c("(end)", allpreds) }
-  if(start){ allpreds <- c("(start)", allpreds) }
+  if(seq.onset & direction == -1){ allpreds <- c("(End)", allpreds) }
+  if(seq.onset & direction ==  1){ allpreds <- c("(Start)", allpreds) }
   
   stairs <- vector(length(allpreds), mode="list")
   names(stairs) <- allpreds
@@ -189,10 +189,10 @@ getStateMask <- function(currstate, pat, sampletype, direction){
     include_nonvisitors <- F
   }
   mask <- pat |> 
-    group_by(sequence) |> 
-    mutate(limited=any(state == currstate)) |>
-    transmute(mask= ifelse(limited, 
-                           idx <= idx[state == currstate], 
+    group_by(.data$sequence) |> 
+    mutate(limited=any(.data$state == currstate)) |>
+    transmute(mask= ifelse(.data$limited, 
+                           .data$idx <= .data$idx[.data$state == currstate], 
                            include_nonvisitors))
   return(mask$mask)
 }
@@ -381,7 +381,7 @@ transitionNet <- function(data,
                 c("sequence", "state", "date")]
     stairmat <- onsets2stairmat(pat=pat,
                                 preds=predictors,
-                                by=switch(type,
+                                by=switch(predtype,
                                           `onset-to-onset`="idx",
                                           `recency-onset-to-onset`="date"),
                                 direction=direction,
@@ -429,14 +429,14 @@ transitionNet <- function(data,
             .export=c("getStateMask","extract_coefs","EBIC.glmnet"),
             .multicombine=T) %dopar% {
               gc(reset=T, full=T)
-              mask<-getStateMask(currstate=currstate, pat=pat,
+              mask<-getStateMask(currstate=get("currstate"), pat=pat,
                                  sampletype=sampletype, direction=direction)
               
-              iterfit<-glmnet(x=predmat[mask, colnames(predmat) != currstate],
-                              y=idmat[mask, currstate, drop=F],
+              iterfit<-glmnet(x=predmat[mask, colnames(predmat) != get("currstate")],
+                              y=idmat[mask, get("currstate"), drop=F],
                               family="binomial",
                               alpha=alpha,
-                              lower.limits=minweights[colnames(predmat) != currstate])
+                              lower.limits=minweights[colnames(predmat) != get("currstate")])
               extract_coefs(iterfit, gammas)
             }
   if(verbose){ message("Assembling results") }
@@ -469,16 +469,16 @@ cooccurrenceNet <-
   })
   
   # Run regressions
-  fits <- foreach(currsub=colnames(coocmat),
+  fits <- foreach(currstate=colnames(coocmat),
                   .packages=c("glmnet", "dplyr"),
                   .export=c("extract_coefs", "EBIC.glmnet"),
                   .multicombine=T) %dopar% {
                      
-    iterfit<-glmnet(x=coocmat[,colnames(coocmat) != currsub, drop=F],
-                    y=coocmat[,currsub, drop=F],
-                    family="binomial",
-                    alpha=1,
-                    dfmax=dfmax)
+    iterfit <- glmnet(x=coocmat[,colnames(coocmat) != get("currstate"), drop=F],
+                      y=coocmat[,get("currstate"), drop=F],
+                      family="binomial",
+                      alpha=1,
+                      dfmax=dfmax)
     extract_coefs(iterfit, gammas)
   }
   names(fits) <- colnames(coocmat)

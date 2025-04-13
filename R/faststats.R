@@ -414,6 +414,7 @@ CorTable <- function(x, method=c("pearson","spearman"),
 #' 
 #' @md
 #' @export
+#' @method print CorTable
 #'
 #' @examples
 #' test<-CorTable(mtcars,holdout.goal="flip")

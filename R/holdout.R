@@ -129,6 +129,8 @@ cor.holdout<-function(x,y,
 #' @rdname cor.holdout
 #' @param ... Ignored.
 #' @export
+#' @method print cor.holdout
+#' 
 print.cor.holdout<-function(x,...){
   # cat(sep="",
   #     "h = ",x$h,"; h.prop = ",x$h.prop,"\n",
@@ -268,6 +270,7 @@ lm.holdout<-function(model,goal=c("nsig","flip"),terms=NULL,alpha=.05,verbose=FA
 #' @param x A \code{lm.holdout} object.
 #' @param ... Additional plotting parameters for \code{[base::plot()]}; ignored for \code{print}.
 #' @export
+#' @method print lm.holdout
 #' 
 print.lm.holdout<-function(x,...){
   cat("Holdout values for linear regression model\n")

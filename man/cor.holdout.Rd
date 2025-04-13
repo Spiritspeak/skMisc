@@ -14,7 +14,7 @@ cor.holdout(
   verbose = FALSE
 )
 
-print.cor.holdout(x, ...)
+\method{print}{cor.holdout}(x, ...)
 }
 \arguments{
 \item{x, y}{Numeric vectors of variables to correlate. 

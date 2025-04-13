@@ -45,9 +45,11 @@ storeNetwork <- function(plotmat, filename=NULL,
     if(!is.null(grps)){
       brighten <- .25
       cols <- plotcols[match(plotgrps, levels(plotgrps))] %>%
-        col2rgb() %>% t() %>% { floor(.*brighten+255-255*brighten) } %>%
+        col2rgb() %>% t() 
+      cols <- floor(cols*brighten+255-255*brighten) %>%
         as.hexmode() %>% format(width=2, upper.case=T) %>% matrix(ncol=3) %>%
-        apply(1, function(x) {paste(x, collapse="")}) %>% paste0("#", .)
+        apply(1, function(x) {paste(x, collapse="")})
+      cols <- paste0("#", cols)
     }else{
       cols <- "#FFFFFF"
     }
@@ -55,11 +57,11 @@ storeNetwork <- function(plotmat, filename=NULL,
       s <- seq(0, 2 * pi, length.out = 3000)
       circle <- list(x = 1.1 * (cos(s)),
                      y = 1.1 * (sin(s)))
-      plot(tiles, pch = 19, axes=F, xlab="", ylab="", close=T, add=T, showpoints=F,
-           fillcol=cols, clipp=circle)
+      plot(tiles, pch = 19, axes=F, xlab="", ylab="", close=T, add=T, 
+           showpoints=F, fillcol=cols, clipp=circle)
     }else{
-      plot(tiles, pch = 19, axes=F, xlab="", ylab="", close=T, add=T, showpoints=F,
-           fillcol=cols)
+      plot(tiles, pch = 19, axes=F, xlab="", ylab="", close=T, add=T, 
+           showpoints=F, fillcol=cols)
     }
     do.call(qgraph,c(std.args, plot=F, legend=F))
   }

@@ -299,6 +299,7 @@ AnovaTable<-function(..., fullmodel, models, serial=FALSE,
 #' @export
 #' @param x an \code{AnovaTable} object
 #' @describeIn AnovaTable Print generic for anova tables.
+#' @method print AnovaTable
 #' 
 print.AnovaTable<-function(x, ...){
   attr(x,"header") %>% cat()
