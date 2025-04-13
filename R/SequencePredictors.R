@@ -14,7 +14,8 @@ onsets2idmat <- function(pat, preds){
   return(idmat)
 }
 
-get_recencymat <- function(data, preds, direction=1, seq.onset=TRUE, verbose=FALSE){
+get_recencymat <- function(data, preds, by=c("date", "index"),
+                           direction=1, seq.onset=TRUE, verbose=FALSE){
   quickave <- function(X, INDEX, FUN){
     split(X, INDEX) <- lapply(split(X, INDEX), FUN)
     X
@@ -24,6 +25,7 @@ get_recencymat <- function(data, preds, direction=1, seq.onset=TRUE, verbose=FAL
   onsets <- !duplicated(paste(data$sequence, data$state, sep="+"))
   pat <- data[onsets, c("sequence", "state", "date")]
   out <- matrix(0, ncol=length(preds), nrow=nrow(pat), dimnames=list(NULL, preds))
+  idx <- 1:nrow(data)
   
   for(currstate in preds){
     if(verbose){ cat("\r", currstate, "                        ") }
@@ -32,36 +34,51 @@ get_recencymat <- function(data, preds, direction=1, seq.onset=TRUE, verbose=FAL
     if(direction==1){
       indices <- quickave(X=indices, INDEX=data$sequence, 
                           FUN=carryforward_numeric)
-    }
-    if(direction==-1){
+    }else if(direction==-1){
       indices <- quickave(X=indices, INDEX=data$sequence, 
                           FUN=function(x){ rev(carryforward_numeric(rev(x))) })
     }
-    lastreldate <- data$date[indices]
-    out[,currstate] <- (data$date[onsets] - lastreldate[onsets])*direction
+    if(by == "date"){
+      lastreldate <- data$date[indices]
+      out[,currstate] <- (data$date[onsets] - lastreldate[onsets]) * direction
+    }else if(by == "index"){
+      out[,currstate] <- (idx[onsets] - indices[onsets]) * direction
+    }
   }
   rm(indices, lastreldate, onsets)
   out[is.na(out)] <- 0
   
   if(seq.onset & direction==1){
     if(verbose){ cat("\r(Start)                        ") }
-    indices <- 1:nrow(pat)
-    sequenceonset <- lag(pat$sequence) != pat$sequence
+    indices <- 1:nrow(data)
+    sequenceonset <- lag(data$sequence) != data$sequence
     sequenceonset[1] <- T
     indices[!sequenceonset] <- NA
     indices <- carryforward_numeric(indices)
-    out <- cbind(`(Start)`=pat$date - pat$date[indices] + 1, out)
+    if(by=="date"){
+      out <- cbind(`(Start)`=data$date[onsets] - 
+                     data$date[indices][onsets] + 1, out)
+    }else if(by=="index"){
+      out <- cbind(`(Start)`=idx[onsets] - 
+                     indices[onsets] + 1, out)
+    }
     rm(indices, sequenceonset)
   }
   
   if(seq.onset & direction==-1){
     if(verbose){ cat("\r(End)                        ") }
-    indices <- 1:nrow(pat)
-    sequenceend <- pat$sequence != lead(pat$sequence)
+    indices <- 1:nrow(data)
+    sequenceend <- data$sequence != lead(data$sequence)
     sequenceend[length(sequenceend)] <- T
     indices[!sequenceend] <- NA
     indices <- rev(carryforward_numeric(rev(indices)))
-    out <- cbind(`(End)`=pat$date - pat$date[indices] + 1, out)
+    if(by=="date"){
+      out <- cbind(`(End)`=data$date[onsets] - 
+                     data$date[indices][onsets] + 1, out)
+    }else if(by=="index"){
+      out <- cbind(`(End)`=idx[onsets] - 
+                     indices[onsets] + 1, out)
+    }
     rm(indices, sequenceonset)
   }
   
