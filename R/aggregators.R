@@ -146,8 +146,9 @@ trimean <- function(x, na.rm=FALSE){
 #' @param na.rm Should \code{NA} values be removed? Defaults to \code{TRUE}.
 #' 
 #' @details
-#' This function finds the value that has the smallest squared distance 
-#' to all values in \code{x}, like the regular mean.
+#' \code{modular.mean()} and \code{modular.median()} respectively find 
+#' the value with the smallest squared or absolute distance 
+#' to all values in \code{x}, like the regular mean and median.
 #' 
 #' @returns
 #' @export
@@ -159,7 +160,7 @@ trimean <- function(x, na.rm=FALSE){
 #' modular.mean(c(0,3,6,9),mod=12)
 #' modular.mean(c(0,1,3,4,6,7,9,10),mod=12)
 #' 
-modular.mean <- function(x, mod, check=TRUE, na.rm=TRUE){
+modular.mean <- function(x, mod, check=TRUE, na.rm=FALSE){
   scorefun <- function(par){
     scv <- abs(par - x)
     scv <- pmin(scv, mod - scv)
@@ -171,7 +172,7 @@ modular.mean <- function(x, mod, check=TRUE, na.rm=TRUE){
 #' @rdname modular.mean
 #' @export
 #' 
-modular.median <- function(x, mod, check=TRUE, na.rm=TRUE){
+modular.median <- function(x, mod, check=TRUE, na.rm=FALSE){
   scorefun <- function(par){
     scv <- abs(par - x)
     scv <- pmin(scv, mod - scv)
@@ -193,9 +194,9 @@ compute.modular.aggregate <- function(x, mod, check, na.rm, scorefun){
   
   # Detect if the mean location on a circle is in the middle
   if(check){
-    if(length(unique(x))>1){
-      if(abs(mean(cos(x/mod*2*pi)))<.Machine$double.eps && 
-         abs(mean(sin(x/mod*2*pi)))<.Machine$double.eps){
+    if(length(unique(x)) > 1){
+      if(abs(mean(cos(x/mod*2*pi))) < .Machine$double.eps && 
+         abs(mean(sin(x/mod*2*pi))) < .Machine$double.eps){
         return(NA)
       }
     }
@@ -225,7 +226,7 @@ circular.mean <- function(x, mod=2*pi, check=TRUE, na.rm=TRUE){
       return(NA)
     }
   }
-  return(atan2(xsin,xcos))
+  return(atan2(xsin, xcos))
 }
 
 #' Get classification accuracy metrics
