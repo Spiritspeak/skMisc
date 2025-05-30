@@ -15,47 +15,104 @@ hedgesg <- function(x,y=NULL,paired=FALSE){
 }
 
 
-#' Standard error
+#' @name std.errors
+#' @title Standard error estimators
 #' 
-#' Compute the standard error of the mean.
+#' @description Compute the standard errors (SE) of various estimators, 
+#' algebraically or through bootstrapping.
 #'
 #' @param x A numeric vector.
+#' @param boot If 0, SE will be determined algebraically. Otherwise,
+#' this specifies the number of bootstraps used to compute the SE.
 #' @param na.rm Logical. Should missing values be removed?
 #'
 #' @return The standard error of \code{x}. Returns \code{NA} for
 #' vectors with non-removed missing values, 
 #' as well as those with 1 or less non-\code{NA} values.
-#' @author Sercan Kahveci#' 
+#' @note 
+#' The SEs of the skewness and kurtosis are computed for 
+#' the second skewness and kurtosis formulas reported by 
+#' Joannes and Gill (1998).
+#' 
+#' These estimators all assume a normal distribution. 
+#' Results may be inaccurate if the data is distributed differently. 
+#' In such occasions, bootstrapping should be preferred.
+#' 
+
+#' @references Harding, B., Tremblay, C., & Cousineau, D. (2014). 
+#' Standard errors: A review and evaluation of standard error estimators 
+#' using Monte Carlo simulations. 
+#' The Quantitative Methods for Psychology, 10(2), 107-123. 
+#' doi: 10.20982/tqmp.10.2.p107
+#' 
+#' D. N. Joanes and C. A. Gill (1998). 
+#' Comparing measures of sample skewness and kurtosis. 
+#' The Statistician, 47, 183–189.
+#' 
 #' @export
 #'
 #' @examples
 #' serr(rnorm(100))
 #' 
-serr <- function(x, na.rm=FALSE){
-  sd(x, na.rm=na.rm) / sqrt(if(na.rm) sum(!is.na(x)) else length(x))
+#' serr.sd(rnorm(100))
+#' 
+#' serr.var(rnorm(100))
+#' 
+NULL
+
+#' @describeIn std.errors SE of the mean
+#' @export
+#' 
+serr <- function(x, boot=0, na.rm=FALSE){
+  if(boot==0){
+    sd(x, na.rm=na.rm) / sqrt(if(na.rm) sum(!is.na(x)) else length(x))
+  }else{
+    if(na.rm){ x <- x[!is.na(x)]}
+    sd(replicate(boot, mean(sample(x, replace=TRUE))))
+  }
 }
 
-
-#' t-distribution fitter
-#' This is a wrapper around [MASS::fitdistr()] specifically intended to
-#' fit the t-distribution.
+#' @describeIn std.errors SE of the standard deviation
+#' @export
 #' 
-#' @param x Vector of values to fit the t-distribution to
-#' @param df Starting df value
-#'
-#' @return An object of class \code{"fitdistr"}.
+serr.sd <- function(x, boot=0, na.rm=FALSE){
+  if(boot==0){
+    sd(x, na.rm=na.rm) / sqrt(2 * ifelse(na.rm, sum(!is.na(x)),length(x)) - 2)
+  }else{
+    if(na.rm){ x <- x[!is.na(x)]}
+    sd(replicate(boot, sd(sample(x, replace=TRUE))))
+  }
+}
+
+#' @describeIn std.errors SE of the variance
+#' @export
+#' 
+serr.var <- function(x, boot=0, na.rm=FALSE){
+  if(boot==0){
+    var(x, na.rm=na.rm) * sqrt(2 / (ifelse(na.rm, sum(!is.na(x)), length(x)) - 1))
+  }else{
+    if(na.rm){ x <- x[!is.na(x)]}
+    sd(replicate(boot, var(sample(x, replace=TRUE))))
+  }
+}
+
+#' @describeIn std.errors SE of the skewness
 #' @export
 #'
-#' @examples
-#' h<-rt(1000,df=3)*3+10
-#' tpars(h)
-#' 
-tpars <- function(x, df=30){
-  MASS::fitdistr(x=x,
-                 densfun="t",
-                 start=list(m=mean(x), s=sd(x), df=df),
-                 lower=c(m=-Inf, s=0, df=1))
+serr.skewness <- function(x, na.rm=FALSE){
+  n <- ifelse(na.rm, sum(is.na(x)), length(x))
+  sqrt((6*n*(n-1))/((n-2)*(n+1)*(n+3)))
 }
+
+#' @describeIn std.errors SE of the kurtosis
+#' @export
+#'
+serr.kurtosis <- function(x, na.rm=FALSE){
+  n <- ifelse(na.rm, sum(is.na(x)), length(x))
+  2 * sqrt((6*n*(n-1))/((n-2)*(n+1)*(n+3)))*
+    sqrt((n^2-1)/((n-3)*(n+5)))
+}
+
 
 #' Tukey's Trimean
 #' 
@@ -115,7 +172,7 @@ modular.mean <- function(x, mod, check=TRUE, na.rm=TRUE){
   x <- x %% mod
   
   # Detect if the mean location on a circle is in the middle
-  if(length(x) > 1 && check && length(unique(x))>1){
+  if(check && length(unique(x))>1){
     if(abs(mean(cos(x/mod*2*pi)))<.Machine$double.eps && 
        abs(mean(sin(x/mod*2*pi)))<.Machine$double.eps){
       return(NA)
@@ -130,6 +187,28 @@ modular.mean <- function(x, mod, check=TRUE, na.rm=TRUE){
                   interval=c(0, mod - .Machine$double.eps),
                   tol=sqrt(.Machine$double.eps))$minimum
   return(est)
+}
+
+
+circular.mean <- function(x, mod=2*pi, check=TRUE, na.rm=TRUE){
+  nas <- is.na(x)
+  if(any(nas)){
+    if(na.rm){
+      x <- x[!nas]
+    }else{
+      return(NA)
+    }
+  }
+  
+  xtrans <- x/mod*(2*pi)
+  xsin <- mean.default(sin(xtrans))
+  xcos <- mean.default(cos(xtrans))
+  if(check && length(x)>1){
+    if(abs(xsin)<.Machine$double.eps && abs(xcos)<.Machine$double.eps){
+      return(NA)
+    }
+  }
+  return(atan2(xsin,xcos))
 }
 
 #' Get classification accuracy metrics

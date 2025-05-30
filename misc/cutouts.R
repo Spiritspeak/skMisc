@@ -257,3 +257,24 @@ angular.mean <- function(x,period=2*pi){
 seq_composite <- function(from,to){
   unlist(mapply(\(x,y){x:y},from,to))
 }
+
+#' t-distribution fitter
+#' This is a wrapper around [MASS::fitdistr()] specifically intended to
+#' fit the t-distribution.
+#' 
+#' @param x Vector of values to fit the t-distribution to
+#' @param df Starting df value
+#'
+#' @return An object of class \code{"fitdistr"}.
+#' @export
+#'
+#' @examples
+#' h<-rt(1000,df=3)*3+10
+#' tpars(h)
+#' 
+tpars <- function(x, df=30){
+  MASS::fitdistr(x=x,
+                 densfun="t",
+                 start=list(m=mean(x), s=sd(x), df=df),
+                 lower=c(m=-Inf, s=0, df=1))
+}
