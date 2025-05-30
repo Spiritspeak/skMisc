@@ -135,31 +135,52 @@ trimean <- function(x, na.rm=FALSE){
   sum(c(1,2,1) * quantile(x,c(.25,.5,.75)), na.rm=na.rm)/4
 }
 
-#' Title
+#' Average or median of a modular quantity
 #' 
-#' @param x A numeric vector of modular quantities to be averaged.
+#' @param x A numeric vector of modular quantities to be aggregated
 #' @param mod The modulus of \code{x}, i.e. where the numbers "loop back" to zero. 
 #' On a clock this is 12, in degrees it is 360, etc.
-#' @param check Should a check be performed to detect whether there is no identifiable mean?
-#' This should be set to \code{FALSE} when such a situation is not expected in the data, since
-#' this check can be computationally costly.
+#' @param check Should a check be performed to detect whether there is 
+#' no identifiable mean or median?
+#' Set to \code{FALSE} when this is not expected to occur, since this check can be costly.
 #' @param na.rm Should \code{NA} values be removed? Defaults to \code{TRUE}.
 #' 
 #' @details
 #' This function finds the value that has the smallest squared distance 
-#' to all values in \code{x}.
+#' to all values in \code{x}, like the regular mean.
 #' 
 #' @returns
 #' @export
 #'
 #' @examples
-#' 
+#' modular.mean(c(0,1,2,10),mod=12)
 #' 
 #' # Situations where no modular mean exists (points are evenly divided around the circle)
 #' modular.mean(c(0,3,6,9),mod=12)
 #' modular.mean(c(0,1,3,4,6,7,9,10),mod=12)
 #' 
 modular.mean <- function(x, mod, check=TRUE, na.rm=TRUE){
+  scorefun <- function(par){
+    scv <- abs(par - x)
+    scv <- pmin(scv, mod - scv)
+    sum(scv ^ 2)
+  }
+  compute.modular.aggregate(x, mod, check, na.rm, scorefun=scorefun)
+}
+
+#' @rdname modular.mean
+#' @export
+#' 
+modular.median <- function(x, mod, check=TRUE, na.rm=TRUE){
+  scorefun <- function(par){
+    scv <- abs(par - x)
+    scv <- pmin(scv, mod - scv)
+    sum(scv)
+  }
+  compute.modular.aggregate(x, mod, check, na.rm, scorefun=scorefun)
+}
+
+compute.modular.aggregate <- function(x, mod, check, na.rm, scorefun){
   nas <- is.na(x)
   if(any(nas)){
     if(na.rm){
@@ -171,16 +192,13 @@ modular.mean <- function(x, mod, check=TRUE, na.rm=TRUE){
   x <- x %% mod
   
   # Detect if the mean location on a circle is in the middle
-  if(check && length(unique(x))>1){
-    if(abs(mean(cos(x/mod*2*pi)))<.Machine$double.eps && 
-       abs(mean(sin(x/mod*2*pi)))<.Machine$double.eps){
-      return(NA)
+  if(check){
+    if(length(unique(x))>1){
+      if(abs(mean(cos(x/mod*2*pi)))<.Machine$double.eps && 
+         abs(mean(sin(x/mod*2*pi)))<.Machine$double.eps){
+        return(NA)
+      }
     }
-  }
-  scorefun <- function(par){
-    scv <- abs(par - x)
-    scv <- pmin(scv, mod - scv)
-    sum(scv ^ 2)
   }
   est <- optimize(f=scorefun, 
                   interval=c(0, mod - .Machine$double.eps),
