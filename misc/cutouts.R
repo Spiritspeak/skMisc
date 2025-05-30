@@ -278,3 +278,35 @@ tpars <- function(x, df=30){
                  start=list(m=mean(x), s=sd(x), df=df),
                  lower=c(m=-Inf, s=0, df=1))
 }
+
+
+#' Carry non-NA values forward into NA values
+#' 
+#' This replaces every \code{NA} value with their last preceding non-\code{NA} value.
+#'
+#' @param x A vector.
+#'
+#' @returns \code{x} with all \code{NA} values replaced with their 
+#' last preceding non-\code{NA} value.
+#' @export
+#' @author Sercan Kahveci
+#'
+#' @examples
+#' carryforward(c(NA,1,NA,NA,2))
+#' 
+carryforward <- function(x){
+  runend <- which(!is.na(x) & is.na(quicklag(x))) -1L
+  runstart <- which(is.na(x) & !is.na(quicklag(x)))
+  if(length(runstart)==0){ return(x) }
+  if(runstart[1] > runend[1]){
+    runend <- runend[-1]
+  }
+  if(length(runend)==0){
+    runend <- c(runend, length(x))
+  }else if(runstart[length(runstart)] > runend[length(runend)]){
+    runend <- c(runend, length(x))
+  }
+  
+  x[seq_composite(runstart, runend)] <- rep(x[runstart-1], times=runend-runstart+1)
+  return(x)
+}

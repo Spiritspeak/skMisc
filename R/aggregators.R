@@ -34,11 +34,10 @@ hedgesg <- function(x,y=NULL,paired=FALSE){
 #' the second skewness and kurtosis formulas reported by 
 #' Joannes and Gill (1998).
 #' 
-#' These estimators all assume a normal distribution. 
+#' The algebraic estimators all assume a normal distribution. 
 #' Results may be inaccurate if the data is distributed differently. 
 #' In such occasions, bootstrapping should be preferred.
 #' 
-
 #' @references Harding, B., Tremblay, C., & Cousineau, D. (2014). 
 #' Standard errors: A review and evaluation of standard error estimators 
 #' using Monte Carlo simulations. 

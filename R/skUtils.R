@@ -120,8 +120,8 @@ which.duplicate <- function(x){
 #' duplicateof(c("a","b","a","k"))
 #' 
 duplicateof <- function(x, na.first=FALSE){
-  ux<-unique(x)
-  newx<-rep(NA,length(x))
+  ux <- unique(x)
+  newx <- rep(NA, length(x))
   if(na.first){
     for(u in ux){
       idvec <- which(x == u)
@@ -157,14 +157,14 @@ duplicateof <- function(x, na.first=FALSE){
 #' setduplicated(mysets)
 #' 
 setunique <- function(x){
-  x[!duplicated(lapply(x,sort))]
+  x[!duplicated(lapply(x, sort))]
 }
 
 #' @rdname setunique
 #' @export
 #' 
 setduplicated <- function(x){
-  duplicated(lapply(x,sort))
+  duplicated(lapply(x, sort))
 }
 
 
@@ -272,7 +272,7 @@ allpairs <- function(nval, ntuplet=2, incl.self=FALSE){
 #' 
 interweave <- function(...){
   nvecs <- ...length()
-  veclens <- sapply(seq_len(nvecs),\(x){length(...elt(x))})
+  veclens <- sapply(seq_len(nvecs), \(x){length(...elt(x))})
   maxlen <- max(veclens)
   if(!all(veclens == 1 | veclens == maxlen)){
     stop("Inputs not of equal length")
@@ -287,37 +287,7 @@ interweave <- function(...){
   return(out)
 }
 
-#' Carry non-NA values forward into NA values
-#' 
-#' This replaces every \code{NA} value with their last preceding non-\code{NA} value.
-#'
-#' @param x A vector.
-#'
-#' @returns \code{x} with all \code{NA} values replaced with their 
-#' last preceding non-\code{NA} value.
-#' @export
-#' @author Sercan Kahveci
-#'
-#' @examples
-#' carryforward(c(NA,1,NA,NA,2))
-#' 
-carryforward <- function(x){
-  runend <- which(!is.na(x) & is.na(quicklag(x))) -1L
-  runstart <- which(is.na(x) & !is.na(quicklag(x)))
-  if(length(runstart)==0){ return(x) }
-  if(runstart[1] > runend[1]){
-    runend <- runend[-1]
-  }
-  if(length(runend)==0){
-    runend <- c(runend, length(x))
-  }else if(runstart[length(runstart)] > runend[length(runend)]){
-    runend <- c(runend, length(x))
-  }
-  
-  x[seq_composite(runstart, runend)] <- rep(x[runstart-1], times=runend-runstart+1)
-  return(x)
-}
-quicklag <- function(x){ c(NA,x[-length(x)]) }
+quicklag <- function(x){ c(NA, x[-length(x)]) }
 
 
 #' Convert dates to Nth weekday of the month values
@@ -361,7 +331,7 @@ nthWeekdayOfMonth <- function(x){
 #' findQuantile(a,5)
 #' 
 findQuantile <- function(x, n){
-  quants <- c(-Inf,quantile(x, seq_len(n-1)/n, na.rm=T),Inf)
+  quants <- c(-Inf,quantile(x, seq_len(n-1)/n, na.rm=T), Inf)
   .bincode(x, breaks=quants)
 }
 
@@ -421,14 +391,15 @@ subdivide <- function(x, divs, divlen){
 #' @export
 #'
 #' @examples
-#' testvec <- sample(c(NA,NA,1:14))
-#' t(cbind(testvec,bundle_up(testvec,maxval=12,group.high="own",group.na="own")))
+#' testvec <- sample(c(NA, NA, 1:14))
+#' t(cbind(testvec, bundle_up(testvec, maxval=12, group.high="own", group.na="own")))
 #' 
-#' bundle_up(testvec,maxval=10,group.high="na",group.na="na")
+#' bundle(testvec, maxval=10, group.high="na", group.na="na")
 #' 
-bundle_up <- function(x, maxval, 
-                    group.high=c("own","na","error"),
-                    group.na=c("own","na","same","error")){
+bundle <- function(x, 
+                   maxval, 
+                   group.high=c("own", "na", "error"),
+                   group.na=c("own", "na", "same", "error")){
   group.high <- match.arg(group.high)
   group.na <- match.arg(group.na)
   cs <- 0
@@ -468,7 +439,7 @@ bundle_up <- function(x, maxval,
       cs <- 0
       out[i] <- grp -1 + ex.addna
     }else{
-      cs <- cs+x[i]
+      cs <- cs + x[i]
       if(cs > maxval){
         cs <- x[i]
         grp <- grp + 1
@@ -492,8 +463,8 @@ bundle_up <- function(x, maxval,
 #' @examples
 #' test <- df.init(c("A","B","C"))
 #' 
-df.init <- function(x,nrow=0){
-  data.frame(matrix(ncol = length(x), nrow = nrow,dimnames=list(NULL, x)))
+df.init <- function(x, nrow=0){
+  data.frame(matrix(ncol = length(x), nrow = nrow, dimnames=list(NULL, x)))
 }
 
 #' Scale a vector
