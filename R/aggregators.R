@@ -1,19 +1,49 @@
 
 
-hedgesg <- function(x,y=NULL,paired=FALSE){
-  if(is.null(y) | (paired & !is.null(y))){
-    if(paired){
+#' Hedges' g
+#' 
+#' A measure of effect size similar to Cohen's d with a more accurate 
+#' pooled standard deviation of the contrasted groups.
+#'
+#' @param x,y Numeric vectors. \code{y} can be omitted if 
+#' the effect size should be computed for the difference from zero.
+#' @param paired Are the values in \code{x} and \code{y} paired? 
+#' Then Hedges' g will be computed for \code{x-y}.
+#'
+#' @return Hedges' g, positive if x > y.
+#' @export
+#'
+#' @examples
+#' # Difference from zero
+#' hedgesg(x=rnorm(100,m=3))
+#' 
+#' # Difference from another group
+#' hedgesg(x=rnorm(100,m=0),y=rnorm(100,m=3))
+#' 
+#' # Difference from paired value
+#' a <- rnorm(100,m=3)
+#' b <- a+rnorm(100,m=3)
+#' hedgesg(x=a,y=b)
+#' 
+hedgesg <- function(x, y=NULL, paired=FALSE){
+  if(paired){
+    if(!is.null(y)){
       x <- x-y
+      mean(x)/sd(x)
+    }else{
+      stop("No y given to compute a paired effect size for.")
     }
-    mean(x)/sd(x)
-  }else if(!is.null(y) & !paired){
-    dfx <- length(x)
-    dfy <- length(y)
-    (mean(x)-mean(y)) / 
-      sqrt((dfx*var(x)+dfy*var(y))/(dfx+dfy))
+  }else{
+    if(is.null(y)){
+      mean(x)/sd(x)
+    }else{
+      dfx <- length(x)
+      dfy <- length(y)
+      (mean(x)-mean(y)) / 
+        sqrt((dfx*var(x)+dfy*var(y))/(dfx+dfy))
+    }
   }
 }
-
 
 #' @name std.errors
 #' @title Standard error estimators
@@ -145,12 +175,10 @@ trimean <- function(x, na.rm=FALSE){
 #' Set to \code{FALSE} when this is not expected to occur, since this check can be costly.
 #' @param na.rm Should \code{NA} values be removed? Defaults to \code{TRUE}.
 #' 
-#' @details
-#' \code{modular.mean()} and \code{modular.median()} respectively find 
-#' the value with the smallest squared or absolute distance 
-#' to all values in \code{x}, like the regular mean and median.
 #' 
-#' @returns
+#' @returns \code{modular.mean()} and \code{modular.median()} respectively find 
+#' the value with the smallest squared or absolute distance 
+#' to all values in \code{x}, like the regular mean and median do.
 #' @export
 #'
 #' @examples
