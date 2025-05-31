@@ -165,7 +165,10 @@ trimean <- function(x, na.rm=FALSE){
   sum(c(1,2,1) * quantile(x,c(.25,.5,.75)), na.rm=na.rm)/4
 }
 
-#' Average or median of a modular quantity
+
+# TODO: add formula in latex
+
+#' Mean or median of a modular quantity
 #' 
 #' @param x A numeric vector of modular quantities to be aggregated
 #' @param mod The modulus of \code{x}, i.e. where the numbers "loop back" to zero. 
@@ -175,6 +178,9 @@ trimean <- function(x, na.rm=FALSE){
 #' Set to \code{FALSE} when this is not expected to occur, since this check can be costly.
 #' @param na.rm Should \code{NA} values be removed? Defaults to \code{TRUE}.
 #' 
+#' @details
+#' These functions should not be confused with the [circular.mean()], which is computed
+#' in a different way. 
 #' 
 #' @returns \code{modular.mean()} and \code{modular.median()} respectively find 
 #' the value with the smallest squared or absolute distance 
@@ -235,8 +241,34 @@ compute.modular.aggregate <- function(x, mod, check, na.rm, scorefun){
   return(est)
 }
 
+# TODO: add formula in latex
 
-circular.mean <- function(x, mod=2*pi, check=TRUE, na.rm=TRUE){
+#' Circular mean
+#'
+#' @param x A numeric vector.
+#' @param mod The modulus of \code{x}, i.e. where the numbers "loop back" to zero. 
+#' On a clock this is 12, in degrees it is 360, etc.
+#' @param check Should a check be performed to detect whether there is 
+#' no identifiable mean or median?
+#' @param na.rm 
+#'
+#' @note This should not be confused with the [modular.mean()], which is computed differently.
+#' @return
+#' @export
+#'
+#' @examples
+#' # Bedtimes for the past week
+#' bedtimes <- c(23,23,00,01,23,02,03)
+#' circular.mean(bedtimes,mod=24)
+#' 
+#' # Intuitively, these may require different outcomes, but they have the same circular mean
+#' circular.mean(c(7,11,12),mod=12)
+#' circular.mean(c(8,11,12),mod=12)
+#' 
+#' # No identifiable circular mean
+#' circular.mean(c(0,pi),mod=2*pi)
+#' 
+circular.mean <- function(x, mod=2*pi, check=TRUE, na.rm=FALSE){
   nas <- is.na(x)
   if(any(nas)){
     if(na.rm){
@@ -246,15 +278,15 @@ circular.mean <- function(x, mod=2*pi, check=TRUE, na.rm=TRUE){
     }
   }
   
-  xtrans <- x/mod*(2*pi)
-  xsin <- mean.default(sin(xtrans))
-  xcos <- mean.default(cos(xtrans))
+  xscaled <- x/mod*(2*pi)
+  xsin <- mean.default(sin(xscaled))
+  xcos <- mean.default(cos(xscaled))
   if(check && length(x)>1){
-    if(abs(xsin)<.Machine$double.eps && abs(xcos)<.Machine$double.eps){
+    if(abs(xsin) < .Machine$double.eps && abs(xcos) < .Machine$double.eps){
       return(NA)
     }
   }
-  return(atan2(xsin, xcos))
+  return(atan2(xsin, xcos)/(2*pi)*mod)
 }
 
 #' Get classification accuracy metrics
