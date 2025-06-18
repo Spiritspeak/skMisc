@@ -221,3 +221,65 @@ asyncVAR<-function(data,vars,idvar,dayvar,beepvar,covar=NULL,
   ##########
   
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Impulse-response function
+#preds <- list(testvars[1],testvars[-1])
+IRF <- function(x, n, preds){
+  
+  # Interpret the 'preds' object
+  allpreds <- unlist(preds)
+  if(!is.list(preds)){
+    predord <- rep(1,length(allpreds))
+  }else{
+    predord <- sapply(allpreds,\(x) sapply(preds,\(y) x %in% y))
+    if(any(colSums(predord)>1)){
+      stop("preds argument misspecified, some variables occur on multiple levels: ",
+           paste0(allpreds[colSums(predord)>1],collapse=", "))
+    }
+    predord <- apply(predord,2,which)
+  }
+  
+  zeroprofile <- as.data.frame(matrix(0, ncol=length(allpreds), nrow=n,
+                                      dimnames=list(NULL, allpreds)))
+  predcases <- expand.grid(impulse=allpreds, stringsAsFactors = F)
+  
+  overtime <- list()
+  for(j in 1:nrow(predcases)){
+    currpredictions <- zeroprofile
+    currpredictions[1,predcases$impulse[j]] <- 1
+    
+    for(i in 1:n){
+      if(i>1){
+        currpredictions[i,!key] <-
+          colSums(currpredictions[cbind(i-1, seq_along(allpreds))] * 
+                    matlist[[ predcases$currcat[j] ]])[!key]
+      }
+      if(i>1 | testvars_presemi[predcases$impulse[j]]){
+        preceding_values <- currpredictions[cbind(pmax(1,i-1+testvars_presemi),seq_along(allpreds))]
+        currpredictions[i, key] <-
+          colSums(preceding_values * matlist[[ predcases$currcat[j] ]])[key]
+      }
+    }
+    
+    currpredictions$iter <- 0:(n-1)
+    currpredictions$impulse <- predcases[j, "impulse"]
+    overtime[[length(overtime)+1]] <- currpredictions
+  }
+  
+  overtimeset <- do.call(rbind, overtime) %>% 
+    tidyr::pivot_longer(names_to="variable", values_to="value", cols=all_of(allpreds))
+}
