@@ -337,3 +337,39 @@ ClassMetrics <- function(x, y){
            sens=cm[2,2] / sum(cm[2,]),
            spec=cm[1,1] / sum(cm[1,]) ))
 }
+# TODO: add inequality-balanced accuracy
+
+#' Gini coefficient
+#' 
+#' Computes the Gini coefficient, an index of inequality.
+#'
+#' @param x A vector to compute the Gini coefficient of
+#' @param unbiased Whether to multiply by n/(n-1) to ensure generalizability to the population-level.
+#'
+#' @returns The Gini coefficient of the vector. 
+#' \code{NA} if the vector contains a negative, zero, or NA value.
+#' 
+#' @export
+#' @seealso \href{https://www.statsdirect.com/help/nonparametric_methods/gini.htm}{Source utilized}
+#' 
+#' Mills, J.A., Zandvakili, A. (1997). Statistical inference via bootstrapping for measures of inequality. 
+#' Journal of Applied Econometrics, 12, 133-150. https://www.jstor.org/stable/2284908
+#'
+#' @examples
+#' gini(state.x77[,"Income"])
+#' 
+#' # Completely equal gives 0
+#' gini(c(100,100,100))
+#' 
+#' # Outliers increase the value
+#' gini(c(100,100,1000))
+#' 
+gini <- function(x, unbiased=FALSE){
+  if(any(x<=0)){
+    return(NA)
+  }
+  x <- sort(x)
+  i <- seq_along(x)
+  n <- length(x)
+  return(sum((2 * i - n - 1) * x) / (n * sum(x)) * ifelse(unbiased,n/(n-1),1))
+}
