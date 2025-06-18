@@ -118,9 +118,15 @@ squarifyLayout <- function(x, rate=1){
   return(out)
 }
 
+circleLayout <- function(n,tilt=.5*pi){
+  cbind(cos(tilt+2*pi/n*(seq_len(n)-1)),sin(tilt+2*pi/n*(seq_len(n)-1)))
+}
 
-
-
+normalizeLayout <- function(x){
+  x <- t(t(x)-colMeans(x))
+  x <- x/max(abs(x))
+  x
+}
 
 
 
