@@ -157,3 +157,12 @@ multimerge <- function(x, ...){
   return(x)
 }
 
+
+# TODO: document
+rowname2column <- function(x, name="row"){
+  x[[name]] <- rownames(x)
+  rownames(x) <- NULL
+  return(x)
+}
+
+

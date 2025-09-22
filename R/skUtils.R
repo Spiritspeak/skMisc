@@ -3,6 +3,20 @@
 #I don't want to import rlang, so it will be done this way instead.
 args2strings <- function(...) sapply(substitute({ ... })[-1], deparse)
 
+# TODO: should return same type rather than character
+mostcommon<-function(x,n=1){
+  names(sort(table(x),T))[seq_len(n)]
+}
+
+NONE2NA<-function(x){
+  if(length(x)==0){
+    NA
+  }else{
+    x
+  }
+}
+
+
 #' @name clamp
 #' @title Clamp
 #' @description Clamp a numeric vector between a minimum and maximum value.
