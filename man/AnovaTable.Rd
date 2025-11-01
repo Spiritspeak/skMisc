@@ -5,25 +5,14 @@
 \alias{print.AnovaTable}
 \title{Compare multilevel models}
 \usage{
-AnovaTable(
-  ...,
-  fullmodel,
-  models,
-  serial = FALSE,
-  suppress = c("AIC", "deviance", "logLik")
-)
+AnovaTable(..., serial = FALSE, suppress = c("AIC", "deviance", "logLik"))
 
 \method{print}{AnovaTable}(x, ...)
 }
 \arguments{
-\item{...}{Model objects to be compared}
+\item{...}{lme4 model objects to be compared.}
 
-\item{fullmodel}{A model to which all other models are to be compared; 
-only use if \code{...} is not specified.}
-
-\item{models}{Models to compare to \code{fullmodel}. Only use if \code{...} is not specified.}
-
-\item{serial}{If TRUE, models are compared serially; 
+\item{serial}{If \code{TRUE}, models are compared serially; 
 if false, all models will be compared to the first.}
 
 \item{suppress}{Character vector of column names to suppress in printed output.}
@@ -49,6 +38,6 @@ library(lmerTest)
 data("sleepstudy", package="lme4")
 m1 <- lmer(Reaction ~ Days + (Days | Subject), sleepstudy)
 m2 <- lmer(Reaction ~ Days + (1 | Subject), sleepstudy)
-AnovaTable(m1,m2)
+AnovaTable(m2,m1)
 
 }

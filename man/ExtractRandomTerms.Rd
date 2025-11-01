@@ -7,7 +7,7 @@
 ExtractRandomTerms(form)
 }
 \arguments{
-\item{form}{A formula}
+\item{form}{A formula.}
 }
 \value{
 A named list containing character vectors with random terms; 

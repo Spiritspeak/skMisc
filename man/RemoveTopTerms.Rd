@@ -2,14 +2,14 @@
 % Please edit documentation in R/lme4tools.R
 \name{RemoveTopTerms}
 \alias{RemoveTopTerms}
-\title{Remove all possible models with one unmoderated term removed}
+\title{Get all possible formulas with one unmoderated term removed}
 \usage{
-RemoveTopTerms(form, randeff = "")
+RemoveTopTerms(form, ranef = "")
 }
 \arguments{
-\item{form}{A formula}
+\item{form}{A formula.}
 
-\item{randeff}{The name of the group from which unmoderated terms should be removed. 
+\item{ranef}{The name of the group from which unmoderated terms should be removed. 
 To remove from fixed effects, use \code{""} (the default).}
 }
 \value{
@@ -17,7 +17,7 @@ A list of formulas which have one unmoderated term removed each.
 The name of each list item is the term which was removed.
 }
 \description{
-Remove all possible models with one unmoderated term removed
+Get all possible formulas with one unmoderated term removed
 }
 \examples{
 RemoveTopTerms(a ~ b * c + d + (1|e))
@@ -25,5 +25,8 @@ RemoveTopTerms(a ~ b * c + d + (1|e))
 #> a ~ b + c + b:c + (1 | e)
 #> $`b:c`
 #> a ~ b + c + d + (1 | e)
+
+RemoveTopTerms(a ~ b * c + d + (1|e), ranef="e")
+RemoveTopTerms(a ~ b * c + d + (f|e), ranef="e")
 
 }

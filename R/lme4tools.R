@@ -12,7 +12,7 @@ lmer.beta <- function(mod) {
 
 #' Extract random terms from a lme4 formula
 #'
-#' @param form A formula
+#' @param form A formula.
 #'
 #' @return A named list containing character vectors with random terms; 
 #' names are group variables.
@@ -30,20 +30,18 @@ ExtractRandomTerms <- function(form){
   bars <- lme4::findbars(form)
   
   modterms <- lapply(bars, FUN=function(x){
-    x %<>% as.character()
-    if(x[2] != "1"){
-      x %<>% magrittr::extract(2) %>% reformulate() %>% 
-        terms() %>% attr("term.labels")
-    }else{
-      x <- "1"
+    x <- as.character(x)
+    out <- x[2] |> reformulate() |> terms() |> attr("term.labels")
+    if(x[2] |> reformulate() |> terms() |> attr("intercept")){
+      out <- c(1,out)
     }
-    x
+    out
   })
   
   names(modterms) <- lapply(bars, FUN=function(x){
-    x %<>% as.character()
+    x <- as.character(x)
     if(length(x) > 1){
-      x %<>% extract2(3)
+      x <- x[3]
     }else{
       x <- gsub(".*\\|","",x) %>% trimws()
     }
@@ -55,29 +53,39 @@ ExtractRandomTerms <- function(form){
 
 #' Find all model terms that are not moderated by a higher-order interaction
 #'
-#' @param form a formula
+#' @param form A formula.
 #'
-#' @return A character vector containing all model terms that are not moderated 
+#' @return A character vector containing all fixed model terms that are not moderated 
 #' by a higher-order interaction.
 #' @export
 #'
-#' @examples FindTopTerms(speed ~ skill + weight * friction)
+#' @examples FindTopTerms(speed ~ skill + weight * friction + (1|class))
 #' #[1] "skill"           "weight:friction"
 #' 
 FindTopTerms <- function(form){
+  form <- nobars(form)
+  
   #Do my 1's fit in another column's 1's?
-  form %<>% terms() %>% attr("factors")
-  dep <- rep(0,ncol(form))
-  for(i in seq_len(ncol(form))){
-    for(j in seq_len(ncol(form))[-i]){
-      dep[i] <- dep[i] + all(and(form[,i], form[,j]) == form[,i])
+  form <- form |> terms() 
+  if(length(attr(form,"factors"))>0){
+    form <- form |> attr("factors")
+    dep <- rep(0, ncol(form))
+    for(i in seq_len(ncol(form))){
+      for(j in seq_len(ncol(form))[-i]){
+        dep[i] <- dep[i] + all(and(form[,i], form[,j]) == form[,i])
+      }
     }
+    return(colnames(form)[!dep])
+  }else if(attr(form,"intercept")){
+    return("1")
+  }else{
+    return(NULL)
   }
-  return(colnames(form)[!dep])
 }
 
+
 #' Parse a lme4 formula and return all main effects and interactions as separate terms
-#' @param form Formula to be expanded.
+#' @param form A formula to be expanded.
 #'
 #' @return The same formula, but with all interactions and mai neffects as separate terms
 #' @export
@@ -88,9 +96,11 @@ FindTopTerms <- function(form){
 #' ExpandFormula(rt ~ pull * target + (pull * target || subjectid))
 #' 
 ExpandFormula <- function(form){
-  labs <- form %>% terms() %>% attr("term.labels")
+  labs <- form |> terms() |> attr("term.labels")
+  if(form |> terms() |> attr("intercept")){
+    labs <- c(1, labs)
+  }
   norandos <- labs[!grepl("\\|",labs)]
-  #norandos<-form %>% nobars() %>% terms() %>% attr("term.labels")
   randos <- ExtractRandomTerms(form)
   randlist <- character()
   for(i in seq_len(length(randos))){
@@ -106,10 +116,10 @@ ExpandFormula <- function(form){
 }
 
 
-#' Remove all possible models with one unmoderated term removed
+#' Get all possible formulas with one unmoderated term removed
 #'
-#' @param form A formula
-#' @param randeff The name of the group from which unmoderated terms should be removed. 
+#' @param form A formula.
+#' @param ranef The name of the group from which unmoderated terms should be removed. 
 #' To remove from fixed effects, use \code{""} (the default).
 #'
 #' @return A list of formulas which have one unmoderated term removed each. 
@@ -123,8 +133,11 @@ ExpandFormula <- function(form){
 #' #> $`b:c`
 #' #> a ~ b + c + d + (1 | e)
 #' 
-RemoveTopTerms<-function(form, randeff=""){
-  if(randeff == ""){
+#' RemoveTopTerms(a ~ b * c + d + (1|e), ranef="e")
+#' RemoveTopTerms(a ~ b * c + d + (f|e), ranef="e")
+#' 
+RemoveTopTerms <- function(form, ranef=""){
+  if(ranef == ""){
     remform<-form %>% lme4::nobars() %>% as.character() %>% extract(3) %>% 
       reformulate %>% terms() %>% attr("term.labels")
     remcomps<-form %>% lme4::nobars() %>% FindTopTerms()
@@ -137,15 +150,19 @@ RemoveTopTerms<-function(form, randeff=""){
     redform %<>% lapply(ExpandFormula)
     names(redform) <- remcomps
   }else{
-    remform <- ExtractRandomTerms(form)[[randeff]]
+    remform <- ExtractRandomTerms(form)[[ranef]]
     remcomps <- FindTopTerms(reformulate(paste(remform, collapse="+")))
     revcomp <- character()
     for(i in seq_len(length(remcomps))){
-      revcomp[i]<- paste0("(", paste(remform[remform != remcomps[i]], collapse=" + "),
-                          " | ",randeff,")")
+      if(remcomps[i]=="1"){
+        revcomp[i]<- paste0("(0 | ",ranef,")")
+      }else{
+        revcomp[i]<- paste0("(", paste(remform[remform != remcomps[i]], collapse=" + "),
+                            " | ",ranef,")")
+      }
     }
     nonremform <- ExtractRandomTerms(form)
-    nonremform <- nonremform[names(nonremform) != randeff]
+    nonremform <- nonremform[names(nonremform) != ranef]
     miscforms <- character()
     for(i in seq_len(length(nonremform))){
       miscforms[i] <- paste0("(",paste(nonremform[[i]], collapse=" + "),
@@ -153,65 +170,23 @@ RemoveTopTerms<-function(form, randeff=""){
     }
     
     redform <- paste((form %>% lme4::nobars() %>% as.character() %>% extract(3)),
-                     revcomp, 
-                     paste(miscforms,collapse=" + "),
-                     sep=" + ")
+                     revcomp,sep=" + ")
+    if(length(miscforms)>0){
+      redform <- paste0(redform,"+",paste(miscforms,collapse=" + "))
+    }
     
     redform <- paste(as.character(form)[2], as.character(form)[1], redform) %>% 
       sapply(FUN=as.formula, USE.NAMES=F)
-    names(redform) <- paste0("(",remcomps," | ",randeff,")")
+    names(redform) <- paste0("(",remcomps," | ",ranef,")")
   }
   
   return(redform)
 }
 
-ComputeLowerModels <- function(form, data, group="", ...){
-  args <- list(...)
-  cluster <- makeCluster(detectCores()-1)
-  registerDoParallel(cluster)
-  testforms <- RemoveTopTerms(form,group)
-  
-  results <-
-    foreach(currform=testforms, .packages="lmerTest") %dopar% {
-      do.call(lmer, c(list(formula=currform, data=data), args))
-    }
-  
-  stopCluster(cluster)
-  return(results)
-}
-
-ComputeLowerModels2 <- function(model, data, group="", ...){
-  form <- formula(model)
-  data <- model.frame(model)
-  #data <- model@call$data
-  args <- list(...)
-  testforms <- RemoveTopTerms(form, group)
-  
-  cluster <- makeCluster(detectCores())
-  registerDoParallel(cluster)
-  results<-
-    foreach(currform=testforms,.packages="lmerTest") %dopar% {
-      do.call(lmer,c(list(formula=currform, data=data, REML=F), args))
-    }
-  stopCluster(cluster)
-  names(results) <- names(testforms)
-  
-  warns <- sapply(results, function(x){ paste(x@optinfo$warnings, collapse="\n") })
-  message(paste0("Warning in model ", names(results)[warns!=""], ": ", warns[warns != ""]))
-  
-  anovatable <- AnovaTable(model, results)
-  
-  print(anovatable)
-  return(invisible(list(anovatable=anovatable, models=results)))
-}
-
 #' Compare multilevel models
 #'
-#' @param ... Model objects to be compared
-#' @param fullmodel A model to which all other models are to be compared; 
-#' only use if \code{...} is not specified.
-#' @param models Models to compare to \code{fullmodel}. Only use if \code{...} is not specified.
-#' @param serial If TRUE, models are compared serially; 
+#' @param ... lme4 model objects to be compared.
+#' @param serial If \code{TRUE}, models are compared serially; 
 #' if false, all models will be compared to the first.
 #' @param suppress Character vector of column names to suppress in printed output.
 #'
@@ -227,15 +202,14 @@ ComputeLowerModels2 <- function(model, data, group="", ...){
 #' data("sleepstudy", package="lme4")
 #' m1 <- lmer(Reaction ~ Days + (Days | Subject), sleepstudy)
 #' m2 <- lmer(Reaction ~ Days + (1 | Subject), sleepstudy)
-#' AnovaTable(m1,m2)
+#' AnovaTable(m2,m1)
 #' 
-AnovaTable<-function(..., fullmodel, models, serial=FALSE, 
-                     suppress=c("AIC", "deviance", "logLik")){
-  if(missing(models) & missing(fullmodel)){    
-    models <- list(...)
-    fullmodel <- models[[1]]
-    models <- models[-1]
-  }
+AnovaTable <- function(..., serial=FALSE, 
+                       suppress=c("AIC", "deviance", "logLik")){
+  models <- list(...)
+  fullmodel <- models[[1]]
+  models <- models[-1]
+
   mumin <- MuMIn::r.squaredGLMM(fullmodel)
   LL <- logLik(fullmodel)
   anovatable <- data.frame(Df=LL %>% attr("df"),
@@ -258,7 +232,7 @@ AnovaTable<-function(..., fullmodel, models, serial=FALSE,
     mumin <- MuMIn::r.squaredGLMM(mod)
     LL <- logLik(mod)
     anovatable %<>% rbind(
-      data.frame(Df=LL %>% attr("df"),
+      data.frame(Df=attr(LL,"df"),
                  AIC=AIC(mod),
                  BIC=BIC(mod),
                  dBIC=BIC(mod) - ifelse(serial, anovatable[i-1,]$BIC, anovatable[1,]$BIC),
@@ -275,15 +249,12 @@ AnovaTable<-function(..., fullmodel, models, serial=FALSE,
   
   for(i in 2:nrow(anovatable)){
     anovatable[i,]$Chisq <- anovatable[ifelse(serial,i-1,1),]$deviance - anovatable[i,]$deviance
-    anovatable[i,]$ChiDf <- anovatable[ifelse(serial,i-1,1),]$Df - anovatable[i,]$Df
+    anovatable[i,]$ChiDf <- anovatable[i,]$Df - anovatable[ifelse(serial,i-1,1),]$Df
     anovatable[i,]$P <- pchisq(q = -anovatable[i,]$Chisq, df = anovatable[i,]$ChiDf)
   }
   
-  modnames <- c("Full Model",names(models))
-  if(length(modnames) < length(models)){ 
-    modnames <- args2strings(...)
-  }
-  #rownames(anovatable) <- modnames
+  modnames <- args2strings(...)
+  rownames(anovatable) <- modnames
   
   formulas <- c(fullmodel,models) %>% sapply(function(x){ x@call$formula })
   header <- paste0(modnames,": ", formulas, "\n", collapse="") %>% paste0("\n")

@@ -398,3 +398,45 @@ verify_types <- function(...){
   }
   return(T)
 }
+
+
+
+ComputeLowerModels <- function(form, data, group="", ...){
+  args <- list(...)
+  cluster <- makeCluster(detectCores()-1)
+  registerDoParallel(cluster)
+  testforms <- RemoveTopTerms(form,group)
+  
+  results <-
+    foreach(currform=testforms, .packages="lmerTest") %dopar% {
+      do.call(lmer, c(list(formula=currform, data=data), args))
+    }
+  
+  stopCluster(cluster)
+  return(results)
+}
+
+ComputeLowerModels2 <- function(model, data, group="", ...){
+  form <- formula(model)
+  data <- model.frame(model)
+  #data <- model@call$data
+  args <- list(...)
+  testforms <- RemoveTopTerms(form, group)
+  
+  cluster <- makeCluster(detectCores())
+  registerDoParallel(cluster)
+  results<-
+    foreach(currform=testforms,.packages="lmerTest") %dopar% {
+      do.call(lmer,c(list(formula=currform, data=data, REML=F), args))
+    }
+  stopCluster(cluster)
+  names(results) <- names(testforms)
+  
+  warns <- sapply(results, function(x){ paste(x@optinfo$warnings, collapse="\n") })
+  message(paste0("Warning in model ", names(results)[warns!=""], ": ", warns[warns != ""]))
+  
+  anovatable <- AnovaTable(model, results)
+  
+  print(anovatable)
+  return(invisible(list(anovatable=anovatable, models=results)))
+}
