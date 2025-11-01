@@ -22,35 +22,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// carryforward_numeric
-NumericVector carryforward_numeric(NumericVector x);
-RcppExport SEXP _skMisc_carryforward_numeric(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(carryforward_numeric(x));
-    return rcpp_result_gen;
-END_RCPP
-}
-// EnumerateFrom
-List EnumerateFrom(List sequences, List times, String target);
-RcppExport SEXP _skMisc_EnumerateFrom(SEXP sequencesSEXP, SEXP timesSEXP, SEXP targetSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type sequences(sequencesSEXP);
-    Rcpp::traits::input_parameter< List >::type times(timesSEXP);
-    Rcpp::traits::input_parameter< String >::type target(targetSEXP);
-    rcpp_result_gen = Rcpp::wrap(EnumerateFrom(sequences, times, target));
-    return rcpp_result_gen;
-END_RCPP
-}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_skMisc_seq_composite", (DL_FUNC) &_skMisc_seq_composite, 2},
-    {"_skMisc_carryforward_numeric", (DL_FUNC) &_skMisc_carryforward_numeric, 1},
-    {"_skMisc_EnumerateFrom", (DL_FUNC) &_skMisc_EnumerateFrom, 3},
     {NULL, NULL, 0}
 };
 

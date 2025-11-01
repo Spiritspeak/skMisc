@@ -440,7 +440,7 @@ subdivide <- function(x, divs, divlen){
 #'
 #' @examples
 #' testvec <- sample(c(NA, NA, 1:14))
-#' t(cbind(testvec, bundle_up(testvec, maxval=12, group.high="own", group.na="own")))
+#' t(cbind(testvec, bundle(testvec, maxval=12, group.high="own", group.na="own")))
 #' 
 #' bundle(testvec, maxval=10, group.high="na", group.na="na")
 #' 

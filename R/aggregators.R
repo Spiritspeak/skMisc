@@ -77,8 +77,6 @@ hedgesg <- function(x, y=NULL, paired=FALSE){
 #' D. N. Joanes and C. A. Gill (1998). 
 #' Comparing measures of sample skewness and kurtosis. 
 #' The Statistician, 47, 183–189.
-#' 
-#' @export
 #'
 #' @examples
 #' serr(rnorm(100))
@@ -200,7 +198,7 @@ modular.mean <- function(x, mod, check=TRUE, na.rm=FALSE){
     scv <- pmin(scv, mod - scv)
     sum(scv ^ 2)
   }
-  compute.modular.aggregate(x, mod, check, na.rm, scorefun=scorefun)
+  compute_modular_aggregate(x, mod, check, na.rm, scorefun=scorefun)
 }
 
 #' @rdname modular.mean
@@ -212,10 +210,10 @@ modular.median <- function(x, mod, check=TRUE, na.rm=FALSE){
     scv <- pmin(scv, mod - scv)
     sum(scv)
   }
-  compute.modular.aggregate(x, mod, check, na.rm, scorefun=scorefun)
+  compute_modular_aggregate(x, mod, check, na.rm, scorefun=scorefun)
 }
 
-compute.modular.aggregate <- function(x, mod, check, na.rm, scorefun){
+compute_modular_aggregate <- function(x, mod, check, na.rm, scorefun){
   nas <- is.na(x)
   if(any(nas)){
     if(na.rm){
@@ -250,10 +248,11 @@ compute.modular.aggregate <- function(x, mod, check, na.rm, scorefun){
 #' On a clock this is 12, in degrees it is 360, etc.
 #' @param check Should a check be performed to detect whether there is 
 #' no identifiable mean or median?
-#' @param na.rm 
+#' @param na.rm Remove \code{NA}s from \code{x}?
 #'
 #' @note This should not be confused with the [modular.mean()], which is computed differently.
-#' @return
+#' @return The circular mean of \code{x}. \code{NA} if \code{check} is \code{TRUE} and
+#' there is no identifiable circular mean.
 #' @export
 #'
 #' @examples

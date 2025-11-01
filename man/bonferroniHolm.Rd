@@ -2,28 +2,30 @@
 % Please edit documentation in R/faststats.R
 \name{bonferroniHolm}
 \alias{bonferroniHolm}
-\title{Bonferroni-Holm significance evaluation
-Evaluate the significance of a vector of p-values according to
-the Bonferroni-Holm method}
+\alias{benjaminiHochberg}
+\alias{benjaminiYekutieli}
+\title{Adjusted p-values for false-discovery rates and familywise error rates}
 \usage{
-bonferroniHolm(x, alpha = 0.05)
+bonferroniHolm(x)
+
+benjaminiHochberg(x)
+
+benjaminiYekutieli(x)
 }
 \arguments{
 \item{x}{A vector of p-values.}
-
-\item{alpha}{An experiment-wise alpha-level to test against.}
 }
 \value{
-A vector indicating whether values in \code{x} were significant
-according to the Bonferroni-Holm method.
+A vector of p-values adjusted in accordance with the chosen method.
 }
 \description{
-Bonferroni-Holm significance evaluation
-Evaluate the significance of a vector of p-values according to
-the Bonferroni-Holm method
+Adjusted p-values for false-discovery rates and familywise error rates
 }
 \examples{
-bonferroniHolm(c(1,.05,.001,.002,.01))
+oldp<-c(0.01,0.04,0.02,.1,0.035)
+bonferroniHolm(oldp)
+benjaminiHochberg(oldp)
+benjaminiYekutieli(oldp)
 
 }
 \author{

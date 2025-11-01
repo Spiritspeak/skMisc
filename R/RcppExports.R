@@ -19,11 +19,3 @@ seq_composite <- function(from, to) {
     .Call('_skMisc_seq_composite', PACKAGE = 'skMisc', from, to)
 }
 
-carryforward_numeric <- function(x) {
-    .Call('_skMisc_carryforward_numeric', PACKAGE = 'skMisc', x)
-}
-
-EnumerateFrom <- function(sequences, times, target) {
-    .Call('_skMisc_EnumerateFrom', PACKAGE = 'skMisc', sequences, times, target)
-}
-

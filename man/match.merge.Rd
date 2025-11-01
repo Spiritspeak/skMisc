@@ -2,9 +2,17 @@
 % Please edit documentation in R/datawrangler.R
 \name{match.merge}
 \alias{match.merge}
-\title{Match and merge two data.frames by ID and date}
+\title{Match and merge two data.frames by ID and consecutive date}
 \usage{
-match.merge(x, y, idvar, datevar, keep.unmatched = c("all", "x", "y", "none"))
+match.merge(
+  x,
+  y,
+  idvar,
+  datevar,
+  by = NULL,
+  keep.unmatched = c("all", "x", "y", "none"),
+  suffixes = c(".x", ".y")
+)
 }
 \arguments{
 \item{x, y}{The \code{data.frame}s to merge.}
@@ -13,7 +21,12 @@ match.merge(x, y, idvar, datevar, keep.unmatched = c("all", "x", "y", "none"))
 
 \item{datevar}{Name of the variable holding dates in both x and y.}
 
+\item{by}{Any other variables to match by.}
+
 \item{keep.unmatched}{When no match is found for a row, should it be kept or removed?}
+
+\item{suffixes}{Character strings to append to the end of variable names that occur in both
+\code{x} and \code{y}, to make them unique in the resulting \code{data.frame}.}
 }
 \value{
 A merged \code{data.frame} where rows of \code{x}
@@ -33,12 +46,12 @@ where one dataset is always collected after another. It is assumed here that
 This matches using [match.pps()] and merges using [dplyr::full_join()].
 }
 \examples{
-x <- data.frame(id=c(1,2,2,3,3,4),
-                date=as.POSIXct(c(1,1,3,1,3,1)),
-               info=letters[1:6])
-y <- data.frame(id=c(1,2,3,3,4),
-               date=as.POSIXct(c(2,2,4,2,0)),
-                data=LETTERS[1:5])
+x <- data.frame(  id=c(1,2,2,3,3,4,5),
+                date=c(1,1,3,1,3,1,9),
+               info=letters[1:7])
+y <- data.frame(  id=c(1,1,2,3,3,4),
+                date=c(2,0,2,4,2,0),
+                data=LETTERS[1:6])
 match.merge(x=x,y=y,idvar="id",datevar="date",keep.unmatched="all")
 match.merge(x=x,y=y,idvar="id",datevar="date",keep.unmatched="none")
 

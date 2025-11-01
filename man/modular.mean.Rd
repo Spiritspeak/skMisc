@@ -2,31 +2,39 @@
 % Please edit documentation in R/aggregators.R
 \name{modular.mean}
 \alias{modular.mean}
-\title{Title}
+\alias{modular.median}
+\title{Mean or median of a modular quantity}
 \usage{
-modular.mean(x, mod, check = TRUE, na.rm = TRUE)
+modular.mean(x, mod, check = TRUE, na.rm = FALSE)
+
+modular.median(x, mod, check = TRUE, na.rm = FALSE)
 }
 \arguments{
-\item{x}{A numeric vector of modular quantities to be averaged.}
+\item{x}{A numeric vector of modular quantities to be aggregated}
 
 \item{mod}{The modulus of \code{x}, i.e. where the numbers "loop back" to zero. 
 On a clock this is 12, in degrees it is 360, etc.}
 
-\item{check}{Should a check be performed to detect whether there is no identifiable mean?
-This should be set to \code{FALSE} when such a situation is not expected in the data, since
-this check can be computationally costly.}
+\item{check}{Should a check be performed to detect whether there is 
+no identifiable mean or median?
+Set to \code{FALSE} when this is not expected to occur, since this check can be costly.}
 
 \item{na.rm}{Should \code{NA} values be removed? Defaults to \code{TRUE}.}
 }
+\value{
+\code{modular.mean()} and \code{modular.median()} respectively find 
+the value with the smallest squared or absolute distance 
+to all values in \code{x}, like the regular mean and median do.
+}
 \description{
-Title
+Mean or median of a modular quantity
 }
 \details{
-This function finds the value that has the smallest squared distance 
-to all values in \code{x}.
+These functions should not be confused with the [circular.mean()], which is computed
+in a different way.
 }
 \examples{
-
+modular.mean(c(0,1,2,10),mod=12)
 
 # Situations where no modular mean exists (points are evenly divided around the circle)
 modular.mean(c(0,3,6,9),mod=12)

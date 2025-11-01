@@ -4,10 +4,13 @@
 \alias{which.duplicate}
 \title{Count duplicate values in a vector}
 \usage{
-which.duplicate(x)
+which.duplicate(x, fromLast = FALSE)
 }
 \arguments{
 \item{x}{A vector.}
+
+\item{fromLast}{if \code{TRUE}, the last occurrence of a value will be counted as the first,
+and any earlier occurrences will be counted as second, third, etc.}
 }
 \value{
 A vector of the same length as \code{x}, where each element represents
