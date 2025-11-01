@@ -7,7 +7,7 @@
 mostcommon(x, n = 1)
 }
 \arguments{
-\item{x}{Vector.}
+\item{x}{A vector.}
 
 \item{n}{Number of most common elements to return.}
 }

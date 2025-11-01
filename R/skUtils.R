@@ -6,7 +6,7 @@ args2strings <- function(...) sapply(substitute({ ... })[-1], deparse)
 
 #' Return most common element(s) of vector
 #'
-#' @param x Vector.
+#' @param x A vector.
 #' @param n Number of most common elements to return.
 #'
 #' @returns A vector of the most common elements of \code{x}, with length \code{n}.
@@ -184,14 +184,14 @@ duplicateof <- function(x, na.first=FALSE){
   return(newx)
 }
 
-# TODO: add option to ignore duplicate values
 
 #' Set-based unique and duplicate detection
 #' 
 #' These functions are like [base::unique()] and [base::duplicated()] except they only look at
 #' whether two list elements contain the same values - the order does not matter.
 #'
-#' @param x A list of vectors
+#' @param x A list of vectors.
+#' @param unique.only Should duplicated values within sets be ignored? Defaults to \code{FALSE}.
 #'
 #' @return For \code{setunique()}, a list of unique sets. 
 #' For \code{setduplicated()}, a logical vector indicating whether
@@ -200,19 +200,28 @@ duplicateof <- function(x, na.first=FALSE){
 #' @export
 #'
 #' @examples
-#' mysets <- list(a=1:3,b=2,c=3:1,d=c(1,3))
+#' mysets <- list(a=c(1,2,3),b=2,c=c(3,2,1),d=c(1,3),e=c(1,1,2,3,3))
 #' setunique(mysets)
-#' setduplicated(mysets)
+#' setunique(mysets, unique.only=TRUE)
 #' 
-setunique <- function(x){
-  x[!duplicated(lapply(x, sort))]
+#' setduplicated(mysets)
+#' setduplicated(mysets, unique.only=TRUE)
+#' 
+setunique <- function(x, unique.only=FALSE){
+  x[!duplicated(lapply(x, function(y){
+    if(unique.only){ y <- unique(y) }
+    sort(y)
+  }))]
 }
 
 #' @rdname setunique
 #' @export
 #' 
-setduplicated <- function(x){
-  duplicated(lapply(x, sort))
+setduplicated <- function(x, unique.only=FALSE){
+  duplicated(lapply(x, function(y){
+    if(unique.only){ y <- unique(y) }
+    sort(y)
+  }))
 }
 
 
@@ -560,91 +569,6 @@ vec2columns <- function(x, sep=";"){
   return(out)
 }
 
-# TODO: change format to: numeric = c("age","height")
-# Add support for tidyselectors
-
-#' Change classes of columns in a data.frame
-#' 
-#' @description \code{retype()} changes the class of specific columns; 
-#' \code{retype_all()} changes the class of all columns of a given class.
-#'
-#' @param df a data frame
-#' @param ... Unquoted column names, paired with the desired class, e.g. 
-#' 
-#' \code{age = numeric(), language = character()}
-#'
-#' @export
-#' @author Sercan Kahveci
-#'
-#' @examples 
-#' sapply(ToothGrowth,class)
-#' NewToothGrowth <- retype(ToothGrowth, supp = character(), dose = factor())
-#' sapply(NewToothGrowth,class)
-#' 
-retype <- function(df, ...){
-  args <- list(...)
-
-  varnames <- names(args)
-  vartypes <- sapply(args, class)
-
-  effcols <- names(df)[names(df) %in% varnames]
-
-  for(effcol in effcols){
-    df[,effcol] <- as(df[,effcol], vartypes[which(varnames == effcol)])
-  }
-  return(df)
-}
-
-#' @rdname retype
-#' @param df A \code{data.frame}.
-#' @param from An empty vector of the class to convert from, or a string. 
-#' Columns sharing the class of argument \code{from} will be converted 
-#' to the class of argument \code{to}.
-#' @param to An empty vector of the class to convert to, or a string. 
-#' Columns sharing the class of argument \code{from} will be converted 
-#' to the class of argument \code{to}.
-#'
-#' @export
-#'
-#' @examples 
-#'
-#' sapply(mtcars,class)
-#' newmtcars <- retype_all(mtcars,from="numeric",to="character")
-#' sapply(newmtcars,class)
-#' 
-retype_all <- function(df, from, to){
-  for(i in which(sapply(df, class) == from)){
-    df[[i]] <- as(df[[i]], to)
-  }
-  df
-}
-
-#' Verify variable types in bulk
-#'
-#' @param ... Named arguments, where the argument is the object to be checked and 
-#' the name of the argument is the mode (numeric, list, character, etc).
-#'
-#' @return Returns true on success, causes error if not.
-#' @author Sercan Kahveci
-#' @export
-#'
-#' @examples
-#' try(verify_types(character="test",numeric=0000,character=12345))
-#' 
-verify_types <- function(...){
-  args <- list(...)
-  call <- as.list(match.call()[-1])
-  types <- unique(names(args))
-  for(type in types){
-    ids <- which(type == names(args))
-    for(id in ids){
-      if(!do.call(paste0("is.",type),list(args[[id]]))){
-        stop("Variable ",as.character(call[[id]])," is not of type ",type)
-      }
-    }
-  }
-  return(T)
-}
 
 #' Levenshtein distance
 #' 
@@ -662,7 +586,7 @@ verify_types <- function(...){
 #' 
 #' LevenshteinDistance(c("cheese","fish"),c("child","flan"))
 #' 
-LevenshteinDistance <- function(x,y){
+LevenshteinDistance <- function(x, y){
   x <- strsplit(x,"")
   y <- strsplit(y,"")
   xl <- sapply(x,length)
@@ -688,6 +612,8 @@ LevenshteinDistance <- function(x,y){
   }
   return(diffs)
 }
+
+
 
 ##########################################
 # Ops unrelated to objects or statistics #

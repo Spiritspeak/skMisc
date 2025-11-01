@@ -310,3 +310,91 @@ carryforward <- function(x){
   x[seq_composite(runstart, runend)] <- rep(x[runstart-1], times=runend-runstart+1)
   return(x)
 }
+
+
+
+# TODO: change format to: numeric = c("age","height")
+# Add support for tidyselectors
+
+#' Change classes of columns in a data.frame
+#' 
+#' @description \code{retype()} changes the class of specific columns; 
+#' \code{retype_all()} changes the class of all columns of a given class.
+#'
+#' @param df a data frame
+#' @param ... Unquoted column names, paired with the desired class, e.g. 
+#' 
+#' \code{age = numeric(), language = character()}
+#'
+#' @export
+#' @author Sercan Kahveci
+#'
+#' @examples 
+#' sapply(ToothGrowth,class)
+#' NewToothGrowth <- retype(ToothGrowth, supp = character(), dose = factor())
+#' sapply(NewToothGrowth,class)
+#' 
+retype <- function(df, ...){
+  args <- list(...)
+  
+  varnames <- names(args)
+  vartypes <- sapply(args, class)
+  
+  effcols <- names(df)[names(df) %in% varnames]
+  
+  for(effcol in effcols){
+    df[,effcol] <- as(df[,effcol], vartypes[which(varnames == effcol)])
+  }
+  return(df)
+}
+
+#' @rdname retype
+#' @param df A \code{data.frame}.
+#' @param from An empty vector of the class to convert from, or a string. 
+#' Columns sharing the class of argument \code{from} will be converted 
+#' to the class of argument \code{to}.
+#' @param to An empty vector of the class to convert to, or a string. 
+#' Columns sharing the class of argument \code{from} will be converted 
+#' to the class of argument \code{to}.
+#'
+#' @export
+#'
+#' @examples 
+#'
+#' sapply(mtcars,class)
+#' newmtcars <- retype_all(mtcars,from="numeric",to="character")
+#' sapply(newmtcars,class)
+#' 
+retype_all <- function(df, from, to){
+  for(i in which(sapply(df, class) == from)){
+    df[[i]] <- as(df[[i]], to)
+  }
+  df
+}
+
+#' Verify variable types in bulk
+#'
+#' @param ... Named arguments, where the argument is the object to be checked and 
+#' the name of the argument is the mode (numeric, list, character, etc).
+#'
+#' @return Returns true on success, causes error if not.
+#' @author Sercan Kahveci
+#' @export
+#'
+#' @examples
+#' try(verify_types(character="test",numeric=0000,character=12345))
+#' 
+verify_types <- function(...){
+  args <- list(...)
+  call <- as.list(match.call()[-1])
+  types <- unique(names(args))
+  for(type in types){
+    ids <- which(type == names(args))
+    for(id in ids){
+      if(!do.call(paste0("is.",type),list(args[[id]]))){
+        stop("Variable ",as.character(call[[id]])," is not of type ",type)
+      }
+    }
+  }
+  return(T)
+}

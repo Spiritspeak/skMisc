@@ -5,12 +5,14 @@
 \alias{setduplicated}
 \title{Set-based unique and duplicate detection}
 \usage{
-setunique(x)
+setunique(x, unique.only = FALSE)
 
-setduplicated(x)
+setduplicated(x, unique.only = FALSE)
 }
 \arguments{
-\item{x}{A list of vectors}
+\item{x}{A list of vectors.}
+
+\item{unique.only}{Should duplicated values within sets be ignored? Defaults to \code{FALSE}.}
 }
 \value{
 For \code{setunique()}, a list of unique sets. 
@@ -22,9 +24,12 @@ These functions are like [base::unique()] and [base::duplicated()] except they o
 whether two list elements contain the same values - the order does not matter.
 }
 \examples{
-mysets <- list(a=1:3,b=2,c=3:1,d=c(1,3))
+mysets <- list(a=c(1,2,3),b=2,c=c(3,2,1),d=c(1,3),e=c(1,1,2,3,3))
 setunique(mysets)
+setunique(mysets, unique.only=TRUE)
+
 setduplicated(mysets)
+setduplicated(mysets, unique.only=TRUE)
 
 }
 \author{
