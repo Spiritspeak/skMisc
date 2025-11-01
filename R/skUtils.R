@@ -3,19 +3,47 @@
 #I don't want to import rlang, so it will be done this way instead.
 args2strings <- function(...) sapply(substitute({ ... })[-1], deparse)
 
-# TODO: should return same type rather than character
-mostcommon<-function(x,n=1){
-  names(sort(table(x),T))[seq_len(n)]
+
+#' Return most common element(s) of vector
+#'
+#' @param x Vector.
+#' @param n Number of most common elements to return.
+#'
+#' @returns A vector of the most common elements of \code{x}, with length \code{n}.
+#' @export
+#'
+#' @examples
+#' mostcommon(c(1,2,2,3,7,6,4,4,4))
+#' mostcommon(c(1,2,2,3,7,6,4,4,4), n=2)
+#' 
+mostcommon <- function(x,n=1){
+  xnames <- as.character(x)
+  xfreq <- table(x)
+  xord <- order(xfreq,decreasing=TRUE)
+  x[match(names(xfreq[xord][seq_len(n)]),xnames)]
 }
 
-NONE2NA<-function(x){
-  if(length(x)==0){
+#' Convert empty vectors to NA
+#' 
+#' This converts vectors of length 0 to \code{NA}.
+#'
+#' @param x A vector.
+#'
+#' @returns \code{NA} if \code{x} is length 0, else \code{x} itself.
+#' @export
+#'
+#' @examples
+#' NONE2NA(NULL)
+#' NONE2NA(logical(0))
+#' NONE2NA(1:5)
+#' 
+NONE2NA <- function(x){
+  if(length(x) == 0){
     NA
   }else{
     x
   }
 }
-
 
 #' @name clamp
 #' @title Clamp
@@ -86,8 +114,6 @@ cols2ids <- function(x){
   x
 }
 
-# TODO: add counting direction as argument
-
 #' Count duplicate values in a vector
 #' 
 #' which.duplicate() determines for each element of a vector 
@@ -97,6 +123,8 @@ cols2ids <- function(x){
 #' whether a value has occurred before and not how many times.
 #' 
 #' @param x A vector.
+#' @param fromLast if \code{TRUE}, the last occurrence of a value will be counted as the first,
+#' and any earlier occurrences will be counted as second, third, etc.
 #'
 #' @return A vector of the same length as \code{x}, where each element represents
 #' the number of times the value in the same position in \code{x} has been repeated so far.
@@ -106,11 +134,17 @@ cols2ids <- function(x){
 #' @examples
 #' which.duplicate(c(1,6,5,2,1,1,8,6,5))
 #' 
-which.duplicate <- function(x){
+which.duplicate <- function(x, fromLast=FALSE){
   vals <- unique(x)
   repvec <- numeric(length(vals))
-  for(v in vals){
-    repvec[x == v] <- seq_len(sum(x == v))
+  if(!fromLast){
+    for(v in vals){
+      repvec[x == v] <- seq_len(sum(x == v))
+    }
+  }else{
+    for(v in vals){
+      repvec[x == v] <- rev(seq_len(sum(x == v)))
+    }
   }
   return(repvec)
 }

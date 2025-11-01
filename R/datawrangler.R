@@ -62,7 +62,7 @@ match.pps <- function(x.ids, x.dates, y.ids, y.dates){
 }
 
 
-#' Match and merge two data.frames by ID and date
+#' Match and merge two data.frames by ID and consecutive date
 #' 
 #' the rows from \code{y} are matched with rows from \code{x} that 
 #' share the same ID and directly precede them in date.
@@ -74,7 +74,10 @@ match.pps <- function(x.ids, x.dates, y.ids, y.dates){
 #' @param x,y The \code{data.frame}s to merge.
 #' @param idvar Name of the variable holding participant/session IDs in both x and y.
 #' @param datevar Name of the variable holding dates in both x and y.
+#' @param by Any other variables to match by.
 #' @param keep.unmatched When no match is found for a row, should it be kept or removed?
+#' @param suffixes Character strings to append to the end of variable names that occur in both
+#' \code{x} and \code{y}, to make them unique in the resulting \code{data.frame}.
 #'
 #' @return A merged \code{data.frame} where rows of \code{x}
 #' are merged with rows of \code{y} that match by session id and where
@@ -86,34 +89,57 @@ match.pps <- function(x.ids, x.dates, y.ids, y.dates){
 #' @export
 #'
 #' @examples
-#' x <- data.frame(id=c(1,2,2,3,3,4),
-#'                 date=as.POSIXct(c(1,1,3,1,3,1)),
-#'                info=letters[1:6])
-#' y <- data.frame(id=c(1,2,3,3,4),
-#'                date=as.POSIXct(c(2,2,4,2,0)),
-#'                 data=LETTERS[1:5])
+#' x <- data.frame(  id=c(1,2,2,3,3,4,5),
+#'                 date=c(1,1,3,1,3,1,9),
+#'                info=letters[1:7])
+#' y <- data.frame(  id=c(1,1,2,3,3,4),
+#'                 date=c(2,0,2,4,2,0),
+#'                 data=LETTERS[1:6])
 #' match.merge(x=x,y=y,idvar="id",datevar="date",keep.unmatched="all")
 #' match.merge(x=x,y=y,idvar="id",datevar="date",keep.unmatched="none")
 #' 
-match.merge <- function(x, y, idvar, datevar,
-                        keep.unmatched = c("all","x","y","none")){
+match.merge <- function(x, y, 
+                        idvar, 
+                        datevar,
+                        by=NULL, 
+                        keep.unmatched = c("all","x","y","none"),
+                        suffixes=c(".x",".y")){
   keep.unmatched <- match.arg(keep.unmatched)
-  matches <- match.pps(x[[idvar]], x[[datevar]], y[[idvar]], y[[datevar]])
-  x$.rowmatch <- NA
-  y$.rowmatch <- NA
-  x$.rowmatch[matches[[1]]] <- seq_along(matches[[1]])
-  y$.rowmatch[matches[[2]]] <- seq_along(matches[[2]])
-  if(any(keep.unmatched==c("y","none"))){ x<-x[!is.na(x$.rowmatch),] }
-  if(any(keep.unmatched==c("x","none"))){ y<-y[!is.na(y$.rowmatch),] }
+  
+  x.table<-unique(x[c(idvar,datevar)])
+  y.table<-unique(y[c(idvar,datevar)])
+  tablematches<-match.pps(x.table[[idvar]],x.table[[datevar]],
+                          y.table[[idvar]],y.table[[datevar]])
+  
+  x.table$.rowmatch<-NA
+  y.table$.rowmatch<-NA
+  x.table$.rowmatch[tablematches$x.rowid]<-seq_len(nrow(tablematches))
+  y.table$.rowmatch[tablematches$y.rowid]<-seq_len(nrow(tablematches))
+  
+  x <- left_join(x,x.table,by=c(idvar,datevar),keep=FALSE,na_matches="never")
+  y <- left_join(y,y.table,by=c(idvar,datevar),keep=FALSE,na_matches="never")
   
   args <- list(x = x, y = y, 
-               by = ".rowmatch",
-               na_matches = "never")
+               by = c(".rowmatch",by),
+               na_matches = "never",
+               suffix=suffixes)
+  z <- do.call(case_match(keep.unmatched,
+                          "all"~"full_join",
+                          "x"~"left_join",
+                          "y"~"right_join",
+                          "none"~"inner_join"), 
+               args)
   
-  z <- do.call(full_join, args)
   z$.rowmatch <- NULL
+  
+  z[[paste0(idvar,suffixes[1])]] <- 
+    apply(z[paste0(idvar,suffixes)],1,function(x){x[first(which(!is.na(x)))]})
+  colnames(z)[colnames(z)==paste0(idvar,suffixes[1])] <- idvar
+  z[paste0(idvar,suffixes)] <- NULL
+  
   return(z)
 }
+
 
 
 #' Merge Multiple Data Frames
@@ -157,12 +183,72 @@ multimerge <- function(x, ...){
   return(x)
 }
 
+#' Coalesce mutually exclusive column sets into individual columns
+#' 
+#' This merges mutually exclusive variables in a \code{data.frame} that 
+#' are distinguished from each other by a suffix or some other part of the variable name.
+#' 
+#' For example, when a survey was administered in multiple languages, and 
+#' the responses to the same questions in each language are distinguished by a suffix 
+#' like "_EN" or "_FR", this function can be used to 
+#' coalesce these values into individual variables.
+#' 
+#' @param x A \code{data.frame} containing mutually exclusive column sets.
+#' @param patterns Multiple regex patterns that only match the part of the variable name 
+#' that makes members of the same mutually exclusive variable set unique (i.e. the variant tag).
+#'
+#' @returns A \code{data.frame} with all mutually exclusive column sets coalesced. 
+#' The names of these coalesced columns are based on the original variable names but with 
+#' \code{pattern} removed.
+#' 
+#' @export
+#'
+#' @examples
+#' # Create a dataset where different individuals fill in different columns
+#' mydataset <- 
+#'    cbind(id=1:5,
+#'          help_EN=c(1,NA,0,NA,NA),
+#'          help_DE=c(NA,1,NA,1,NA),
+#'          help_FR=c(NA,NA,NA,NA,0),
+#'          success_EN=c(0,NA,0,NA,NA),
+#'          success_DE=c(NA,1,NA,1,NA),
+#'          success_FR=c(NA,NA,NA,NA,1)) |> 
+#'            as.data.frame()
+#'   
+#' coalesce.columns(mydataset,c("_EN","_DE","_FR"))
+#' 
+coalesce.columns <- function(x, patterns){
+  # Detect language per row, based on missingness
+  nax <- is.na(x)
+  langnas <- matrix(0,nrow=nrow(x),ncol=length(patterns)) |> as.data.frame()
+  for(i in seq_along(patterns)){
+    langnas[,i] <- nax[,str_detect(colnames(nax), patterns[i]), drop=FALSE] |> 
+      rowMeans()
+  }
+  langs <- apply(langnas, 1, which.min)
 
-# TODO: document
-rowname2column <- function(x, name="row"){
-  x[[name]] <- rownames(x)
-  rownames(x) <- NULL
+  
+  # Remove unused languages
+  newcols <- colnames(x) |> 
+    str_subset(paste0(patterns,collapse="|")) |>
+    str_remove(paste0(patterns,collapse="|")) |> unique()
+  if(any(newcols %in% colnames(x))){
+    stop("Column(s) ",paste0(colnames(x)[newcols %in% colnames(x)],collapse=", "),
+         " already exist in x. Please rename them.")
+  }
+  x[newcols] <- NA
+  for(i in seq_along(patterns)){
+    fromcols <- colnames(x) |> str_subset(patterns[i])
+    tocols <- colnames(x) |> str_subset(patterns[i]) |> str_remove(patterns[i])
+    x[langs == i, tocols] <- x[langs == i, fromcols]
+  }
+  oldcols <- colnames(x) |> str_subset(paste0(patterns,collapse="|"))
+  x[oldcols] <- NULL
+  
   return(x)
 }
+
+
+
 
 
