@@ -135,7 +135,7 @@ match.merge <- function(x, y,
   z[[paste0(idvar,suffixes[1])]] <- 
     apply(z[paste0(idvar,suffixes)],1,function(x){x[first(which(!is.na(x)))]})
   colnames(z)[colnames(z)==paste0(idvar,suffixes[1])] <- idvar
-  z[paste0(idvar,suffixes)] <- NULL
+  z[paste0(idvar,suffixes[suffixes!=""])] <- NULL
   
   return(z)
 }
