@@ -1,5 +1,24 @@
 
 
+#' @name RateLimit
+#' @title Function call rate limiting
+#'
+#' @param period Time period in seconds within which the rate of function calls must be limited.
+#' @param times Maximum number of times this queue can be utilized within the designated \code{period}.
+#' @param padding Additional amount of time in seconds to wait until the script continues, 
+#' when the rate limit has been exceeded.
+#' @param queue The rate limit object.
+#'
+#' @returns
+#' @export
+#'
+#' @examples
+#' h<-defineRateLimit(period=60,times=30)
+#' for(i in 0:30){
+#'   message(i)
+#'   awaitRateLimit(h)
+#' }
+#' 
 defineRateLimit <- function(period, times, padding=0){
   env<-new.env()
   env$period <- period
@@ -9,9 +28,9 @@ defineRateLimit <- function(period, times, padding=0){
   structure(env, class="RateLimitQueue")
 }
 
-#h<-defineRateLimit(period=60,times=30)
-#awaitRateLimit(h)
 
+#' @export
+#' @rdname RateLimit
 awaitRateLimit <- function(queue){
   tds <- as.numeric(difftime(Sys.time(), queue$events, units="secs"))
   queue$events <- queue$events[tds < queue$period]
@@ -21,5 +40,4 @@ awaitRateLimit <- function(queue){
   tds2 <- as.numeric(difftime(Sys.time(), queue$events, units="secs"))
   queue$events <- c(Sys.time(), queue$events[tds2 < queue$period])
 }
-
 

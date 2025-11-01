@@ -4,7 +4,7 @@ Version: 0.02
 Authors@R: person("Sercan", "Kahveci", email = "sercan+kahveci@sbg.ac.at", role = c("aut", "cre"))
 Description: Contains a wide range of basic functions as well as methods for "holdout analysis" and basic statistical tests.
 Depends: R (>= 4.0), magrittr, ggplot2
-Imports: dplyr, lmerTest, lme4, coin, methods, doParallel, parallel, foreach, iterators, MuMIn, car, Rcpp, arm, stringr, MASS
+Imports: dplyr, lmerTest, lme4, coin, methods, doParallel, parallel, foreach, iterators, MuMIn, car, Rcpp, stringr, MASS
 License: GPL-3
 BugReports: https://github.com/Spiritspeak/skMisc/issues
 LazyData: true

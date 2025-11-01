@@ -27,7 +27,6 @@
 #' optimize pnorm
 #' @importFrom car qqp
 #' @importFrom lme4 nobars findbars fixef getME lmerControl ranef
-#' @importFrom arm se.coef
 #' @importFrom MASS mvrnorm
 #' 
 #' 

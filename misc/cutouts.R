@@ -117,26 +117,6 @@ logit.weightfun<-function(x,mean=mean(x),s=sd(x),
 }
 
 
-
-#' Influence function of the Pearson correlation coefficient
-#'
-#' @param x,y Numeric vectors
-#'
-#' @return Influence values of all observations.
-#' @export
-#'
-#' @examples
-#' outlier<-numeric(100)
-#' outlier[1]<-1000
-#' cor.influence(rnorm(100)+outlier,rnorm(100)+outlier)
-#' 
-cor.influence<-function(x,y){
-  x<-x-mean(x)
-  y<-y-mean(y)
-  x*y-(x^2+y^2)/2*cor(x,y)
-}
-
-
 #' Read and merge all .csv files in a folder
 #'
 #' @param folder path to a folder
@@ -231,14 +211,6 @@ colorEdges<-function(x,maxedge=NULL){
   matrix(cols,ncol=ncol(x),nrow=nrow(x))
 }
 
-angular.mean <- function(x,period=2*pi){
-  period/(2*pi)*atan2(mean(sin(x/period*2*pi)),mean(cos(x/period*2*pi)))
-}
-
-# angular.mean(c(12,11,7),period=12)
-# angular.mean(c(12,11,8),period=12)
-
-
 
 #' Generate and concatenate multiple integer sequences
 #' 
@@ -256,27 +228,6 @@ angular.mean <- function(x,period=2*pi){
 #' 
 seq_composite <- function(from,to){
   unlist(mapply(\(x,y){x:y},from,to))
-}
-
-#' t-distribution fitter
-#' This is a wrapper around [MASS::fitdistr()] specifically intended to
-#' fit the t-distribution.
-#' 
-#' @param x Vector of values to fit the t-distribution to
-#' @param df Starting df value
-#'
-#' @return An object of class \code{"fitdistr"}.
-#' @export
-#'
-#' @examples
-#' h<-rt(1000,df=3)*3+10
-#' tpars(h)
-#' 
-tpars <- function(x, df=30){
-  MASS::fitdistr(x=x,
-                 densfun="t",
-                 start=list(m=mean(x), s=sd(x), df=df),
-                 lower=c(m=-Inf, s=0, df=1))
 }
 
 
@@ -310,7 +261,6 @@ carryforward <- function(x){
   x[seq_composite(runstart, runend)] <- rep(x[runstart-1], times=runend-runstart+1)
   return(x)
 }
-
 
 
 # TODO: change format to: numeric = c("age","height")
@@ -440,3 +390,45 @@ ComputeLowerModels2 <- function(model, data, group="", ...){
   print(anovatable)
   return(invisible(list(anovatable=anovatable, models=results)))
 }
+
+
+arrsubset <- function(x, dim, idx, drop=FALSE){
+  newx <- Quote(x[ ,drop=drop])
+  newx <- newx[c(1,2,rep(3,length(dim(x))),4)]
+  newx[2+dim] <- list(idx)
+  return(eval(newx))
+}
+
+chunkapply <- function(x, FUN, ..., chunksize=1000, MARGIN=1){
+  stopifnot(is.function(FUN), is.numeric(chunksize))
+  out <- vector(length=length(x))
+  counter <- ichunk(chunksize=chunksize, count=length(x))
+  
+  chunklength <- prod(dim(x)[-MARGIN])
+  
+  grabber <- NULL
+  if(is.null(dim(x))){
+    grabber <- function(idx){ x[idx] }
+  }else{
+    stopifnot(length(MARGIN)==1,any(seq_along(dim(x))==MARGIN))
+    grabber <- function(idx){ arrsubset(x=x,dim=MARGIN,idx=idx) }
+  }
+  while(T){
+    curridx <- counter()
+    if(length(curridx) == 0){ break; }
+    currx <- grabber(curridx)
+    #currout <- forceAndCall(1, FUN, currx, ...)
+    currout <- forceAndCall(1, FUN, currx)
+    if(dim(currout) != length(curridx)){
+      stop("Function output length (",length(currout),
+           ") was not the same as input length (",length(currx),")")
+    }else if(!is.vector(currout)){
+      stop("Function output not in form of a vector")
+    }
+    out[curridx] <- currout
+  }
+  return(out)
+}
+#chunkapply(x=1:1000,FUN=as.character,chunksize=5)
+#chunkapply(x=matrix(1:1000,nrow=100),FUN=as.character,chunksize=5)
+
