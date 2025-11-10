@@ -3,6 +3,49 @@
 #I don't want to import rlang, so it will be done this way instead.
 args2strings <- function(...) sapply(substitute({ ... })[-1], deparse)
 
+#' Quota-fair Sampler
+#' 
+#' This samples \code{size} times from \code{x} such that the proportions given by
+#' \code{prob} are met _exactly_. When they cannot be met exactly, sampling occurs as
+#' fairly as possible; in that case, only the observations that cannot be allocated fairly
+#' are randomly sampled with probabilities such that many repetitions of the sampling
+#' algorithm would yield the desired proportions. If no proportions are given,
+#' all observations are sampled equally often.
+#'
+#' @param x A vector to sample from.
+#' @param size The desired length of the output vector.
+#' @param prob (Optional) With what proportion should each value 
+#' in \code{x} occur in the output vector?
+#'
+#' @returns A vector of length \code{size} with elements fairly sampled from \code{x}.
+#' @author Sercan Kahveci
+#' @export
+#' @md
+#'
+#' @examples
+#' allocate(1:2,size=50)
+#' 
+#' test <- replicate(10000,allocate(1:5,size=23,prob=c(.1,.3,.2,.1,.3)))
+#' table(test) / length(test)
+#' 
+allocate <- function(x, size, prob=1){
+  if(length(prob)==length(x)){
+    prob <- prob/sum(prob)
+  }else if(length(prob)==1){
+    prob <- rep(1/length(x),length(x))
+  }else{
+    stop("Prob must be of length 1 or the same length as x")
+  }
+  xsizes <- size * prob
+  floorsizes <- floor(xsizes)
+  miscsizes <- xsizes-floorsizes
+  newx <- rep(x,floorsizes)
+  if(sum(miscsizes)>0){
+    addedx <- sample(x,size=round(sum(miscsizes)),prob=miscsizes/sum(miscsizes),replace=F)
+    newx <- c(newx,addedx)
+  }
+  sample(newx)
+}
 
 #' Return most common element(s) of vector
 #'
