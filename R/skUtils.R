@@ -3,6 +3,67 @@
 #I don't want to import rlang, so it will be done this way instead.
 args2strings <- function(...) sapply(substitute({ ... })[-1], deparse)
 
+
+#' Semi-randomize a sequence
+#' 
+#' This algorithm first uses [base::sample()] to randomize the sequence and then 
+#' repetitively eliminates excessively long subsequences of the same value 
+#' by swapping individual values.
+#'
+#' @param x A vector to randomize.
+#' @param maxrep Maximum permissible number of sequential occurrences of the same value.
+#'
+#' @returns Vector \code{x} in semirandomized order, with no more than \code{maxrep}
+#' sequential occurrences of the same value.
+#' @details
+#' This gives an error if semirandomization is not possible, 
+#' for example when one value in \code{x} is too numerous.
+#' 
+#' @export
+#'
+#' @examples
+#' Semirandomize(rep(0:1,each=96),maxrep=2)
+#' 
+Semirandomize <- function(x, maxrep){
+  # Check if semirandom sequence is possible
+  tx <- table(x)
+  if(max(tx/sum(tx)) > maxrep/(1+maxrep)){
+    stop("Semirandom sequence with given parameters not possible. ",
+         "One of the values is too abundant.")
+  }
+  
+  # Do the randomization
+  x <- sample(x)
+  counter <- 0
+  while(TRUE){
+    counter<-counter+1
+    rlex <- rle(x)
+    repsize <- rep(rlex$lengths,rlex$lengths)
+    repids <- rep(seq_along(rlex$lengths),rlex$lengths)
+    excessreps <- unique(repids[repsize>maxrep])
+    if(length(excessreps)<1){
+      break
+    }else if(counter > length(x)/2){
+      counter <- 0
+      x <- sample(x)
+    }
+    swapids <- sapply(excessreps,\(x){
+      sample(which(repids==x),size=1)
+    })
+    swapvals <- unique(x[swapids])
+    for(i in swapvals){
+      currswapids <- swapids[x[swapids]==i]
+      currswapvals <- swapids[x[swapids]!=i][sample(seq_along(currswapids))]
+      swapids<-swapids[x[swapids]!=i & !(swapids %in% currswapvals[!is.na(currswapvals)])]
+      currswapvals[is.na(currswapvals)]<-sample(which(x!=i),sum(is.na(currswapvals)))
+      x[currswapids] <- x[currswapvals]
+      x[currswapvals] <- i
+    }
+  }
+  return(x)
+}
+
+
 #' Quota-fair Sampler
 #' 
 #' This samples \code{size} times from \code{x} such that the proportions given by
