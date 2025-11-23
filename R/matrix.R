@@ -88,7 +88,7 @@ sortmat <- function(mat, sorttype=c("diag", "center", "bottomright")){
   allswaps <- expand.grid(row=seq_len(k), col=seq_len(k))
   tryswaps <- seq_len(nrow(allswaps)) |> sample()
   oldscore <- sum(mat * wt)
-  for(i in 1:nrow(allswaps)){
+  for(i in seq_len(nrow(allswaps))){
     key <- seq_len(k)
     key[ allswaps[tryswaps[i], 1] ] <- allswaps[tryswaps[i], 2]
     key[ allswaps[tryswaps[i], 2] ] <- allswaps[tryswaps[i], 1]

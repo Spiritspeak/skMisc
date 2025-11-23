@@ -97,7 +97,7 @@ cor.holdout<-function(x,y,
     iter<-iter+1
     # Evaluate termination conditions
     currn<-sum(incl)
-    if(currn<=2 | var(x[incl])==0 | var(y[incl])==0){
+    if(currn<=2 || var(x[incl])==0 || var(y[incl])==0){
       success<-F
       break 
     }else{

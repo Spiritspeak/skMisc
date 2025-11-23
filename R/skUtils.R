@@ -24,33 +24,44 @@ args2strings <- function(...) sapply(substitute({ ... })[-1], deparse)
 #' @examples
 #' Semirandomize(rep(0:1,each=96),maxrep=2)
 #' 
+#' Semirandomize(rep(0:2,c(1,4,1)),maxrep=2)
+#' 
 Semirandomize <- function(x, maxrep){
   # Check if semirandom sequence is possible
   tx <- table(x)
-  if(max(tx/sum(tx)) > maxrep/(1+maxrep)){
+  maxprop<-max(tx/sum(tx))
+  if(maxprop > maxrep/(1+maxrep)){
     stop("Semirandom sequence with given parameters not possible. ",
          "One of the values is too abundant.")
   }
   
   # Do the randomization
   x <- sample(x)
-  counter <- 0
+  counter <- 0L
   while(TRUE){
-    counter<-counter+1
+    counter<-counter+1L
+    # Detect runs with excessive length
     rlex <- rle(x)
     repsize <- rep(rlex$lengths,rlex$lengths)
     repids <- rep(seq_along(rlex$lengths),rlex$lengths)
     excessreps <- unique(repids[repsize>maxrep])
-    if(length(excessreps)<1){
+    
+    # Quit if no runs with excessive length
+    if(length(excessreps)<1L){
       break
-    }else if(counter > length(x)/2){
-      counter <- 0
+    # Reshuffle if too many swaps occurred
+    }else if(counter > length(x)*maxprop){
+      counter <- 0L
       x <- sample(x)
     }
+    # From each run, pick one value to swap
     swapids <- sapply(excessreps,\(x){
-      sample(which(repids==x),size=1)
+      sample(which(repids==x),size=1L)
     })
     swapvals <- unique(x[swapids])
+    # Per unique value, swap each picked element with that value with 
+    # a picked element of another value; if that is not possible, swap with
+    # an element of value that was not picked
     for(i in swapvals){
       currswapids <- swapids[x[swapids]==i]
       currswapvals <- swapids[x[swapids]!=i][sample(seq_along(currswapids))]
@@ -92,7 +103,7 @@ Semirandomize <- function(x, maxrep){
 allocate <- function(x, size, prob=1){
   if(length(prob)==length(x)){
     prob <- prob/sum(prob)
-  }else if(length(prob)==1){
+  }else if(length(prob)==1L){
     prob <- rep(1/length(x),length(x))
   }else{
     stop("Prob must be of length 1 or the same length as x")
@@ -101,7 +112,7 @@ allocate <- function(x, size, prob=1){
   floorsizes <- floor(xsizes)
   miscsizes <- xsizes-floorsizes
   newx <- rep(x,floorsizes)
-  if(sum(miscsizes)>0){
+  if(sum(miscsizes)>0L){
     addedx <- sample(x,size=round(sum(miscsizes)),prob=miscsizes/sum(miscsizes),replace=F)
     newx <- c(newx,addedx)
   }
@@ -435,10 +446,10 @@ interweave <- function(...){
   nvecs <- ...length()
   veclens <- sapply(seq_len(nvecs), \(x){length(...elt(x))})
   maxlen <- max(veclens)
-  if(!all(veclens == 1 | veclens == maxlen)){
+  if(!all(veclens == 1L | veclens == maxlen)){
     stop("Inputs not of equal length")
   }
-  if(nvecs==0 | maxlen==0){
+  if(nvecs==0 || maxlen==0){
     return(NULL)
   }
   out <- vector(length=nvecs * maxlen)
@@ -570,7 +581,7 @@ bundle <- function(x,
   naval <- is.na(x)
   na.addna <- 0
   na.grpbump <- 2
-  if(any(naval) & group.na=="error"){
+  if(any(naval) && group.na=="error"){
     stop("NA values not permitted")
   }else if(group.na=="na"){
     na.addna <- NA
@@ -583,7 +594,7 @@ bundle <- function(x,
   excess <- x > maxval
   ex.addna <- 0
   ex.grpbump <- 2
-  if(any(excess) & group.high=="error"){
+  if(any(excess) && group.high=="error"){
     stop("Value exceeds maximum")
   }else if(group.high=="na"){
     ex.addna <- NA

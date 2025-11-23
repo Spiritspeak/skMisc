@@ -129,7 +129,7 @@ vec2phrase <- function(x){
 strsplit.wrap <- function(x, width=2000, split=c("\n"," ",",","")){
   output <- character()
   if(!any(split=="")){ split <- c(split,"") }
-  while(nchar(x) > 0){
+  while(nzchar(x)){
     cstr <- substr(x,1,width)
     if(nchar(cstr) < width){
       output[length(output)+1] <- x

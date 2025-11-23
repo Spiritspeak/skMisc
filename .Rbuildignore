@@ -3,4 +3,5 @@
 ^misc$
 ^LICENSE\.md$
 ^generate_manual\.R$
+^lint\.R$
 ^skmisc.*\.pdf$
