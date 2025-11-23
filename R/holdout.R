@@ -24,9 +24,8 @@ cor.outlying <- function(x, y){
 #' In case of the print function, \code{x} is a \code{cor.holdout} object to print. 
 #' @param goal Objective of observation removal: 
 #' "nsig" (no longer significant) or "flip" (change of sign).
-#' @param method Correlation method, either "pearson" or "spearman"
-#' @param alpha Alpha level for significance testing
-#' @param verbose Should the function generate verbose output? Defaults to FALSE.
+#' @param method Correlation method, either "pearson" or "spearman".
+#' @param alpha Alpha level for significance testing.
 #'
 #' @return A list with...
 #' - h: number of observations needed to reach objective
@@ -57,7 +56,7 @@ cor.outlying <- function(x, y){
 cor.holdout<-function(x,y,
                       goal=c("nsig","flip"),
                       method=c("pearson","spearman"),
-                      alpha=.05,verbose=FALSE){
+                      alpha=.05){
   
   # prep for spearman
   method<-match.arg(method)
@@ -113,7 +112,7 @@ cor.holdout<-function(x,y,
   }
   
   h<-sum(excl>0,na.rm=T)
-  lastdf<-h-2
+  lastdf<-sum(incl)-2
   
   # Prepare output
   outlist<-list(final.r=rval,
@@ -139,6 +138,7 @@ print.cor.holdout<-function(x,...){
 }
 
 registerS3method("print","cor.holdout",print.cor.holdout)
+
 
 ##############
 # lm.holdout #

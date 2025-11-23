@@ -410,7 +410,7 @@ rotate2front <- function(x, first=NULL, matches.only=FALSE){
 
 #' Produce consecutive ranks
 #' 
-#' Ranks a vector such that ranks are always 1 apart if they succeed each other
+#' Ranks values of a vector such that ranks are always 1 apart if they succeed each other
 #' or 0 apart if they are tied. 
 #'
 #' @param x A numeric vector.
@@ -425,14 +425,7 @@ rotate2front <- function(x, first=NULL, matches.only=FALSE){
 #' cons.rank(testvec)
 #' 
 cons.rank <- function(x){
-  ux <- unique(x)
-  ur <- as.integer(rank(ux))
-  out <- integer(length(x))
-  names(out) <- names(x)
-  for(i in seq_along(ux)){
-    out[x == ux[i]] <- ur[i]
-  }
-  return(out)
+  match(x,sort(unique(x)))
 }
 
 
@@ -462,35 +455,6 @@ runs <- function(x){
   return(out)
 }
 
-#' Generate unique pairs or N-tuplets
-#'
-#' @param nval Number of values to arrange into unique tuplets.
-#' @param ntuplet N-tuplets to arrange the values uniquely into.
-#' @param incl.self Determines whether a value can be paired with itself.
-#'
-#' @return A matrix where each row is a unique N-tuplet.
-#' @author Sercan Kahveci
-#' @export
-#'
-#' @examples
-#' allpairs(nval=5,ntuplet=3)
-#' 
-allpairs <- function(nval, ntuplet=2, incl.self=FALSE){
-  currmat <- matrix(seq_len(nval), ncol=1)
-  offset <- ifelse(incl.self, 0, 1)
-  for(tuple in seq_len(ntuplet)[-1]){
-    newmats <- list()
-    for(i in seq_len(nrow(currmat))){
-      startval <- currmat[i,tuple-1] + offset
-      if(startval <= nval){
-        itervec <- startval:nval
-        newmats[[i]] <- do.call(cbind, c(as.list(currmat[i,]), list(itervec)))
-      }
-    }
-    currmat <- do.call(rbind, newmats)
-  }
-  return(currmat)
-}
 
 #' Interweave vectors
 #' 
