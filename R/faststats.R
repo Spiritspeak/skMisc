@@ -65,7 +65,7 @@ removeOLs <- function(.tbl, olvars=NULL, groups=NULL, s=3, make.na=FALSE){
                groupvar,
                FUN=function(x){ 
                     if(sum(!is.na(x)) > 2){
-                      abs(vec.scale(x)) > s
+                      abs(scale.vector(x)) > s
                     }else{
                       rep_len(NA, length(x))
                     }
@@ -121,7 +121,7 @@ removeOLs <- function(.tbl, olvars=NULL, groups=NULL, s=3, make.na=FALSE){
 #' vec.removeOLs(testvec,make.na=TRUE)
 #' 
 vec.removeOLs <- function(x, s=3, make.na=FALSE){
-  excl <- which(abs(vec.scale(x)) > s)
+  excl <- which(abs(scale.vector(x)) > s)
   message("Excluded ", length(excl), " observations from vector")
   if(length(excl) > 0){
     if(make.na){
@@ -279,8 +279,8 @@ multiple.cor <- function(x, ymat, use="everything"){
     cv <- cor(x, use=use)
     corvec <- numeric(ncol(x))
     for(i in seq_along(corvec)){
-      gfvec <- cv[(1:nrow(cv))[-i], i]
-      dcm <- cv[(1:nrow(cv))[-i], (1:ncol(cv))[-i]]
+      gfvec <- cv[seq_len(nrow(cv))[-i], i]
+      dcm <- cv[seq_len(nrow(cv))[-i], seq_len(ncol(cv))[-i]]
       rsq <- t(gfvec) %*% solve(dcm) %*% gfvec
       corvec[i] <- sqrt(as.vector(rsq))
     }

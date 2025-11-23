@@ -14,7 +14,7 @@ bundle(
 \arguments{
 \item{x}{A numeric vector to bundle up.}
 
-\item{maxval}{The maximum value a bundle can have.}
+\item{maxval}{The maximum sum a bundle can have.}
 
 \item{group.high}{What should be done if an individual value exceeds \code{maxval}?
 \code{"own"} assigns it to its own bundle, \code{"na"} assigns it to \code{NA}, and 

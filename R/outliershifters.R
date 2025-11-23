@@ -20,7 +20,7 @@ std.suppressor<-function(x,soft=2.5,hard=3,strength=1){
 }
 
 loop.suppressor<-function(x,soft=2.5,hard=3,strength=1){
-  while(any(abs(vec.scale(x))>3)){
+  while(any(abs(scale.vector(x))>3)){
     x<-std.suppressor(x,soft,hard,strength)
   }
   x

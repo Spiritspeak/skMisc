@@ -229,9 +229,9 @@ cols2ids <- function(x){
   x
 }
 
-#' Count duplicate values in a vector
+#' Cumulative occurrence count of each value in a vector
 #' 
-#' which.duplicate() determines for each element of a vector 
+#' occurrence() determines for each element of a vector 
 #' how many times its value has occurred so far.
 #' 
 #' It works similarly to [base::duplicated()] which only determines 
@@ -244,12 +244,13 @@ cols2ids <- function(x){
 #' @return A vector of the same length as \code{x}, where each element represents
 #' the number of times the value in the same position in \code{x} has been repeated so far.
 #' @author Sercan Kahveci
+#' @seealso [firstoccurrence()]
 #' @export
 #'
 #' @examples
-#' which.duplicate(c(1,6,5,2,1,1,8,6,5))
+#' occurrence(c(1,6,5,2,1,1,8,6,5))
 #' 
-which.duplicate <- function(x, fromLast=FALSE){
+occurrence <- function(x, fromLast=FALSE){
   vals <- unique(x)
   repvec <- numeric(length(vals))
   if(!fromLast){
@@ -265,7 +266,7 @@ which.duplicate <- function(x, fromLast=FALSE){
 }
 
 
-#' Find the index of the first occurrence of each value
+#' Replace elements with the index of the first occurrence of their value
 #' 
 #' This replaces all values with the index of their first occurrence.
 #' 
@@ -277,12 +278,13 @@ which.duplicate <- function(x, fromLast=FALSE){
 #' \code{NA} if it is the first occurrence of a unique value, or 
 #' the index of the first instance of each value in \code{x} if it is a duplicated value.
 #' @author Sercan Kahveci
+#' @seealso [occurrence()]
 #' @export
 #'
 #' @examples
-#' duplicateof(c("a","b","a","k"))
+#' firstoccurrence(c("a","b","a","k"))
 #' 
-duplicateof <- function(x, na.first=FALSE){
+firstoccurrence <- function(x, na.first=FALSE){
   ux <- unique(x)
   newx <- rep(NA, length(x))
   if(na.first){
@@ -337,6 +339,72 @@ setduplicated <- function(x, unique.only=FALSE){
     if(unique.only){ y <- unique(y) }
     sort(y)
   }))
+}
+
+
+#' Rotate a specific value to the front of vectors
+#' 
+#' This function rotates vectors in a list such that the first value in each vector 
+#' is the first value in \code{first} that occurs in that vector.
+#' 
+#' This can be used to identify cyclic vectors that are duplicated 
+#' with \code{duplicated(alignchains(x))}.
+#' 
+#' @param x List of vectors or a single vector to align through rotation.
+#' @param first Optional vector indicating which values would be preferred as first value, 
+#' in order of preference.
+#' If left blank, this is set to the unique values in \code{x} in order of occurrence.
+#' @param matches.only Should vectors only be rotated if at least one value 
+#' has a match in \code{first}? Default is \code{FALSE}. If set to \code{FALSE},
+#' then vectors without a match will be rotated such that the first value is the first
+#' that occurs in \code{x}.
+#'
+#' @returns If \code{x} was a list, this returns 
+#' a list with all constituent vectors rotated in accordance with the algorithm.
+#' If \code{x} was a vector, this returns 
+#' a vector rotated in accordance with the algorithm.
+#' @md 
+#' @author Sercan Kahveci
+#' @export
+#'
+#' @examples
+#' vecs <- list(a=c(5,3,6,7,3,2),
+#'              b=c(7,8,4,2,3),
+#'              c=c(3,4,5,6,1,2),
+#'              d=c(1,5,3),
+#'              e=c(5,3,1),
+#'              f=c(3,1,5))
+#' alignvecs <- rotate2front(vecs,first=1:8)
+#' duplicated(alignvecs)
+#' 
+#' rotate2front(list(1:3,letters[3:1],letters[1:3],3:1))
+#' rotate2front(c(4,2,3,1),first=1)
+#' 
+rotate2front <- function(x, first=NULL, matches.only=FALSE){
+  if(!matches.only || is.null(first)){
+    first <- unique(c(first, unlist(x)))
+  }
+  if(!is.list(x) && is.vector(x)){
+    x <- list(x)
+    vec.out <- T
+  }else{
+    vec.out <- F
+  }
+  out <- vector(mode="list", length=length(x))
+  for(i in seq_along(x)){
+    preferredinitial <- first[which(first %in% x[[i]])[1]]
+    if(!is.na(preferredinitial)){
+      newinitial <- which(x[[i]] == preferredinitial)[1]
+      out[[i]] <- x[[i]][c(newinitial:length(x[[i]]),
+                           (1:newinitial)[-newinitial])]
+    }else{
+      out[[i]] <- x[[i]]
+    }
+  }
+  if(vec.out){
+    out <- out[[1]]
+  }
+  out
 }
 
 
@@ -449,12 +517,12 @@ interweave <- function(...){
   if(!all(veclens == 1L | veclens == maxlen)){
     stop("Inputs not of equal length")
   }
-  if(nvecs==0 || maxlen==0){
+  if(nvecs==0L || maxlen==0L){
     return(NULL)
   }
   out <- vector(length=nvecs * maxlen)
   for(i in seq_len(nvecs)){
-    out[i+nvecs*(0:(maxlen-1))] <- ...elt(i)
+    out[i+nvecs*(0:(maxlen-1L))] <- ...elt(i)
   }
   return(out)
 }
@@ -548,7 +616,7 @@ subdivide <- function(x, divs, divlen){
 #' Assign numeric values to bundles summing up to a set value
 #'
 #' @param x A numeric vector to bundle up.
-#' @param maxval The maximum value a bundle can have.
+#' @param maxval The maximum sum a bundle can have.
 #' @param group.high What should be done if an individual value exceeds \code{maxval}?
 #' \code{"own"} assigns it to its own bundle, \code{"na"} assigns it to \code{NA}, and 
 #' \code{"error"} gives an error.
@@ -639,23 +707,32 @@ df.init <- function(x, nrow=0){
   data.frame(matrix(ncol = length(x), nrow = nrow, dimnames=list(NULL, x)))
 }
 
-#' Scale a vector
+#' Standardize a vector
 #' 
-#' Like scale() but returns a vector and is faster.
+#' A method for scale() that takes and returns a vector.
 #' 
 #' @param x Numeric vector to standardize.
+#' @param center whether centering should occur (default \code{TRUE}).
+#' @param scale Whether scaling should occur (default \code{TRUE}).
 #'
-#' @return Scaled numeric vector with mean of 0 and standard deviation of 1.
+#' @return Numeric vector with mean of 0 (if centered) and standard deviation of 1 (if scaled).
 #' @author Sercan Kahveci
 #' @export
 #'
 #' @examples
-#' vec.scale(1:10)
+#' scale(1:10)
 #' 
-vec.scale <- function(x){
+scale.vector <- function(x, center=TRUE, scale=TRUE){
   xt <- na.omit(x)
-  m <- mean.default(xt)
-  (x-m) / sqrt( sum((xt-m)^2)/(length(xt)-1) )
+  if(center){
+    m <- mean.default(xt)
+    x <- x-m
+  }
+  if(scale){
+    x / sqrt( sum((xt-m)^2)/(length(xt)-1L) )
+  }else{
+    x
+  }
 }
 
 #' Split a character column into multiple values
@@ -704,26 +781,26 @@ vec2columns <- function(x, sep=";"){
 LevenshteinDistance <- function(x, y){
   x <- strsplit(x,"")
   y <- strsplit(y,"")
-  xl <- sapply(x,length)
-  yl <- sapply(y,length)
+  xl <- lengths(x)
+  yl <- lengths(y)
   diffs <- integer(length(x))
   
   for(k in seq_along(diffs)){
-    d <- matrix(NA,nrow=xl[k] + 1, ncol=yl[k] + 1)
+    d <- matrix(NA,nrow=xl[k] + 1L, ncol=yl[k] + 1L)
   
-    d[,1] <- seq_len(xl[k] + 1) - 1
-    d[1,] <- seq_len(yl[k] + 1) - 1
+    d[,1] <- seq_len(xl[k] + 1L) - 1L
+    d[1,] <- seq_len(yl[k] + 1L) - 1L
     
-    for(j in seq_len(yl[k] + 1)[-1]){
-      for(i in seq_len(xl[k] + 1)[-1]){
+    for(j in seq_len(yl[k] + 1L)[-1L]){
+      for(i in seq_len(xl[k] + 1L)[-1L]){
         d[i, j] <- min(
-          d[i-1, j] + 1,
-          d[i, j-1] + 1,
-          d[i-1, j-1] + (x[[k]][i-1] != y[[k]][j-1])
+          d[i-1L, j] + 1L,
+          d[i, j-1L] + 1L,
+          d[i-1L, j-1L] + (x[[k]][i-1L] != y[[k]][j-1L])
         )
       }
     }
-    diffs[k] <- d[xl[k] + 1, yl[k] + 1]
+    diffs[k] <- d[xl[k] + 1L, yl[k] + 1L]
   }
   return(diffs)
 }

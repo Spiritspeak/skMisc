@@ -5,4 +5,4 @@ print(Rcpp::compileAttributes(pkgdir = ".", verbose = T))
 
 #devtools::document()
 devtools::check(args="--as-cran")
-devtools::build_manual(path=".")
+#devtools::build_manual(path=".")

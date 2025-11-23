@@ -11,7 +11,7 @@ r2t<-function(r,df){
 
 # Seeks most bivariate-outlying pair of values
 cor.outlying <- function(x, y){
-  vec.scale(x) * vec.scale(y)
+  scale.vector(x) * scale.vector(y)
 }
 
 #' Correlation holdouts
