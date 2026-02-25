@@ -25,7 +25,7 @@
 #' formula ks.test lm.influence logLik model.frame na.omit pchisq pt
 #' quantile reformulate sd setNames t.test terms update var lm resid
 #' optimize pnorm
-#' @importFrom car qqp
+#' @importFrom car qqp bcPower bcnPower yjPower powerTransform
 #' @importFrom lme4 nobars findbars fixef getME lmerControl ranef
 #' @importFrom MASS mvrnorm
 #' 
