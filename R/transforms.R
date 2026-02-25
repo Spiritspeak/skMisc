@@ -46,6 +46,14 @@
 #' shapiro.test(logshifttrans) # Not normal but less bad
 #' bctrans<-trans(u,"bcp")
 #' shapiro.test(bctrans) # Normal
+#' 
+#' # Shifted distribution
+#' u<-rgamma(1000,2)+2
+#' logshifttrans<-trans(u,"logshift")
+#' shapiro.test(logshifttrans) # Not normal 
+#' invshifttrans<-trans(u,"invshift")
+#' shapiro.test(invshifttrans) # Not normal
+#' 
 #'
 #' u<-rt(1000,2)+10 
 #' yjtrans<-trans(u,"yjp")
@@ -129,6 +137,6 @@ trans <- function(x,type=c("none","log","log1p","sqrt","inv","atan","asinh",
   attr(out,"transform.par")<-par
   return(out)
 }
-trans(rgamma(500,2)+2,"logshift") |>hist()
+
 
 
