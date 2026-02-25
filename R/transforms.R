@@ -9,7 +9,7 @@
 #' @param type Can be "none" (no transform), "log" (\code{log(x)}), "log1p" (\code{log(x+1)}), 
 #' "sqrt" (\code{sqrt(x)}), "inv" (\code{1/x}), "atan" (\code{atan(x)}),
 #' "asinh" (\code{asinh(x-mean(x)) + mean(x)}),
-#' "logshift" (\code{log(x+shift)-log(shift)}),
+#' "logshift" (\code{log(x+shift)-log(shift)} if \code{shift>0}, else \code{log(x+shift)}),
 #' "invshift" (\code{(1+shift)/(x+1+shift)}),
 #' "asinhrate" (\code{asinh((x-mean(x)) * rate) / rate + mean(x)}),
 #' "bcp" (Box-Cox transform from [car::bcPower()]), 
@@ -72,14 +72,15 @@ trans <- function(x,type=c("none","log","log1p","sqrt","inv","atan","asinh",
     out<-asinh(x-mean(x))+mean(x)
   }else if(type=="logshift"){
     logshift<-function(x,p){
-      log(x+p)-if(p==0){0}else{log(p)}
+      log(x+p)-if(p<=0){0}else{log(p)}
     }
     if(is.null(par)){
+      minpar<-min(x)
       scorer<-function(p){
-        trval<-logshift(x,exp(p))
+        trval<-logshift(x,exp(p)-minpar)
         ks.test(trval,"pnorm",mean=mean(trval),sd=sd(trval))$statistic
       }
-      par<-exp(optim(par=0,fn=scorer,method="BFGS")$par)
+      par<-exp(optim(par=0,fn=scorer,method="BFGS")$par)-minpar
     }
     out<-logshift(x,par[1])
   }else if(type=="invshift"){
@@ -87,11 +88,12 @@ trans <- function(x,type=c("none","log","log1p","sqrt","inv","atan","asinh",
       (p+1)/(x+p+1)
     }
     if(is.null(par)){
+      minpar<-min(x)
       scorer<-function(p){
-        trval<-invshift(x,exp(p))
+        trval<-invshift(x,exp(p)-minpar)
         ks.test(trval,"pnorm",mean=mean(trval),sd=sd(trval))$statistic
       }
-      par<-exp(optim(par=0,fn=scorer,method="BFGS")$par)
+      par<-exp(optim(par=0,fn=scorer,method="BFGS")$par)-minpar
     }
     out<-invshift(x,par[1])
   }else if(type=="asinhrate"){
@@ -127,6 +129,6 @@ trans <- function(x,type=c("none","log","log1p","sqrt","inv","atan","asinh",
   attr(out,"transform.par")<-par
   return(out)
 }
-
+trans(rgamma(500,2)+2,"logshift") |>hist()
 
 
