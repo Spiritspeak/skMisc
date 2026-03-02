@@ -372,3 +372,47 @@ gini <- function(x, unbiased=FALSE){
   n <- length(x)
   return(sum((2 * i - n - 1) * x) / (n * sum(x)) * ifelse(unbiased,n/(n-1),1))
 }
+
+
+
+
+
+#' Title
+#'
+#' @param x 
+#' @param y 
+#' @param op 
+#' @param paired 
+#'
+#' @returns
+#' @export
+#'
+#' @examples
+#' 
+#' a<-rnorm(1000)
+#' b<-rnorm(1000)+1
+#' distdiff(a,b,">")
+#' distdiff(a,b,"<")
+#' distdiff(a,b,"sign")
+#' 
+distdiff <- function(x, y, op=c(">","<",">=","<=","sign"),paired=F){
+  op<-match.arg(op)
+  curr_op <- switch(op,
+                    `>`=\(a,b){a>b},
+                    `>=`=\(a,b){a>=b},
+                    `<`=\(a,b){a<b},
+                    `<=`=\(a,b){a<=b},
+                    sign=\(a,b){sign(a-b)}
+                    )
+  if(!paired){
+    out<-0L
+    for(cx in x){
+      out<-out+sum(curr_op(cx,y))
+    }
+    out/(length(x)*length(y))
+  }else{
+    mean(curr_op(x,y))
+  }
+}
+
+

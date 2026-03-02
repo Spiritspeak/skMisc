@@ -10,7 +10,11 @@ r2t<-function(r,df){
 }
 
 # Seeks most bivariate-outlying pair of values
-cor.outlying <- function(x, y){
+cor.outlying <- function(x, y,doRank=F){
+  if(doRank){
+    x<-rank(x)
+    y<-rank(y)
+  }
   scale.vector(x) * scale.vector(y)
 }
 
@@ -60,10 +64,6 @@ cor.holdout<-function(x,y,
   
   # prep for spearman
   method<-match.arg(method)
-  if(method=="spearman"){
-    x<-rank(x)
-    y<-rank(y)
-  }
   goal<-match.arg(goal)
   
   rval<-origrval<-cor(x,y)
@@ -88,7 +88,7 @@ cor.holdout<-function(x,y,
   
   # Function for finding the next entry to delete
   findNextToDelete<-function(){
-    inf<-cor.outlying(x[incl],y[incl])
+    inf<-cor.outlying(x[incl],y[incl],doRank= method=="spearman")
     return(which.max(inf*origsign))
   }
   
