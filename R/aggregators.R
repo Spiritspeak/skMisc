@@ -374,21 +374,23 @@ gini <- function(x, unbiased=FALSE){
 }
 
 
-
-
-
-#' Title
-#'
-#' @param x 
-#' @param y 
-#' @param op 
-#' @param paired 
-#'
-#' @returns
+#' Compare distributions
+#' 
+#' These are fast routines to compute the probability that a random draw from x 
+#' exceeds a random draw from y (\code{op=">"}) or 
+#' the difference between the probability of x>y minus the difference of the probability of x<y (\code{op="sign"}).
+#' 
+#' @param x,y Vectors to compare.
+#' @param op The comparison operation to perform.
+#' @param paired Are the values from \code{x} and \code{y} paired? 
+#' If \code{TRUE}, each element in \code{x} is compared only to the element in the same position in \code{y};
+#' otherwise, every element in \code{x} is compared to every element in \code{y}.
+#' @returns The requested probability estimate as a single value.
+#' @author Sercan Kahveci
+#' @md
 #' @export
 #'
 #' @examples
-#' 
 #' a<-rnorm(1000)
 #' b<-rnorm(1000)+1
 #' distdiff(a,b,">")
@@ -414,5 +416,125 @@ distdiff <- function(x, y, op=c(">","<",">=","<=","sign"),paired=F){
     mean(curr_op(x,y))
   }
 }
+
+
+
+
+#' @name LeaveOneOut
+#' @title Fast leave-one-out statistics
+#' 
+#' These functions return a vector where each element represents 
+#' a statistic applied to that vector but with that particular element left out 
+#' (i.e., leave-one-out statistics).
+#'
+#' @param x,y Numeric vectors
+#'
+#' @returns A numeric vector of equal length to \code{x} but with each value representing the
+#' requested statistic that would be obtained if the element 
+#' in the same position in \code{x} and \code{y} were left out.
+#' 
+#' @details
+#' The functions are optimized and should run faster than 
+#' if you would actually leave a value out and recalculate the statistic.
+#' 
+#' @author Sercan Kahveci
+#' @md
+#' @export
+#'
+#' @examples
+#' testvec <- runif(2000)
+#' testdata <- MASS::mvrnorm(30,mu=c(0,1),Sigma=100*matrix(c(1,.5,.5,1),nrow=2))
+#' 
+#' # Sum
+#' loosum <- loo.sum(testvec)
+#' loosum2 <- sapply(seq_along(testvec),\(i)sum(testvec[-i]))
+#' max(abs(loosum-loosum2)) # Largest error
+#' 
+#' # Mean 
+#' loomean <- loo.mean(testvec)
+#' loomean2 <- sapply(seq_along(testvec),\(i)mean(testvec[-i]))
+#' max(abs(loomean-loomean2))
+#' 
+#' # Variance
+#' loovar <- loo.var(testvec)
+#' loovar2 <- sapply(seq_along(testvec),\(i)var(testvec[-i]))
+#' max(abs(loovar-loovar2))
+#' 
+#' # SD
+#' loosd <- loo.sd(testvec)
+#' loosd2 <- sapply(seq_along(testvec),\(i)sd(testvec[-i]))
+#' max(abs(loosd-loosd2))
+#' 
+#' # Covariance
+#' loocov <- loo.cov(testdata[,1],testdata[,2])
+#' loocov2 <- sapply(seq_len(nrow(testdata)),\(i)cov(testdata[-i,1],testdata[-i,2]))
+#' max(abs(loocov-loocov2))
+#' 
+#' # Pearson correlation
+#' loocor <- loo.cor(testdata[,1],testdata[,2])
+#' loocor2 <- sapply(seq_len(nrow(testdata)),\(i)cor(testdata[-i,1],testdata[-i,2]))
+#' max(abs(loocor-loocor2))
+#' 
+NULL
+
+#' @describeIn LeaveOneOut leave-one-out sum
+#' @export
+#' 
+loo.sum <- function(x){
+  sum(x)-x
+}
+
+#' @describeIn LeaveOneOut leave-one-out mean
+#' @export
+#' 
+loo.mean <- function(x){
+  loo.sum(x)/(length(x)-1)
+}
+
+#' @describeIn LeaveOneOut leave-one-out variance
+#' @export
+#' 
+loo.var <- function(x){
+  numer <- loo.sum(x^2)-loo.mean(x)^2*(length(x)-1)
+  numer/(length(x)-2)
+}
+
+#' @describeIn LeaveOneOut leave-one-out standard deviation
+#' @export
+#' 
+loo.sd <- function(x){
+  sqrt(loo.var(x))
+}
+
+#' @describeIn LeaveOneOut leave-one-out covariance
+#' @export
+#' 
+loo.cov <- function(x,y){
+  stopifnot(length(x)==length(y),!anyNA(x),!anyNA(y))
+  lmin1 <- length(x)-1
+  loosx <- loo.sum(x)
+  loosy <- loo.sum(y)
+  ((sum(x*y)-x*y)-loosx*loosy/lmin1)/(length(x)-2)
+}
+
+#' @describeIn LeaveOneOut leave-one-out Pearson correlation
+#' @export
+#' 
+loo.cor <- function(x,y){
+  stopifnot(length(x)==length(y),!anyNA(x),!anyNA(y))
+  lmin1 <- length(x)-1
+  
+  loosx <- loo.sum(x)
+  loosy <- loo.sum(y)
+  
+  # These should normally be divided by length(x)-2 but it's not needed here.
+  loocov <- ((sum(x*y)-x*y)-loosx*loosy/lmin1)
+  looxvar <- (loo.sum(x^2)-loosx^2/lmin1)
+  looyvar <- (loo.sum(y^2)-loosy^2/lmin1)
+  
+  loocov/(sqrt(looxvar)*sqrt(looyvar))
+}
+
+
 
 
