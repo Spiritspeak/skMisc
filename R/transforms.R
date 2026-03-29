@@ -1,5 +1,7 @@
 
-
+# TODO: skew and kurtosis-correction methods should try to optimize the actual skew/kurtosis statistic
+# rather than a ks test
+# TODO: remove the "shift" transforms, and make the shift an optional argument for the regular variant of the transform
 
 #' Vector transformations
 #' 

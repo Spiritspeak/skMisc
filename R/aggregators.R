@@ -417,9 +417,6 @@ distdiff <- function(x, y, op=c(">","<",">=","<=","sign"),paired=F){
   }
 }
 
-
-
-
 #' @name LeaveOneOut
 #' @title Fast leave-one-out statistics
 #' 
