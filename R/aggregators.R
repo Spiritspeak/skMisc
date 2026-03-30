@@ -136,8 +136,7 @@ serr.skewness <- function(x, na.rm=FALSE){
 #'
 serr.kurtosis <- function(x, na.rm=FALSE){
   n <- ifelse(na.rm, sum(is.na(x)), length(x))
-  2 * sqrt((6*n*(n-1))/((n-2)*(n+1)*(n+3)))*
-    sqrt((n^2-1)/((n-3)*(n+5)))
+  2 * sqrt((6*n*(n-1))/((n-2)*(n+1)*(n+3))) * sqrt((n^2-1)/((n-3)*(n+5)))
 }
 
 

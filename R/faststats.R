@@ -21,7 +21,8 @@
 #' @return The input \code{data.frame} or matrix with outliers excluded.
 #' @author Sercan Kahveci
 #' @export
-#' @seealso [vec.removeOLs()] for the same outlier exclusion applied to a single vector.
+#' @seealso [vec.removeOLs()] for the same outlier exclusion applied to a single vector. 
+#' [trans()] for normalizing skewed or leptokurtic distributions.
 #'
 #' @examples
 #' # Standard deviation limits can be set with argument s

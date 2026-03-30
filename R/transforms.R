@@ -1,7 +1,21 @@
 
-# TODO: skew and kurtosis-correction methods should try to optimize the actual skew/kurtosis statistic
-# rather than a ks test
-# TODO: remove the "shift" transforms, and make the shift an optional argument for the regular variant of the transform
+# testdat<-rgamma(10,shape=2)*50
+# skewness(testdat)
+# e1071::skewness(testdat,type=2) # mathematically identical to this
+skewness <- function(x){
+  n <- length(x)
+  x <- x-mean(x)
+  sqrt(n*(n-1))/(n-2)*mean(x^3)/(mean(x^2)^(3/2))
+}
+
+# testdat<-rt(500,100)
+# kurtosis(testdat)
+# e1071::kurtosis(testdat,type=2) # mathematically identical to this
+kurtosis <- function(x){
+  n <- length(x)
+  x <- x-mean(x)
+  (n-1)/((n-2)*(n-3))*((n+1)*(mean(x^4)/mean(x^2)^2-3)+6)
+}
 
 #' Vector transformations
 #' 
@@ -18,8 +32,10 @@
 #' "bcnp" (Shifted Box-Cox transform from [car::bcnPower()]),
 #' or "yj" (Yeo-Johnson transformation from [car::yjPower()]). Non-positive values in \code{x} are
 #' only allowed in "none", "asinh", "asinhrate", "bcnp" and "yj".
-#' @param par A parameter that determines the shape of the transformation. If no parameter is given,
-#' the function finds the parameter that gives the most normally distributed values.
+#' @param par A parameter that determines the shape of the transformation. If no parameter is given, then the function finds
+#' * for "logshift" and "invshift", the parameter that minimizes the skew
+#' * for "asinhrate", the parameter that minimizes the excess kurtosis
+#' * for "bcp", "bcnp", and "yj", the parameter that gives the most normally distributed values, using [[car::powerTransform]]
 #' For \code{"logshift"} and \code{"invshift"}, this is the shift; 
 #' For \code{"asinhrate"}, this is the rate, with higher values representing a stronger reduction of kurtosis;
 #' for \code{"bcp"} and \code{"yj"}, this is the lambda parameter; 
@@ -27,7 +43,7 @@
 #' For all other transformations, \code{par} is ignored.
 #' 
 #' @details
-#' * For skewed distributions, consider "log", "sqrt", "inv", "atan", "logshift", "invshift", "bcp","bcnp", or "yjp".
+#' * For skewed distributions, consider "log", "sqrt", "inv", "atan", "logshift", "invshift", "bcp", "bcnp", or "yjp".
 #' 
 #' * For distributions with excess kurtosis, consider "asinh" or "asinhrate".
 #' 
@@ -36,6 +52,7 @@
 #' @returns A transformed vector. 
 #' Attribute \code{"transform.method"} indicates the used method, and 
 #' \code{"transform.par"} indicates the transformation parameter(s).
+#' @seealso [removeOLs()], [vec.removeOLs()]
 #' @export
 #'
 #' @examples
@@ -87,8 +104,8 @@ trans <- function(x,type=c("none","log","log1p","sqrt","inv","atan","asinh",
     if(is.null(par)){
       minpar<-min(x)
       scorer<-function(p){
-        trval<-logshift(x,exp(p)-minpar)
-        ks.test(trval,"pnorm",mean=mean(trval),sd=sd(trval))$statistic
+        trval<-logshift(na.omit(x),exp(p)-minpar)
+        skewness(trval)^2
       }
       par<-exp(optim(par=0,fn=scorer,method="BFGS")$par)-minpar
     }
@@ -100,8 +117,8 @@ trans <- function(x,type=c("none","log","log1p","sqrt","inv","atan","asinh",
     if(is.null(par)){
       minpar<-min(x)
       scorer<-function(p){
-        trval<-invshift(x,exp(p)-minpar)
-        ks.test(trval,"pnorm",mean=mean(trval),sd=sd(trval))$statistic
+        trval<-invshift(na.omit(x),exp(p)-minpar)
+        skewness(trval)^2
       }
       par<-exp(optim(par=0,fn=scorer,method="BFGS")$par)-minpar
     }
@@ -112,8 +129,8 @@ trans <- function(x,type=c("none","log","log1p","sqrt","inv","atan","asinh",
     }
     if(is.null(par)){
       scorer<-function(p){
-        trval<-asinhrate(x,exp(p))
-        ks.test(trval,"pnorm",mean=mean(trval),sd=sd(trval))$statistic
+        trval<-asinhrate(na.omit(x),exp(p))
+        kurtosis(trval)^2
       }
       par<-exp(optim(par=0,fn=scorer,method="BFGS")$par)
     }
