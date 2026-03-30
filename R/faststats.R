@@ -15,6 +15,7 @@
 #' at least one variable in \code{olvars} (listwise).
 #' If \code{TRUE}, the function instead turns the individual outlying values into \code{NA},
 #' and does not exclude any rows.
+#' @param verbose Report in console how many values have been removed per variable?
 #' 
 #' @details This does not detect any outliers in groups with less than 3 non-NA observations.
 #'
@@ -40,14 +41,16 @@
 #' testmat[cbind(sample(1:200,5),1:5)]<-1000
 #' removeOLs(testmat)
 #' 
-removeOLs <- function(.tbl, olvars=NULL, groups=NULL, s=3, make.na=FALSE){
-  if(is.null(olvars)){
+removeOLs <- function(.tbl, olvars=NULL, groups=NULL, s=3, make.na=FALSE, verbose=TRUE){
+  if(is.null(olvars)){ # If no olvars are given, evaluate all columns except those given by the group argument
     olvars <- setdiff(colnames(.tbl),groups)
-    if(is.null(olvars)){
+    if(is.null(olvars)){ # same procedure but for when no colnames exist
       olvars <- setdiff(seq_len(NCOL(.tbl)),groups)
     }
   }
+  # Error if not all olvars are numeric
   stopifnot(all(sapply(olvars,function(x)is.numeric(.tbl[,x]))))
+  # determine olvars colname type
   if(is.numeric(olvars)){ 
     stopifnot(all(olvars <= NCOL(.tbl)))
     coltype <- "col. "
@@ -55,11 +58,13 @@ removeOLs <- function(.tbl, olvars=NULL, groups=NULL, s=3, make.na=FALSE){
     stopifnot(all(olvars %in% colnames(.tbl)))
     coltype <- ""
   }
+  # Create single crossed groupvar
   if(!is.null(groups)){
     groupvar <- interaction(.tbl[,groups])
   }else{
     groupvar <- rep(1, NROW(.tbl))
   }
+  # For each of olvars, determine which values are outlying, and NA-ify if applicable
   keylist <- list()
   for(olvar in olvars){
     key <- ave(x=.tbl[,olvar,drop=T], 
@@ -73,32 +78,37 @@ removeOLs <- function(.tbl, olvars=NULL, groups=NULL, s=3, make.na=FALSE){
                   }) |> as.logical() |> which()
     if(make.na){
       .tbl[key,olvar] <- NA
-      message("Masked ", length(key), " outliers from ",coltype, olvar)
+      if(verbose){ message("Masked ", length(key), " outliers from ",coltype, olvar) }
     }else{
       keylist[[olvar]] <- key
     }
   }
+  # If entire rows are to be removed, then do that
   if(!make.na){
+    # Remove outlying rows
     keys <- unique(unlist(keylist))
     if(length(keys) > 0){
       .tbl <- .tbl[-keys, ]
     }
     
-    nols<-sapply(keylist,length)
-    endstr <- paste0(nols[1]," outliers in ",coltype, olvars[1])
-    if(length(olvars) > 1){
-      laststr <- paste0("and ",nols[length(nols)]," in ", coltype, olvars[length(olvars)])
-      if(length(olvars) == 2){
-        endstr <- paste(endstr, laststr)
-      }else{
-        endstr <- paste(endstr,
-                        paste0(nols[-c(1,length(nols))]," in ", coltype, 
-                               olvars[-c(1,length(olvars))], collapse=", "),
-                        laststr,
-                        sep=", ")
+    # Report what you did
+    if(verbose){ 
+      nols<-sapply(keylist,length)
+      endstr <- paste0(nols[1]," outliers in ",coltype, olvars[1])
+      if(length(olvars) > 1){
+        laststr <- paste0("and ",nols[length(nols)]," in ", coltype, olvars[length(olvars)])
+        if(length(olvars) == 2){
+          endstr <- paste(endstr, laststr)
+        }else{
+          endstr <- paste(endstr,
+                          paste0(nols[-c(1,length(nols))]," in ", coltype, 
+                                 olvars[-c(1,length(olvars))], collapse=", "),
+                          laststr,
+                          sep=", ")
+        }
       }
+      message("Excluded ", length(keys), " rows, due to ", endstr)
     }
-    message("Excluded ", length(keys), " rows, due to ", endstr)
   }
   return(.tbl)
 }
@@ -110,6 +120,7 @@ removeOLs <- function(.tbl, olvars=NULL, groups=NULL, s=3, make.na=FALSE){
 #' @param s If a value deviates more SDs from the mean than this value, it is marked as an outlier
 #' @param make.na If \code{FALSE}, excludes the outliers. 
 #' If \code{TRUE}, replaces them with \code{NA}.
+#' @param verbose Report in console how many values have been removed?
 #'
 #' @return A vector with outliers removed or replaced with \code{NA}.
 #' @author Sercan Kahveci
@@ -121,9 +132,9 @@ removeOLs <- function(.tbl, olvars=NULL, groups=NULL, s=3, make.na=FALSE){
 #' vec.removeOLs(testvec)
 #' vec.removeOLs(testvec,make.na=TRUE)
 #' 
-vec.removeOLs <- function(x, s=3, make.na=FALSE){
+vec.removeOLs <- function(x, s=3, make.na=FALSE, verbose=TRUE){
   excl <- which(abs(scale.vector(x)) > s)
-  message("Excluded ", length(excl), " observations from vector")
+  if(verbose){ message("Excluded ", length(excl), " observations from vector") }
   if(length(excl) > 0){
     if(make.na){
       x[excl]<-NA
