@@ -15,9 +15,9 @@ serr.sd(x, boot = 0, na.rm = FALSE)
 
 serr.var(x, boot = 0, na.rm = FALSE)
 
-serr.skewness(x, na.rm = FALSE)
+serr.skewness(x, boot = 0, na.rm = FALSE)
 
-serr.kurtosis(x, na.rm = FALSE)
+serr.kurtosis(x, boot = 0, na.rm = FALSE)
 }
 \arguments{
 \item{x}{A numeric vector.}
@@ -51,8 +51,8 @@ algebraically or through bootstrapping.
 }}
 \note{
 The SEs of the skewness and kurtosis are computed for 
-the second skewness and kurtosis formulas reported by 
-Joannes and Gill (1998).
+the second skewness and kurtosis formulas reported by Joannes and Gill (1998), 
+i.e. the "type 2" skewness and kurtosis implemented in the package e1071.
 
 The algebraic estimators all assume a normal distribution. 
 Results may be inaccurate if the data is distributed differently. 
@@ -64,6 +64,10 @@ serr(rnorm(100))
 serr.sd(rnorm(100))
 
 serr.var(rnorm(100))
+
+serr.skewness(rgamma(10,2))
+
+serr.kurtosis(rt(20,2))
 
 }
 \references{

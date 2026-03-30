@@ -61,8 +61,8 @@ hedgesg <- function(x, y=NULL, paired=FALSE){
 #' as well as those with 1 or less non-\code{NA} values.
 #' @note 
 #' The SEs of the skewness and kurtosis are computed for 
-#' the second skewness and kurtosis formulas reported by 
-#' Joannes and Gill (1998).
+#' the second skewness and kurtosis formulas reported by Joannes and Gill (1998), 
+#' i.e. the "type 2" skewness and kurtosis implemented in the package e1071.
 #' 
 #' The algebraic estimators all assume a normal distribution. 
 #' Results may be inaccurate if the data is distributed differently. 
@@ -84,6 +84,10 @@ hedgesg <- function(x, y=NULL, paired=FALSE){
 #' serr.sd(rnorm(100))
 #' 
 #' serr.var(rnorm(100))
+#' 
+#' serr.skewness(rgamma(10,2))
+#' 
+#' serr.kurtosis(rt(20,2))
 #' 
 NULL
 
@@ -126,17 +130,27 @@ serr.var <- function(x, boot=0, na.rm=FALSE){
 #' @describeIn std.errors SE of the skewness
 #' @export
 #'
-serr.skewness <- function(x, na.rm=FALSE){
-  n <- ifelse(na.rm, sum(is.na(x)), length(x))
-  sqrt((6*n*(n-1))/((n-2)*(n+1)*(n+3)))
+serr.skewness <- function(x, boot=0, na.rm=FALSE){
+  if(boot==0){  
+    n <- ifelse(na.rm, sum(is.na(x)), length(x))
+    sqrt((6*n*(n-1))/((n-2)*(n+1)*(n+3)))
+  }else{
+    if(na.rm){ x<-x[!is.na(x)] }
+    sd(replicate(boot, skewness(sample(x, replace=TRUE))))
+  }
 }
 
 #' @describeIn std.errors SE of the kurtosis
 #' @export
 #'
-serr.kurtosis <- function(x, na.rm=FALSE){
-  n <- ifelse(na.rm, sum(is.na(x)), length(x))
-  2 * sqrt((6*n*(n-1))/((n-2)*(n+1)*(n+3))) * sqrt((n^2-1)/((n-3)*(n+5)))
+serr.kurtosis <- function(x, boot=0, na.rm=FALSE){
+  if(boot==0){
+    n <- ifelse(na.rm, sum(is.na(x)), length(x))
+    2 * sqrt((6*n*(n-1))/((n-2)*(n+1)*(n+3))) * sqrt((n^2-1)/((n-3)*(n+5)))
+  }else{
+    if(na.rm){ x<-x[!is.na(x)] }
+    sd(replicate(boot, kurtosis(sample(x, replace=TRUE))))
+  }
 }
 
 
@@ -418,7 +432,7 @@ distdiff <- function(x, y, op=c(">","<",">=","<=","sign"),paired=F){
 
 #' @name LeaveOneOut
 #' @title Fast leave-one-out statistics
-#' 
+#' @description
 #' These functions return a vector where each element represents 
 #' a statistic applied to that vector but with that particular element left out 
 #' (i.e., leave-one-out statistics).
@@ -435,39 +449,38 @@ distdiff <- function(x, y, op=c(">","<",">=","<=","sign"),paired=F){
 #' 
 #' @author Sercan Kahveci
 #' @md
-#' @export
 #'
 #' @examples
 #' testvec <- runif(2000)
 #' testdata <- MASS::mvrnorm(30,mu=c(0,1),Sigma=100*matrix(c(1,.5,.5,1),nrow=2))
 #' 
 #' # Sum
-#' loosum <- loo.sum(testvec)
+#' loosum <- loo_sum(testvec)
 #' loosum2 <- sapply(seq_along(testvec),\(i)sum(testvec[-i]))
 #' max(abs(loosum-loosum2)) # Largest error
 #' 
 #' # Mean 
-#' loomean <- loo.mean(testvec)
+#' loomean <- loo_mean(testvec)
 #' loomean2 <- sapply(seq_along(testvec),\(i)mean(testvec[-i]))
 #' max(abs(loomean-loomean2))
 #' 
 #' # Variance
-#' loovar <- loo.var(testvec)
+#' loovar <- loo_var(testvec)
 #' loovar2 <- sapply(seq_along(testvec),\(i)var(testvec[-i]))
 #' max(abs(loovar-loovar2))
 #' 
 #' # SD
-#' loosd <- loo.sd(testvec)
+#' loosd <- loo_sd(testvec)
 #' loosd2 <- sapply(seq_along(testvec),\(i)sd(testvec[-i]))
 #' max(abs(loosd-loosd2))
 #' 
 #' # Covariance
-#' loocov <- loo.cov(testdata[,1],testdata[,2])
+#' loocov <- loo_cov(testdata[,1],testdata[,2])
 #' loocov2 <- sapply(seq_len(nrow(testdata)),\(i)cov(testdata[-i,1],testdata[-i,2]))
 #' max(abs(loocov-loocov2))
 #' 
 #' # Pearson correlation
-#' loocor <- loo.cor(testdata[,1],testdata[,2])
+#' loocor <- loo_cor(testdata[,1],testdata[,2])
 #' loocor2 <- sapply(seq_len(nrow(testdata)),\(i)cor(testdata[-i,1],testdata[-i,2]))
 #' max(abs(loocor-loocor2))
 #' 
@@ -475,58 +488,52 @@ NULL
 
 #' @describeIn LeaveOneOut leave-one-out sum
 #' @export
-#' 
-loo.sum <- function(x){
+loo_sum <- function(x){
   sum(x)-x
 }
 
 #' @describeIn LeaveOneOut leave-one-out mean
 #' @export
-#' 
-loo.mean <- function(x){
-  loo.sum(x)/(length(x)-1)
+loo_mean <- function(x){
+  loo_sum(x)/(length(x)-1)
 }
 
 #' @describeIn LeaveOneOut leave-one-out variance
 #' @export
-#' 
-loo.var <- function(x){
-  numer <- loo.sum(x^2)-loo.mean(x)^2*(length(x)-1)
+loo_var <- function(x){
+  numer <- loo_sum(x^2)-loo_mean(x)^2*(length(x)-1)
   numer/(length(x)-2)
 }
 
 #' @describeIn LeaveOneOut leave-one-out standard deviation
 #' @export
-#' 
-loo.sd <- function(x){
-  sqrt(loo.var(x))
+loo_sd <- function(x){
+  sqrt(loo_var(x))
 }
 
 #' @describeIn LeaveOneOut leave-one-out covariance
 #' @export
-#' 
-loo.cov <- function(x,y){
+loo_cov <- function(x,y){
   stopifnot(length(x)==length(y),!anyNA(x),!anyNA(y))
   lmin1 <- length(x)-1
-  loosx <- loo.sum(x)
-  loosy <- loo.sum(y)
+  loosx <- loo_sum(x)
+  loosy <- loo_sum(y)
   ((sum(x*y)-x*y)-loosx*loosy/lmin1)/(length(x)-2)
 }
 
 #' @describeIn LeaveOneOut leave-one-out Pearson correlation
 #' @export
-#' 
-loo.cor <- function(x,y){
+loo_cor <- function(x,y){
   stopifnot(length(x)==length(y),!anyNA(x),!anyNA(y))
   lmin1 <- length(x)-1
   
-  loosx <- loo.sum(x)
-  loosy <- loo.sum(y)
+  loosx <- loo_sum(x)
+  loosy <- loo_sum(y)
   
   # These should normally be divided by length(x)-2 but it's not needed here.
   loocov <- ((sum(x*y)-x*y)-loosx*loosy/lmin1)
-  looxvar <- (loo.sum(x^2)-loosx^2/lmin1)
-  looyvar <- (loo.sum(y^2)-loosy^2/lmin1)
+  looxvar <- (loo_sum(x^2)-loosx^2/lmin1)
+  looyvar <- (loo_sum(y^2)-loosy^2/lmin1)
   
   loocov/(sqrt(looxvar)*sqrt(looyvar))
 }

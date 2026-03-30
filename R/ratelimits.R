@@ -10,6 +10,8 @@
 #' @param queue The rate limit object.
 #'
 #' @returns
+#' [defineRateLimit()] returns an S3 object of class "RateLimitQueue".
+#' [awaitRateLimit()] returns \code{NULL}.
 #' @export
 #'
 #' @examples
@@ -39,5 +41,6 @@ awaitRateLimit <- function(queue){
   }
   tds2 <- as.numeric(difftime(Sys.time(), queue$events, units="secs"))
   queue$events <- c(Sys.time(), queue$events[tds2 < queue$period])
+  NULL
 }
 

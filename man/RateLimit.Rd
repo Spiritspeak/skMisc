@@ -20,6 +20,10 @@ when the rate limit has been exceeded.}
 
 \item{queue}{The rate limit object.}
 }
+\value{
+[defineRateLimit()] returns an S3 object of class "RateLimitQueue".
+[awaitRateLimit()] returns \code{NULL}.
+}
 \description{
 Function call rate limiting
 }

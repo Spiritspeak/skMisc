@@ -15,7 +15,7 @@
 #' @name skMisc
 #' @useDynLib skMisc
 #' @md 
-#' @import magrittr dplyr lmerTest ggplot2 coin doParallel parallel foreach iterators MuMIn 
+#' @import magrittr dplyr lmerTest ggplot2 coin doParallel parallel foreach iterators
 #' Rcpp stringr
 #' @importFrom utils install.packages
 #' @importFrom methods as Quote
@@ -24,10 +24,11 @@
 #' @importFrom stats AIC BIC as.formula ave coef cor cor.test deviance
 #' formula ks.test lm.influence logLik model.frame na.omit pchisq pt
 #' quantile reformulate sd setNames t.test terms update var lm resid
-#' optimize pnorm
+#' optimize optim pnorm
 #' @importFrom car qqp bcPower bcnPower yjPower powerTransform
 #' @importFrom lme4 nobars findbars fixef getME lmerControl ranef
 #' @importFrom MASS mvrnorm
+#' @importFrom MuMIn r.squaredGLMM
 #' 
 #' 
 "_PACKAGE"

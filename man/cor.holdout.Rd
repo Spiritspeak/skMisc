@@ -10,8 +10,7 @@ cor.holdout(
   y,
   goal = c("nsig", "flip"),
   method = c("pearson", "spearman"),
-  alpha = 0.05,
-  verbose = FALSE
+  alpha = 0.05
 )
 
 \method{print}{cor.holdout}(x, ...)
@@ -23,11 +22,9 @@ In case of the print function, \code{x} is a \code{cor.holdout} object to print.
 \item{goal}{Objective of observation removal: 
 "nsig" (no longer significant) or "flip" (change of sign).}
 
-\item{method}{Correlation method, either "pearson" or "spearman"}
+\item{method}{Correlation method, either "pearson" or "spearman".}
 
-\item{alpha}{Alpha level for significance testing}
-
-\item{verbose}{Should the function generate verbose output? Defaults to FALSE.}
+\item{alpha}{Alpha level for significance testing.}
 
 \item{...}{Ignored.}
 }

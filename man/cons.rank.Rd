@@ -13,7 +13,7 @@ cons.rank(x)
 An integer vector of the same length as \code{x}.
 }
 \description{
-Ranks a vector such that ranks are always 1 apart if they succeed each other
+Ranks values of a vector such that ranks are always 1 apart if they succeed each other
 or 0 apart if they are tied.
 }
 \examples{
