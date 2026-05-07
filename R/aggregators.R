@@ -389,16 +389,22 @@ gini <- function(x, unbiased=FALSE){
 
 #' Compare distributions
 #' 
-#' These are fast routines to compute the probability that a random draw from x 
+#' Fast routines to compute the probability that a random draw from x 
 #' exceeds a random draw from y (\code{op=">"}) or 
 #' the difference between the probability of x>y minus the difference of the probability of x<y (\code{op="sign"}).
 #' 
-#' @param x,y Vectors to compare.
+#' @param x,y Vectors to compare; or x is a matrix of columns to compare, while y is not given.
 #' @param op The comparison operation to perform.
 #' @param paired Are the values from \code{x} and \code{y} paired? 
 #' If \code{TRUE}, each element in \code{x} is compared only to the element in the same position in \code{y};
 #' otherwise, every element in \code{x} is compared to every element in \code{y}.
-#' @returns The requested probability estimate as a single value.
+#' @returns If x and y are vectors, the returned value is a single probability estimate.
+#' 
+#' If x is an m x n matrix, the probability estimate function is applied to each pair of columns of x,
+#' and returned as an n x n matrix.  Each cell \code{output[row_id,column_id]} 
+#' represents the probability estimate obtained from comparing 
+#' \code{x[,row_id]} to \code{x[,column_id]}.
+#' 
 #' @author Sercan Kahveci
 #' @md
 #' @export
@@ -419,14 +425,37 @@ distdiff <- function(x, y, op=c(">","<",">=","<=","sign"),paired=F){
                     `<=`=\(a,b){a<=b},
                     sign=\(a,b){sign(a-b)}
                     )
-  if(!paired){
-    out<-0L
-    for(cx in x){
-      out<-out+sum(curr_op(cx,y))
+  if(missing(y) & is.matrix(x)){
+    out <- matrix(NA,nrow=ncol(x),ncol=ncol(x),dimnames=list(colnames(x),colnames(x)))
+    if(paired){
+      for(i in 1:ncol(x)){
+        for(j in (1:ncol(x))[-i]){
+          out[i,j] <- mean(curr_op(x[,i]>x[,j]))
+        }
+      }
+    }else{
+      for(i in 1:ncol(x)){
+        for(j in (1:ncol(x))[-i]){
+          currdiff<-0L
+          for(cx in x[,i,drop=T]){
+            currdiff<-currdiff+sum(curr_op(cx,x[,j]))
+          }
+          out[i,j] <- currdiff/nrow(x)^2
+        }
+      }
     }
-    out/(length(x)*length(y))
+    return(out)
   }else{
-    mean(curr_op(x,y))
+    if(!paired){
+      out<-0L
+      for(cx in x){
+        out<-out+sum(curr_op(cx,y))
+      }
+      out<-out/(length(x)*length(y))
+    }else{
+      out<-mean(curr_op(x,y))
+    }
+    return(out)
   }
 }
 
