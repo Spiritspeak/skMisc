@@ -100,7 +100,7 @@ cor.holdout<-function(x,y,
       success<-F
       break 
     }else{
-      rval<-cor(x[incl],y[incl])
+      rval<-cor(x[incl],y[incl],method=method)
       if(checkGoal(r=rval,df=sum(incl)-2)){
         success<-T
         break
