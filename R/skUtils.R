@@ -124,7 +124,9 @@ allocate <- function(x, size, prob=1){
 #' @param x A vector.
 #' @param n Number of most common elements to return.
 #'
-#' @returns A vector of the most common elements of \code{x}, with length \code{n}.
+#' @returns A vector of length length \code{n}, 
+#' consisting of the most common elements of \code{x}, 
+#' in descending order of frequency.
 #' @export
 #'
 #' @examples
@@ -132,8 +134,9 @@ allocate <- function(x, size, prob=1){
 #' mostcommon(c(1,2,2,3,7,6,4,4,4), n=2)
 #' 
 mostcommon <- function(x,n=1){
+  if(length(x)==0){ x<-NA }
   xnames <- as.character(x)
-  xfreq <- table(x)
+  xfreq <- table(x,useNA="ifany")
   xord <- order(xfreq,decreasing=TRUE)
   x[match(names(xfreq[xord][seq_len(n)]),xnames)]
 }

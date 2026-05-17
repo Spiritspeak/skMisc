@@ -61,7 +61,6 @@ theme_apa <- function(){
 #' @param bg highlight color
 #'
 #' @export
-#' @author Sercan Kahveci
 #'
 #' @examples
 #' plot(mtcars$mpg,mtcars$wt,col=mtcars$cyl)
@@ -132,6 +131,7 @@ AutocorPlot <- function(x, index, lag.max=64, plot=TRUE){
 #' @description Visualize how different transformations of the data 
 #' will fit to a normal distribution.
 #' @param x A numeric vector.
+#' @param type Names of transformations from the [trans()] to apply to \code{x}.
 #'
 #' @export
 #' @author Sercan Kahveci
@@ -139,20 +139,21 @@ AutocorPlot <- function(x, index, lag.max=64, plot=TRUE){
 #' @examples
 #' TransformPlots(mtcars$disp)
 #' 
-TransformPlots <- function(x){
+TransformPlots <- function(x,type=c("none","asinhrate","sqrt","bcp")){
   oldPars <- par("mfrow","mar")
-  par(mfrow=c(2,2), mar=c(3,2,3,1))
-  inv <- function(x){ 1/x }
-  nothing <- function(x){ x }
-  titles <- c("Untransformed", "Log-transformed", "Sqrt-transformed", "Inverse-transformed")
-  transforms <- c(nothing, log, sqrt, inv)
-  for(i in 1:4){
-    y <- do.call(transforms[[i]],list(x))
-    ks <- try(ks.test(y,"pnorm"), silent=T)
-    plottitle <- paste(titles[i],
-                       "\nKS-test D = ", round(ks$statistic, digits=3),
-                       ", p = ",round(ks$p.value, digits=3))
-    car::qqp(y, "norm", main=plottitle)
+  stopifnot(all(type %in% eval(formals(trans)$type)))
+  par(mfrow=grDevices::n2mfrow(length(type)), mar=c(2,2,4,1))
+  for(i in seq_along(type)){
+    try({
+      y <- trans(x,type=type[i])
+      ks <- try(ks.test(y,"pnorm"), silent=T)
+      plottitle <- paste(type[i],
+                         "\nKS-test D = ", round(ks$statistic, digits=3),
+                         ", p = ",round(ks$p.value, digits=3))
+      subtitle <- paste("skewness = ",round(skewness(y),digits=2),
+                        "\nkurtosis = ",round(kurtosis(y),digits=2))
+      hist(y,main=paste0(plottitle,"\n",subtitle))
+    })
   }
   par(oldPars)
 }

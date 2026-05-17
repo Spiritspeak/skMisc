@@ -158,6 +158,40 @@ trans <- function(x,type=c("none","log","log1p","sqrt","inv","atan","asinh",
 }
 
 
+#' Data Transformation Plots
+#' 
+#' @description Visualize how different transformations of the data 
+#' will fit to a normal distribution.
+#' @param x A numeric vector.
+#' @param type Names of transformations from the [trans()] to apply to \code{x}.
+#'
+#' @export
+#' @author Sercan Kahveci
+#' 
+#' @examples
+#' TransformPlots(mtcars$disp)
+#' 
+TransformPlots <- function(x,type=c("none","asinhrate","sqrt","bcp")){
+  oldPars <- par("mfrow","mar")
+  stopifnot(all(type %in% eval(formals(trans)$type)))
+  par(mfrow=grDevices::n2mfrow(length(type)), mar=c(2,2,4,1))
+  for(i in seq_along(type)){
+    try({
+      y <- trans(x,type=type[i])
+      ks <- try(ks.test(y,"pnorm"), silent=T)
+      plottitle <- paste(type[i],
+                         "\nKS-test D = ", round(ks$statistic, digits=3),
+                         ", p = ",round(ks$p.value, digits=3))
+      subtitle <- paste("skewness = ",round(skewness(y),digits=2),
+                        "\nkurtosis = ",round(kurtosis(y),digits=2))
+      hist(y,main=paste0(plottitle,"\n",subtitle))
+    })
+  }
+  par(oldPars)
+}
+
+
+
 #' Remove outlying observations from a data.frame or matrix
 #' 
 #' Outliers are defined as values deviating more than X standard deviations (SDs) from the mean.
