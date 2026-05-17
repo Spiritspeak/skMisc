@@ -92,7 +92,7 @@ vec2phrase <- function(x){
                 `0`="",
                 `1`=as.character(x),
                 `2`=paste(x[1], "and", x[2]),
-                paste0(paste0(x[-lx], collapse=", "), ", and ", x[lx]))
+                paste0(paste(x[-lx], collapse=", "), ", and ", x[lx]))
   return(out)
 }
 

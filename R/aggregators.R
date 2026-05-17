@@ -503,7 +503,7 @@ distdiff <- function(x, y, op=c(">","<",">=","<=","sign"),paired=F){
                     `<=`=\(a,b){a<=b},
                     sign=\(a,b){sign(a-b)}
                     )
-  if(missing(y) & is.matrix(x)){
+  if(missing(y) && is.matrix(x)){
     out <- matrix(NA,nrow=ncol(x),ncol=ncol(x),dimnames=list(colnames(x),colnames(x)))
     if(paired){
       for(i in 1:ncol(x)){

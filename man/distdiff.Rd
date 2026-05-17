@@ -7,7 +7,7 @@
 distdiff(x, y, op = c(">", "<", ">=", "<=", "sign"), paired = F)
 }
 \arguments{
-\item{x, y}{Vectors to compare.}
+\item{x, y}{Vectors to compare; or x is a matrix of columns to compare, while y is not given.}
 
 \item{op}{The comparison operation to perform.}
 
@@ -16,10 +16,15 @@ If \code{TRUE}, each element in \code{x} is compared only to the element in the 
 otherwise, every element in \code{x} is compared to every element in \code{y}.}
 }
 \value{
-The requested probability estimate as a single value.
+If x and y are vectors, the returned value is a single probability estimate.
+
+If x is an m x n matrix, the probability estimate function is applied to each pair of columns of x,
+and returned as an n x n matrix.  Each cell \code{output[row_id,column_id]}
+represents the probability estimate obtained from comparing
+\code{x[,row_id]} to \code{x[,column_id]}.
 }
 \description{
-These are fast routines to compute the probability that a random draw from x
+Fast routines to compute the probability that a random draw from x
 exceeds a random draw from y (\code{op=">"}) or
 the difference between the probability of x>y minus the difference of the probability of x<y (\code{op="sign"}).
 }

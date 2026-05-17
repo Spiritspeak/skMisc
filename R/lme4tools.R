@@ -103,7 +103,7 @@ ExpandFormula <- function(form){
   norandos <- labs[!grepl("\\|",labs)]
   randos <- ExtractRandomTerms(form)
   randlist <- character()
-  for(i in seq_len(length(randos))){
+  for(i in seq_along(randos)){
     randlist[i] <- paste0("(",paste(randos[[i]],collapse=" + "),
                           "|", names(randos)[[i]],")")
   }
@@ -153,7 +153,7 @@ RemoveTopTerms <- function(form, ranef=""){
     remform <- ExtractRandomTerms(form)[[ranef]]
     remcomps <- FindTopTerms(reformulate(paste(remform, collapse="+")))
     revcomp <- character()
-    for(i in seq_len(length(remcomps))){
+    for(i in seq_along(remcomps)){
       if(remcomps[i]=="1"){
         revcomp[i]<- paste0("(0 | ",ranef,")")
       }else{
@@ -164,7 +164,7 @@ RemoveTopTerms <- function(form, ranef=""){
     nonremform <- ExtractRandomTerms(form)
     nonremform <- nonremform[names(nonremform) != ranef]
     miscforms <- character()
-    for(i in seq_len(length(nonremform))){
+    for(i in seq_along(nonremform)){
       miscforms[i] <- paste0("(",paste(nonremform[[i]], collapse=" + "),
                              " | ",names(nonremform[i]),")")
     }

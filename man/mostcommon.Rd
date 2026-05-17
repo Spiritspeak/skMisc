@@ -12,7 +12,9 @@ mostcommon(x, n = 1)
 \item{n}{Number of most common elements to return.}
 }
 \value{
-A vector of the most common elements of \code{x}, with length \code{n}.
+A vector of length length \code{n}, 
+consisting of the most common elements of \code{x}, 
+in descending order of frequency.
 }
 \description{
 Return most common element(s) of vector

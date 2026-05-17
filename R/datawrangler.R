@@ -233,7 +233,7 @@ coalesce.columns <- function(x, patterns){
     str_subset(paste0(patterns,collapse="|")) |>
     str_remove(paste0(patterns,collapse="|")) |> unique()
   if(any(newcols %in% colnames(x))){
-    stop("Column(s) ",paste0(colnames(x)[newcols %in% colnames(x)],collapse=", "),
+    stop("Column(s) ",toString(colnames(x)[newcols %in% colnames(x)]),
          " already exist in x. Please rename them.")
   }
   x[newcols] <- NA

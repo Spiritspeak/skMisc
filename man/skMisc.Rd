@@ -32,4 +32,9 @@ Useful links:
 \author{
 \strong{Maintainer}: Sercan Kahveci \email{sercan+kahveci@sbg.ac.at}
 
+Authors:
+\itemize{
+  \item Sercan Kahveci \email{sercan+kahveci@sbg.ac.at}
+}
+
 }

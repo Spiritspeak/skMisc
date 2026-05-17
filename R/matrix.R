@@ -15,7 +15,7 @@
 #' 
 allpairs <- function(nval, ntuplet=2, incl.self=FALSE){
   currmat <- matrix(seq_len(nval), ncol=1)
-  offset <- ifelse(incl.self, 0, 1)
+  offset <- if(incl.self){ 0 }else{ 1 }
   for(tuple in seq_len(ntuplet)[-1]){
     newmats <- list()
     for(i in seq_len(nrow(currmat))){

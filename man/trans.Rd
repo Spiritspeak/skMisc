@@ -21,8 +21,8 @@ trans(
 "invshift" (\code{(1+shift)/(x+1+shift)}),
 "asinhrate" (\code{asinh((x-mean(x)) * rate) / rate + mean(x)}),
 "bcp" (Box-Cox transform from \code{\link[car:bcPower]{car::bcPower()}}),
-"bcnp" (Shifted Box-Cox transform from \code{\link[car:bcPower]{car::bcnPower()}}),
-or "yj" (Yeo-Johnson transformation from \code{\link[car:bcPower]{car::yjPower()}}). Non-positive values in \code{x} are
+"bcnp" (Shifted Box-Cox transform from \code{\link[car:bcnPower]{car::bcnPower()}}),
+or "yj" (Yeo-Johnson transformation from \code{\link[car:yjPower]{car::yjPower()}}). Non-positive values in \code{x} are
 only allowed in "none", "asinh", "asinhrate", "bcnp" and "yj".}
 
 \item{par}{A parameter that determines the shape of the transformation. If no parameter is given, then the function finds

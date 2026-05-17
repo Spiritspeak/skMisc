@@ -5,3 +5,5 @@
 ^generate_manual\.R$
 ^lint\.R$
 ^skmisc.*\.pdf$
+^\.positai$
+^\.claude$
