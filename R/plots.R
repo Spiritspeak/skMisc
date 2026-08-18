@@ -36,18 +36,20 @@ theme_pecher <- function(){
 #' 
 theme_apa <- function(){
   theme_bw() + 
-    theme(legend.position="bottom",panel.grid=element_blank(),
+    theme(legend.position="bottom",
+          panel.grid.minor=element_blank(),
           panel.border = element_blank(),
           axis.line=element_line(),
           strip.background = element_blank(),
           strip.text=element_text(face="bold",size=unit(14,"pt")),
-          axis.title=element_text(face="bold",size=unit(14,"pt"),margin=unit(rep(0,4),"pt")),
+          axis.title=element_text(face="bold",size=unit(14,"pt"),margin=margin(0,0,0,0,"pt")),
           legend.text = element_text(size=unit(14,"pt")),
           axis.ticks.length = unit(-5,"pt"),
           axis.ticks = element_line(color = "black"),
           axis.text=element_text(color="black",size=unit(13,"pt")),
-          axis.text.x=element_text(margin=unit(c(8,0,0,0),"pt")),
-          axis.text.y=element_text(margin=unit(c(0,8,0,0),"pt")))
+          axis.text.x=element_text(margin=margin(8,0,0,0,"pt")),
+          axis.text.y=element_text(margin=margin(0,8,0,0,"pt")),
+          plot.caption=element_text(size=unit(12,"pt")))
 }
 
 #stolen from stackoverflow

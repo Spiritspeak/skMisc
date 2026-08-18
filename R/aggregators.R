@@ -45,6 +45,84 @@ hedgesg <- function(x, y=NULL, paired=FALSE){
   }
 }
 
+#' Compute \eqn{d_{ppc2}}{dppc2} effect size
+#' 
+#' This implements the \eqn{d_{ppc2}}{dppc2} effect size metric by Morris (2007),
+#' a variant of Cohen's _d_ for pretest-posttest-control group designs.
+#'
+#' @param data A \code{data.frame}.
+#' @param cond The name of the between-subjects condition variable in \code{data}; 
+#' this column should be a \code{factor} with the control group as its first level.
+#' @param time The name of the time variable in \code{data}. 
+#' If this variable is a factor, the first two levels will be compared; 
+#' if it is numeric, the lowest two values will be compared.
+#' @param dv The name of the dependent variable in \code{data}.
+#'
+#' @returns A named vector with the \eqn{d_{ppc2}}{dppc2} value for each condition after the first.
+#' @md
+#' @author Sercan Kahveci
+#' @export
+#' @references Morris, S. B. (2008). Estimating Effect Sizes From Pretest-Posttest-Control Group Designs. 
+#' _Organizational Research Methods_, 11(2), 364-386. \doi{10.1177/109442810629105}
+#'
+#' @examples
+#' data(culcitalogreg) # From lme4
+#' dppc2(data=culcitalogreg[culcitalogreg$block %in% c(1,10),],
+#'       cond="shrimp",time="block",dv="predation")
+#' 
+#' 
+dppc2 <- function(data, cond, time, dv){
+  # Retain full cases
+  data <- data[rowSums(is.na(data[,c(cond,time,dv)]))==0,]
+  
+  # Determine conditions
+  if(is.factor(data[[cond]])){
+    conditions <- levels(data[[cond]])
+  }else{
+    conditions <- unique(data[[cond]])
+    warning(cond," is not a factor; ", conditions[1], " will be treated as the control condition.")
+  }
+  if(length(conditions)<2){
+    stop("Less than 2 conditions are specified in ",cond,".")
+  }
+  
+  # Determine timepoints
+  if(is.factor(data[[time]])){
+    timepoints <- levels(data[[time]])
+  }else if(is.numeric(data[[time]])){
+    timepoints <- sort(unique(data[[time]]))
+  }else{
+    timepoints <- unique(data[[time]])
+    warning(time," is not a factor; ", timepoints[1], " will be treated as the first timepoint.")
+  }
+  if(length(timepoints)>2){ 
+    warning("More than 2 timepoints are specified in ", time,
+            "; only timepoints ", timepoints[1]," and ",timepoints[2]," will be analyzed.")
+  }else if(length(timepoints)<2){
+    stop(time," has less than 2 values.")
+  }
+  
+  # Compute effect sizes
+  effsizes <- setNames(numeric(length(conditions[-1])), as.character(conditions[-1]))
+  for(i in seq_along(conditions[-1])){
+    meandelta <- (mean(data[data[[time]]==timepoints[2] & data[[cond]]==conditions[1+i], dv, drop=T]) - 
+                  mean(data[data[[time]]==timepoints[1] & data[[cond]]==conditions[1+i], dv, drop=T])) - 
+                 (mean(data[data[[time]]==timepoints[2] & data[[cond]]==conditions[1], dv, drop=T]) - 
+                  mean(data[data[[time]]==timepoints[1] & data[[cond]]==conditions[1], dv, drop=T])) 
+    
+    nT <- sum(data[[time]]==timepoints[1] & data[[cond]]==conditions[1+i])-1
+    nC <- sum(data[[time]]==timepoints[1] & data[[cond]]==conditions[1])-1
+    
+    sddelta <- sqrt((nT*var(data[data[[time]]==timepoints[1] & data[[cond]]==conditions[1+i], dv, drop=T]) +
+                     nC*var(data[data[[time]]==timepoints[1] & data[[cond]]==conditions[1], dv, drop=T]))/
+                     (nT+nC))
+    cP <- 1-3/(4*(nT+nC)-1)
+    
+    effsizes[i] <- cP*meandelta/sddelta
+  }
+  return(effsizes)
+}
+
 #' @name std.errors
 #' @title Standard error estimators
 #' 

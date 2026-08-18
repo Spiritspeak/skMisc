@@ -49,7 +49,7 @@ dropLeadingZero <- function(x){
 format_stat <- function(x, digits=2, type=c("default","p","quotient"),
                         sign.positive=FALSE){
   type <- match.arg(type)
-  printx <- dropLeadingZero(format(round(x, digits=digits), scientific=F))
+  printx <- trimws(dropLeadingZero(format(round(x, digits=digits), scientific=F)))
   if(type == "quotient"){
     key <- abs(x)<1
     printx[key] <- 
@@ -58,13 +58,13 @@ format_stat <- function(x, digits=2, type=c("default","p","quotient"),
                                     scientific=F)))
   }
   if(type=="p"){
-    printx[printx=="0"] <- "<.001"
+    printx[printx=="0" | printx==paste0(".",paste(rep(0,digits),collapse=""))] <- "<.001"
   }
   if(sign.positive){
     key <- sign(x) == 1
     printx[key] <- paste0("+",printx[key])
   }
-
+  
   return(printx)
 }
 
